@@ -1,0 +1,102 @@
+  !***********************************************************************
+  !    Copyright (C) 1995-2007,
+  !        Roy A. Walters, R. Falconer Henry, Adrian Dolling
+  !
+  !        rawalters@shaw.ca
+  !
+  !    This file is part of TriGrid2, a grid generation and editing program.
+  !
+  !    TriGrid2 is free software; you can redistribute it and/or
+  !    modify it under the terms of the GNU General Public
+  !    License as published by the Free Software Foundation; either
+  !    version 3 of the License, or (at your option) any later version.
+  !
+  !    This program is distributed in the hope that it will be useful,
+  !    but WITHOUT ANY WARRANTY; without even the implied warranty of
+  !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  !    General Public License for more details.
+  !
+  !    You should have received a copy of the GNU General Public
+  !    License along with this program; if not, write to the Free Software
+  !    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+  !    USA, or see <http://www.gnu.org/licenses/>.
+  !***********************************************************************
+! 
+!  numbers used to define current publicly available window/viewport 
+!  normalization transformations
+!       INTEGER   MAINWIN, CONTROLWIN, PROFILEWIN
+! 
+      INTEGER   MAINWIN, CONTROLWIN, PROFILEWIN
+
+! numbers used to define current window/viewport normalization
+! transformations
+
+      PARAMETER       (MAINWIN     = 1)
+      PARAMETER       (CONTROLWIN  = 2)
+      PARAMETER       (PROFILEWIN  = 4)
+! 
+!  Symbols - used for all symbol parameters
+! 
+!       integer POINT, CROSS, SPLAT, SQUARE, EX, DIAMOND, CIRCLE
+!     POINT is a (small) solid square
+!     CROSS is a +
+!     SPLAT is a + and x overlying each other
+!     SQUARE is an outline square box
+!     EX is an x
+!     DIAMOND is an outline square rotated pi/4
+!     CIRCLE is an outline circle
+! 
+      integer POINT, CROSS, SPLAT, SQUARE, EX, DIAMOND, CIRCLE
+      parameter (POINT   =1)
+      parameter (CROSS   =2)
+      parameter (SPLAT   =3)
+      parameter (SQUARE  =4)
+      parameter (EX      =5)
+      parameter (DIAMOND =6)
+      parameter (CIRCLE  =7)
+! 
+!  Colours - used for all colour parameters
+! 
+
+      integer NUMCOLORS
+      integer BACKGR, FOREGR, RUBBER_COLOR, TITLECOLOR
+      integer PROMPT_COLOR, MESSAGE_COLOR, DEBUG_BACKGR
+      integer BLACK, WHITE, RED, GREEN, BLUE, YELLOW, CYAN, VIOLET
+        integer DKGRAY, LTGRAY, DKRED, DKGREEN, DKBLUE, ORANGE, DKCYAN
+        integer VIOBLUE
+
+!
+! *** GKS Colours
+!
+      Parameter (BLACK = 0, WHITE = 15, RED = 12, GREEN = 10, BLUE = 9) 
+      Parameter (YELLOW = 14, CYAN = 11, VIOLET = 13, DKGRAY = 8) 
+      Parameter (LTGRAY = 7, DKRED = 4, DKGREEN = 2, DKBLUE = 1) 
+      Parameter (ORANGE = 6, DKCYAN = 3, VIOBLUE = 5)
+
+      Parameter (NUMCOLORS = 15)
+
+      Parameter (BACKGR = BLACK) 
+      Parameter (FOREGR = LTGRAY,DEBUG_BACKGR = DKGRAY)
+      Parameter (RUBBER_COLOR = FOREGR)
+      Parameter (  PROMPT_COLOR = YELLOW)
+      Parameter (TITLECOLOR = GREEN)
+      Parameter (MESSAGE_COLOR = CYAN)
+!       integer maxcolour
+      integer maxcolour
+      common /PIGCOLOUR/ maxcolour
+
+!  *** RIGHT HAND PANEL COLORS *********************
+ 
+!  - DEFINITIONS:
+!  HITCOLOR = color for all options selectable by a locator device hit.
+!  NoHITCOLOR = color for all fields that are not selectable but whose
+!                values are variable.
+!  LABELCOLOR = color for all field labels and titles.
+ 
+!       INTEGER HITCOLOR, NoHITCOLOR, LABELCOLOR
+      INTEGER HITCOLOR, NoHITCOLOR, LABELCOLOR
+
+      PARAMETER( HITCOLOR = CYAN )
+      PARAMETER( NoHITCOLOR = YELLOW )
+      PARAMETER( LABELCOLOR = GREEN )
+

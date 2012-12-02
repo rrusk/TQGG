@@ -1,0 +1,18 @@
+!-----------------------------------------------------------------------*
+!                                                                       *
+!                       CRITCOL.DEF                                     *
+!       Colour declarations for the built-in criteria.                  *
+!                                                                       *
+!-----------------------------------------------------------------------*
+
+      integer cc0,cc1,cc2,cc3,cc4,cc5,cc6,cnotc0
+      integer cdgt,cdlt,cdbtw,cnbgt,cnbe,cnblt
+      integer ccuser
+
+      PARAMETER( cc0 = white, cc1 = yellow, cc2 = green, cc3 = cyan )
+      PARAMETER( cc4 = blue, cc5 = ltgray, cc6 = violet, cnotc0 = red )
+      PARAMETER( cdgt = yellow, cdlt = blue, cdbtw = green )
+      PARAMETER( cnbgt = red, cnbe = green, cnblt = yellow )
+      PARAMETER( ccuser = ltgray )
+
+!-------------------------END CRITCOL.DEF-------------------------------*

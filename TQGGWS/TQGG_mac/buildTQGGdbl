@@ -1,0 +1,18 @@
+#!/bin/sh
+# build TQGG - compile and link
+gfortran -c -fdefault-real-8 -Wall ../../src/dataio/MainArrays.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/gridgen/*.f
+gfortran -c -fdefault-real-8 -Wall ../../src/gridgen/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/plotsubs/*.f
+gfortran -c -fdefault-real-8 -Wall ../../src/plotsubs/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/PigInterface/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/gridedit/*.f
+gfortran -c -fdefault-real-8 -Wall ../../src/gridedit/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/dataio/*.f
+gfortran -c -fdefault-real-8 -Wall ../../src/dataio/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/Xm_dialogs/*.f90
+gfortran -c -fdefault-real-8 -Wall ../../src/XMotif/*.f90
+/usr/local/gfortran/bin/gcc -c -Wall -I /usr/OpenMotif/include/ ../../src/XMotif/XmMain.c
+/usr/local/gfortran/bin/gcc -c -Wall -I /usr/OpenMotif/include/ ../../src/XMotif/XmDrawdbl.c
+/usr/local/gfortran/bin/gcc -c -Wall -I /usr/OpenMotif/include/ ../../src/XMotif/XmDialogs.c
+gfortran *.o  -o TQGGdbl -L/usr/OpenMotif/lib -L/usr/X11/lib -lXm -lXt -lX11

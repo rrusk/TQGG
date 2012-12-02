@@ -1,0 +1,583 @@
+  !***********************************************************************
+  !    Copyright (C) 1995-
+  !        Roy A. Walters, R. Falconer Henry
+  !
+  !        rawalters@shaw.ca
+  !
+  !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
+  !    a grid generation and editing program.
+  !
+  !    TQGG is free software; you can redistribute it and/or
+  !    modify it under the terms of the GNU General Public
+  !    License as published by the Free Software Foundation; either
+  !    version 3 of the License, or (at your option) any later version.
+  !
+  !    This program is distributed in the hope that it will be useful,
+  !    but WITHOUT ANY WARRANTY; without even the implied warranty of
+  !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  !    General Public License for more details.
+  !
+  !    You should have received a copy of the GNU General Public
+  !    License along with this program; if not, write to the Free Software
+  !    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+  !    USA, or see <http://www.gnu.org/licenses/>.
+  !***********************************************************************
+
+!*--------------------------------------------------------------------------*
+!     This module contains the subroutines that write the grid information  *
+!     to file based on the type of save the user has chosen. INTERIM save   *
+!     which provides two versions with a generated file name or FINAL       *
+!     that prompts the user for a final file name.                          *
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE SaveInterim( Quit )
+
+! Purpose: Dispatch routine for interim file save.
+! Givens : NREC - Number of points within the current grid
+! Returns: None
+! Effects: Default interim filename is toggled to the next interim
+!          filename.
+
+      implicit none
+
+      INCLUDE '../includes/defaults.inc'
+
+! Passed Parameters
+      logical Quit
+
+! Local variables.
+
+      open( 9, file=GridIName, status='UNKNOWN' )
+
+! Toggle the Interim filename.
+      if ( GridIName .eq. 'interim1.ngh' ) then
+        LastInterim = 'interim1.ngh'
+        call PigPutMessage('Saving interim file interim1.ngh')
+        GridIName = 'interim2.ngh'
+      else
+        LastInterim = 'interim2.ngh'
+        call PigPutMessage('Saving interim file interim2.ngh')
+        GridIName = 'interim1.ngh'
+      endif
+
+! Write the file
+      call GHOST()
+      call SORTEM
+!      call WRFILE( NREC, 9)
+      call Write_ngh_file (9)
+      close( 9 )
+      call PigPutMessage('Done.')
+      Quit = .false.
+      
+      END
+
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE SaveFinal( Quit )
+
+! Purpose: Save final Grid and optionally the TRIANGLE and CRITERIA lists.
+! Givens : NREC - Number of grid points
+! Returns: Quit - TRUE if user wishes to exit the editor
+!          CHANGE - TRUE if a change in triangle criteria
+! Effects: None
+
+      use MainArrays
+
+      implicit none
+
+! Passed variables
+      integer NREC
+      LOGICAL Quit, CHANGE
+
+! Local variables
+      CHARACTER*256 ans
+      integer nunit
+      character PigCursYesNo*1, ans1*1
+      LOGICAL ListTri,ListCri
+      logical PigOpenFileCD, ResOK
+
+      nrec = itot
+      change = .true.
+
+      ListTri = .false.
+      ListCri = .false.
+      
+      ans = ' '
+      nunit = 9
+      ResOK = PigOpenFileCD(nunit,'Save Grid File', ans,                &
+     &    'Neighbour File (*.ngh),*.ngh;All Files (*.*),*.*;')
+
+      if(.not.resOK) return
+      call GHOST()
+!      call LdTrLt( CHANGE )
+
+!* order the numbers of points in DELETE array
+      call PigPutMessage('Sorting deleted nodes..')
+      call SORTEM
+
+!* minimize the number of neighbours (NBTOTR)
+!      call PigPutMessage('Minimizing number of neighbours..')
+!      call SHRINK( NREC )
+      call PigPutMessage('Writing new grid list..')
+
+!* minimize the number of neighbours (NBTOTR)
+!      call WRFILE( NREC, 9)
+      call write_ngh_file (9)
+      close( 9 )
+      call PigPutMessage('Done')
+
+      if(.not.quit) then
+
+        ans1 = PigCursYesNo('Save Triangle List File?')
+
+        if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
+          ans = ' '
+!          call LdTrLt( CHANGE )
+          if(change) then
+            call RemoveNotExist(itot,code,exist,nbtot,nl)
+            call Element_Lister(CHANGE, .FALSE. , &
+               itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
+               x0off,y0off,scaleX,scaleY,igridtype)
+            change = .false.
+          endif
+          nunit = 11
+          ResOK = PigOpenFileCD(nunit,'Save Element File', ans,           &
+     &      'Element File(*.el*), *.el*; All Files(*.*),*.*;' )
+          if(ResOK) then
+            ListTri = .true.
+            call Tr_Dump(ListTri,.false.)
+            close(11)
+          endif
+        endif
+
+        ans1 = PigCursYesNo('Save Open Boundary File?')
+
+        if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
+          ans = ' '
+          nunit = 9
+          ResOK = PigOpenFileCD(nunit,'Save Open Boundary File', ans,           &
+     &      'Boundary File(*.bpt), *.bpt; All Files(*.*),*.*;' )
+          if(ResOK) then
+            call WRBndFILE(9)
+            close(9)
+          endif
+        endif
+      endif
+
+      quit = .false.
+
+      END
+
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE WRBndFILE (LUN)
+
+! PURPOSE : TO WRITE CURRENT open boundary DATA ONTO FILE
+! GIVEN   : NREC - THE NUMBER OF RECORDS IN THE FILE
+!           LUN - THE FORTRAN FILE UNIT NUMBER TO USE
+!   *NOTE*  NREC has been found to be "NUM OF RECORDS + 1" .. Adjustment 
+!           has been made.
+
+      use MainArrays
+
+      implicit none
+
+! *** PASSED VARIABLES ***
+      integer LUN
+   
+! *** LOCAL VARIABLES ***
+      integer I
+
+!     *** START SUBROUTINE ***
+
+      write(lun,*) 'VARIABLES="n" "x" "y" "z" "code"'
+
+      DO I = 1,itot 
+!        *IF THE RECORD EXISTS (HASN'T BEEN FLAGGED FOR DELETION) THEN  
+        IF(EXIST(I)) then  
+          if(code(i).eq.5.or.code(i).eq.6) then
+            write (LUN,fmt=111,err=9999) i,dxray(i),dyray(i),DEPTH(I),CODE(I)
+          endif
+        endif
+      enddo  
+   
+      endfile(LUN)
+      return
+
+9999  continue
+      call PigMessageOK(' *** ERROR IN WRITING NEIGHBOUR FILE ****', ' ')
+
+      return
+
+111   FORMAT(I8,3(1X,1PE14.7),1X,I4)
+
+      end   
+!*--------------------------------------------------------------------------*
+
+      subroutine write_ngh_file(iunit)
+
+      use MainArrays
+      
+      implicit none
+            
+! *** passed variables
+      integer iunit
+
+! *** local variables
+      integer j,jj,k,kk,count,nb,newnbtot
+      integer tmpnbrs(nbtot),nindex(itot)
+      
+! *** shrink nbrs array
+
+      newnbtot = 0
+      do j=1,itot
+        kk = 0
+        do k=1,nbtotr
+          nb = NL(k,j)
+          if(nb.ne.0) then
+            kk = kk + 1
+            NL(kk,j) = nb
+          endif
+        enddo
+        if(kk.lt.nbtot) NL(kk+1:nbtot,j) = 0
+        newnbtot = max(kk,newnbtot)
+      enddo
+      
+! *** set up index array for deleted nodes
+
+      count = 0
+      do j=1,itot
+        if(.not.exist(j)) code(j) = -9
+        if(code(j).lt.0) then
+          count = count+1
+          nindex(j) = 0
+        else
+          nindex(j) = j-count
+        endif
+      enddo
+
+      write(*,*) ' Writing ngh file....'
+
+      write(iunit,'(a)') "#NGH"
+      write(iunit, 101 ) x0off, y0off, scaleX, scaleY, igridtype
+      write(iunit,*) itot-count
+      write(iunit,*) newnbtot
+      
+      jj = 0
+      do j=1,itot
+        if(nindex(j).gt.0) then
+          tmpnbrs(1:nbtot)=NL(1:nbtot,j)
+          kk = 0
+          do k=1,nbtotr !add roll down
+            nb = tmpnbrs(k)
+            if(nb.gt.0) then
+              kk = kk + 1
+              tmpnbrs(kk) = nindex(nb)
+            endif
+          enddo
+          tmpnbrs(kk+1:nbtot) = 0
+          jj = jj + 1
+          write(iunit,111) jj,dxray(j),dyray(j),code(j),depth(j),(tmpnbrs(k),k=1,newnbtot)
+        endif
+      enddo
+     
+101   FORMAT(4(1X,1PE18.10),1X,I3)
+111   FORMAT(I7,2(1X,1PE14.7),1X,I3,1X,1PE14.7,25(1x,I7))
+
+      return
+      end subroutine
+      
+!*----------------------------------------------------------------------*
+!       Routines for reading and writing node data to file.                        *
+!       ROUTINES: SaveNFinal, SaveNInterim, SaveNPoly, ShiftNodes,      *
+!                 GetShift, OpenNodeFile                                *
+!*----------------------------------------------------------------------*
+
+      SUBROUTINE SaveNInterim ( success )
+
+! PURPOSE: To write current data onto file, using file unit 9 as   
+!           output file unit.  
+!   GIVEN: Common NODES = data to write.
+! RETURNS: success = .TRUE. if file saved , else .FALSE.
+!          In Common IOVALUES ; IOvalue
+!                               0 = OK.
+!                               1 = user "quit" at filename.
+!                               others = F77L3 specific.
+! EFFECTS: Node data in dxray(), dyray(), depth() are witten to named file,
+!          in NODE format. Default interim filename is toggled to the next
+!          interim filename.
+!*----------------------------------------------------------------------*
+
+      implicit none 
+
+! - PARAMETERS (constants)
+      integer funit
+      PARAMETER ( funit = 29 )
+
+! - PASSED VARIABLES
+      LOGICAL success
+
+! - COMMON AREA 
+!   - IOVALUES is for I/O status storage
+      integer IOvalue
+      COMMON /IOVALUES/ IOvalue
+
+! - "INCLUDES"
+      include '../includes/defaults.inc'
+
+! - LOCAL VARIABLES
+      CHARACTER*80 cstr
+      LOGICAL Exists
+
+!----------------START ROUTINE------------------------------------------
+
+      Exists = .FALSE.
+      INQUIRE( File = NodeIName, Exist = Exists )
+      IF ( Exists ) THEN
+        OPEN ( funit, file = NodeIName, status = 'UNKNOWN' )
+        CLOSE ( unit = funit, status = 'DELETE' )
+      ENDIF
+!         - ( Exists )
+      OPEN ( funit, file = NodeIName, status = 'NEW' )
+
+!       - toggle the Interim filename.
+      call PigEraseMessage
+      IF ( NodeIName .eq. 'interim1.nod' ) THEN
+        LastInterim = 'interim1.nod'
+        cstr = 'Saving interim file interim1.nod'
+        call PigPutMessage ( cstr )
+        NodeIName = 'interim2.nod'
+      ELSE
+!         - interim file is Interim 2
+        LastInterim = 'interim2.nod'
+        cstr = 'Saving interim file interim2.nod'
+        call PigPutMessage ( cstr )
+        NodeIName = 'interim1.nod'
+      ENDIF
+!         - ( NodeIName = interim1.nod )
+
+!       - write the file
+      call write_node_file(funit)
+      success = .true.
+
+      end subroutine 
+
+!*----------------------------------------------------------------------*
+
+      SUBROUTINE SaveNFinal ( success )
+
+! PURPOSE: To write current data onto file, using file unit 12 as   
+!          output file unit. Any existing interim files saved will be deleted
+!          if success = TRUE.
+!   GIVEN: Common NODES = data to write.
+! RETURNS: success = .TRUE. if file saved , else .FALSE.
+!          In Common IOVALUES ; IOvalue
+!                               0 = OK.
+!                               1 = user "quit" at filename.
+!                               others = F77L3 specific.
+! EFFECTS: Node data in dxray(), dyray(), depth() are witten to named file,
+!          in NODE format. User must choose a new file name, over-writing
+!          an existing file is not allowed.
+!*----------------------------------------------------------------------*
+
+      implicit none
+ 
+      integer, parameter :: funit=29
+
+! - PASSED VARIABLES
+      LOGICAL success
+
+! - COMMON AREA 
+!   - IOVALUES is for I/O status storage
+      integer IOvalue
+      COMMON /IOVALUES/ IOvalue
+
+! - LOCAL VARIABLES
+      CHARACTER*256 Flename
+      LOGICAL resOK
+      logical PigOpenFileCD
+
+!----------------START ROUTINE------------------------------------------
+
+!      success = .FALSE.
+      Flename = ' '
+
+      ResOK = PigOpenFileCD(funit,'Save Node File', Flename,&
+               'Node Files (*.nod),*.nod;All Files (*.*),*.*;')
+      if(.not.resOK) return
+
+!        fnlen = len_trim(Flename)
+
+!        named = .TRUE.
+!         - start writing...
+        call PigPutMessage('Writing File...[NODE] format.')
+      call write_node_file(funit)
+      success = .true.
+
+      end subroutine 
+
+!*----------------------------------------------------------------------*
+
+      subroutine write_node_file(funit)
+
+      use MainArrays
+      
+      implicit none
+            
+! *** passed variables
+      integer funit
+
+! *** local variables
+      integer i,j,k,tmptot
+      integer endi, starti, IOvalue
+      logical success
+      character(128) cstring
+      
+!         - start writing...
+      endi = 1
+      starti = 1
+
+      write(funit,'(a4)') '#NOD'
+      write(funit,'(4(1X,F13.5),1x,I4)') x0off,y0off,scaleX,scaleY,igridtype
+
+!         - write the total number of nodes
+      WRITE( funit, *, err = 99, iostat=IOvalue) TotCoords
+!         - write total boundaries, check first for null boundaries
+      tmptot = 0
+      DO i = 1, TotBndys
+        IF ( PtsThisBnd(i) .ne. 0 )  tmptot = tmptot + 1
+      END DO
+!           - ( i = 1, TotBndys )
+      TotBndys = tmptot
+      WRITE( funit,*, err=99, iostat=IOvalue) TotBndys,TotIntBndys
+      DO i = 1, TotBndys
+!           - write number of nodes this boundary
+        IF ( PtsThisBnd(i) .ne. 0 ) THEN
+!             - not a null boundary
+          WRITE ( funit,*,err = 99,iostat=IOvalue) PtsThisBnd(i)
+          endi = (starti - 1) + PtsThisBnd(i)
+          DO j = starti, endi
+!               - write nodes for this boundary
+        WRITE ( funit, fmt = 910, err = 99, iostat = IOvalue ) dxray(j), dyray(j), Depth(j)
+          END DO
+!               - ( j = starti, endi )
+          starti = endi + 1
+        ENDIF
+!             - ( PtsThisBnd(i) .ne. 0 )
+      END DO
+!           - ( i = 1, TotBndys )
+!         - write number of interior nodes
+      WRITE( funit,*, err = 99, iostat=IOvalue) TotIntPts
+      endi = ( starti - 1 ) + TotIntPts
+      DO k = starti, endi
+!           - write interior nodes
+        WRITE ( funit, fmt = 910, err = 99, iostat = IOvalue ) dxray(k), dyray(k), Depth(k)
+      END DO
+      CLOSE ( funit, status = 'KEEP', err = 99, iostat = IOvalue )
+      IOvalue = 0
+      success = .TRUE.
+!        ENDIF
+!         - ( Not Quitting )
+    GOTO 999
+
+!       - error trap
+99      continue
+    write(cstring,'(a,i3)') 'IOstat = ', MOD ( IOvalue, 256 )
+    call PigMessageOK(cstring,'savenode')
+    success = .False.
+    return
+
+999     CONTINUE
+    call PigEraseMessage
+
+910   format ( 2(1X, F13.5), 1X, F9.2 )
+
+      end subroutine
+      
+!---------------------------------------------------------------------------*
+
+      SUBROUTINE TR_DUMP(ListTri,ListCri)
+
+
+      use MainArrays
+
+       character*1 PigCursYesNo, ans
+       integer izero
+       integer TrInFl, TrOuFl, PtInFl, PtOuFl, CrInFl, CrOuFl
+       PARAMETER (TrInFl= 10, TrOuFl= 11, PtInFl= 12, PtOuFl= 13, CrInFl= 17, CrOuFl= 15)
+
+      integer COUNT, DELETE(mrec)
+      COMMON /NOTIFY/DELETE,COUNT
+
+!     PASSED VARIABLES
+      LOGICAL ListTri, ListCri
+
+!     LOCAL VARIABLES
+        integer I,J,K,L
+!  Following line added   March 27, 89      S.P.
+      LOGICAL LOOP
+!    REAL NuCrit(MaxCrit-1)
+      IF(ListCri) THEN
+      endif
+      IF(ListTri) THEN
+      J = 0
+      DO 100 I = 1,TotTr
+        J = J + 1
+!           *IF THERE HAVE BEEN DELETIONS THEN
+        if (COUNT .GT. 0) then
+           DO 50 L =1,3
+          LOOP = .true.
+          DO 40 K = 1,COUNT
+           if(LOOP) then
+             if (ListTr(L,I).GE.DELETE(1)) then
+            if (ListTr(L,I).eq.DELETE(K)) then
+               ListTr(L,I) = 0
+               LOOP = .false.
+            else
+               if (ListTr(L,I).LT.DELETE(K)) then
+                  ListTr(L,I)=ListTr(L,I) - (K-1)
+                  LOOP = .false.
+               else
+                  if (ListTr(L,I).GT.DELETE(K)) then
+                if (K.eq.COUNT) then
+                    ListTr(L,I)=ListTr(L,I) - K
+                    LOOP = .false.
+                 endif
+                  endif
+               endif
+            endif
+            if (.NOT. LOOP) goto 50
+!  remove next 2 lines if s/r works
+             else
+            ListTr(L,I)=ListTr(L,I)
+            GOTO 50
+             endif
+           endif
+40                continue
+50             continue
+        endif
+100   continue
+      ans = PigCursYesNo('Include TRIANGLES ONLY?')
+!      ans = 'Y'
+      call PigPutMessage('Writing triangle list')
+!      INCLUDE '../includes/triang.fmt'
+201   FORMAT(4(1X,I7),1X,I3)
+      izero = 0
+      if(ans.eq.'Y') then
+      DO I = 1, TotTr
+        if(ListTr(4,I).eq.0) then
+          WRITE (TrOuFl,201) (ListTr(J,I),J=1,4),TCode(I)
+          endif
+      enddo
+      else
+      DO I = 1, TotTr
+        WRITE (TrOuFl,201) (ListTr(J,I),J=1,4),TCode(I)
+        enddo
+      endif
+      call PigPutMessage('Done writing triangle list')
+      ENDIF
+
+    END
+
+!---------------------------------------------------------------------------*
+!-------------------------END ----------------------------------------*

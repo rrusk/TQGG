@@ -1,0 +1,119 @@
+  !***********************************************************************
+  !    Copyright (C) 1995-
+  !        Roy A. Walters, R. Falconer Henry
+  !
+  !        rawalters@shaw.ca
+  !
+  !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
+  !    a grid generation and editing program.
+  !
+  !    TQGG is free software; you can redistribute it and/or
+  !    modify it under the terms of the GNU General Public
+  !    License as published by the Free Software Foundation; either
+  !    version 3 of the License, or (at your option) any later version.
+  !
+  !    This program is distributed in the hope that it will be useful,
+  !    but WITHOUT ANY WARRANTY; without even the implied warranty of
+  !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  !    General Public License for more details.
+  !
+  !    You should have received a copy of the GNU General Public
+  !    License along with this program; if not, write to the Free Software
+  !    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+  !    USA, or see <http://www.gnu.org/licenses/>.
+  !***********************************************************************
+
+!-========================================================================= !        
+!        
+! Include the PUBLIC pig api declarations
+
+      include '../includes/graf.def'!
+
+! ========================================================================= !        
+
+      integer QUIT_EVENT, MOUSE_EVENT, NULL_EVENT, MENU_EVENT
+      integer KEYBOARD_EVENT, STRING_EVENT
+      parameter ( QUIT_EVENT=-5000, MOUSE_EVENT=-5001) 
+      parameter ( NULL_EVENT=-5002, MENU_EVENT=-5003)
+      parameter ( KEYBOARD_EVENT=-5004, STRING_EVENT=-5005)
+      integer PRINT_EVENT
+      parameter (PRINT_EVENT = -5006)
+
+
+! Window and viewport definitions
+!
+!-
+!- numbers used to define current publicly available window/viewport 
+!- normalization transformations
+!-      INTEGER   MAINWIN, MENUWIN, STATUSWIN, CONTROLWIN,
+!-     &            SCREENWIN
+!-
+      INTEGER MENUWIN, STATUSWIN, SCREENWIN, blankwin, topwin, plotwin
+
+! numbers used to define current window/viewport normalization
+! transformations
+
+      PARAMETER       (SCREENWIN   = 0)
+      PARAMETER       (STATUSWIN   = 3)
+      PARAMETER       (MENUWIN     = 4)
+      PARAMETER       (blankwin = SCREENWIN)
+      PARAMETER       (topwin = STATUSWIN, plotwin = SCREENWIN)
+! viewports
+      REAL      XMinMainView, XMaxMainView, YMinMainView,YMaxMainView
+      REAL      XMinControlView, XMaxControlView, YMinControlView,      &
+     &          YMaxControlView
+      REAL      XMinStatusView, XMaxStatusView, YMinStatusView,         &
+     &          YMaxStatusView
+      REAL      XMinMenuView, XMaxMenuView, YMinMenuView,               &
+     &          YMaxMenuView
+!  initialize device coordinates parameters to define viewport
+!  these values assume the hardware is x in {0:1} y in {0:0.75}
+      PARAMETER  (XMinMainView = 0.0, XMaxMainView = 0.65,              &
+     &            YMinMainView = 0.0, YMaxMainView = 0.65)
+      PARAMETER  (XMinControlView = 0.655, XMaxControlView = 0.997,     &
+     &            YMinControlView = 0.0, YMaxControlView = 0.65)
+      PARAMETER  (XMinStatusView = 0.0, XMaxStatusView = 0.997,         &
+     &            YMinStatusView = 0.655, YMaxStatusView = 0.7)
+      PARAMETER  (XMinMenuView = 0.0, XMaxMenuView = 0.997,             &
+     &            YMinMenuView = 0.7, YMaxMenuView = 0.75)
+
+! x and y world coordinates for each window (except mainwin)
+      REAL      XCtrlMin, XCtrlMax, YCtrlMin, YCtrlMax
+      REAL      XStatusMin, XStatusMax, YStatusMin, YStatusMax
+      REAL      XMenuMin, XMenuMax, YMenuMin, YMenuMax
+
+!  initialize world parameters to define windows
+      PARAMETER       (XCtrlMin = 0.0, XCtrlMax = 40,                   &
+     &                 YCtrlMin = 0.0, YCtrlMax = 100)
+      PARAMETER       (XStatusMin = 0.0, XStatusMax = 100.0,            &
+     &                 YStatusMin = 0.0, YStatusMax = 5.0)
+      PARAMETER       (XMenuMin = 0.0, XMenuMax = 100.0,                &
+     &                 YMenuMin = 0.0, YMenuMax = 5.0)
+
+!  coordinates for start of menu text for MENUWIN and STATUSWIN and CONTROLWIN viewports
+      REAL      STATUSX, STATUSY, CONTROLX, CONTROLY
+      PARAMETER       (STATUSX = 1.0, STATUSY = 1.5,                    &
+     &                 CONTROLX = 2.0, CONTROLY = 90.0)
+
+
+!- Text Alignment constants (general)
+
+       integer BASE_JUSTIFY, TOP_JUSTIFY, BOTTOM_JUSTIFY
+       parameter ( BASE_JUSTIFY=2, TOP_JUSTIFY=3, BOTTOM_JUSTIFY=4 )
+
+! 
+!  Text Justification constants
+! 
+	integer NORMAL_JUSTIFY
+      integer LEFT_JUSTIFY, CENTRE_JUSTIFY, RIGHT_JUSTIFY
+	PARAMETER     ( NORMAL_JUSTIFY = 0, LEFT_JUSTIFY = 1) 
+      PARAMETER     (CENTRE_JUSTIFY = 2, RIGHT_JUSTIFY = 3)
+
+!- Text Alignment constants (for Windows)
+
+        integer LEFT_ALIGN, CENTRE_ALIGN, RIGHT_ALIGN,BASE_ALIGN,       &
+     &          TOP_ALIGN, BOTTOM_ALIGN
+        PARAMETER ( LEFT_ALIGN =1, CENTRE_ALIGN =2, RIGHT_ALIGN =3,     &
+     &          BASE_ALIGN = 4, TOP_ALIGN =5, BOTTOM_ALIGN =6)
+
+

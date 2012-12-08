@@ -196,6 +196,7 @@ extern double WtoVScale;
     void        set_color(Widget, XtPointer, XtPointer) ;
     void        CreateDialogs( Widget );
     void        CreateDrawTools( Widget );
+    void        redraw();
 
     int   WPigGetOpenFileName(char *prompt, char *name, char *tmpl, const int dummy_len1, const int dummy_len2, const int dummy_len3);
 
@@ -447,7 +448,7 @@ int WPigGetFileName(char *prompt, char *name, char *tmpl )
     name[0] = '\0';
 
     if (mycall_data.reason == XmCR_OK){
-        (void *)strncpy(name,mycall_data.name,(anslen-1));
+        name = (void *)strncpy(name,mycall_data.name,(anslen-1));
                 //name = mycall_data.name;
     }
     printf ("return from int iWPigGetOpenFileName(%s)\n", name);
@@ -905,6 +906,7 @@ int main (int argc, char *argv[])
     XtAddCallback (MainCanvas, XmNinputCallback, drawing_area_callback, &mycall_data);
     XtVaGetValues (MainCanvas, XmNwidth, &width, XmNheight, &height, NULL);
     printf ("height,width= (%d,%d)\n", height, width);
+    XtAddCallback (MainCanvas, XmNexposeCallback, drawing_area_callback, &mycall_data);
 
     gcv.foreground = BlackPixelOfScreen (XtScreen (MainCanvas));
     gc = XCreateGC (XtDisplay (MainCanvas), RootWindowOfScreen (XtScreen (MainCanvas)), GCForeground, &gcv);
@@ -1024,6 +1026,7 @@ void MNU_MainMenuDisable ()
 
 void MNU_MainMenuEnable ()
 {
+    redraw(); // included here in case there is no expose event causing canvas redraw
     XtSetSensitive(TopMenuW, True);
 }
 

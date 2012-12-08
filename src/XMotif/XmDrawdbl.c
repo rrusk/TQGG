@@ -43,6 +43,7 @@
 #define  MouseEHandler  mouseehandler_
 
 Widget  MainCanvas;
+Pixmap	pixmap;	/* used to redraw the drawing area */
 
 XGCValues    gcv;
 GC           gc;
@@ -88,6 +89,28 @@ void CreateDrawTools ( Widget parent )
     XtVaSetValues (MainCanvas, XmNuserData, gc, NULL);
 }
 
+/*----------------------------------------------------------------------------*/
+
+/* Create pixmap to store contents of drawing area */
+void initPixmap() {
+	/* create a pixmap the same size as the drawing area. */
+	pixmap = XCreatePixmap (XtDisplay(MainCanvas), RootWindowOfScreen (XtScreen (MainCanvas)),
+			width, height, DefaultDepthOfScreen (XtScreen(MainCanvas)));
+	/* clear pixmap with white */
+	XFillRectangle (XtDisplay (MainCanvas), pixmap, gc, 0, 0, width, height);
+}
+
+/*----------------------------------------------------------------------------*/
+
+/* Copy pixmap to drawing area */
+void redraw()
+{
+	XCopyArea (XtDisplay(MainCanvas), pixmap, XtWindow(MainCanvas), gc,
+			0, 0, width, height, 0, 0);
+}
+
+/*----------------------------------------------------------------------------*/
+
 /* Callback routine for DrawingArea's input callbacks and the
 ** PushButton's activate callback.  Determine which it is by
 ** testing the cbs->reason field.
@@ -103,7 +126,7 @@ void drawing_area_callback (Widget widget, XtPointer client_data, XtPointer call
     int  BUP = 2;
     XmDrawingAreaCallbackStruct *cbs = (XmDrawingAreaCallbackStruct *) call_data;
     XEvent *event = cbs->event;
-    printf ("drawing cb: (%s)\n", "top");
+    //printf ("drawing cb: (%s)\n", "top");
     
     if (cbs->reason == XmCR_INPUT) {
         /* activated by DrawingArea input event -- draw lines.
@@ -114,7 +137,7 @@ void drawing_area_callback (Widget widget, XtPointer client_data, XtPointer call
             /* anchor initial point (i.e., save its value) */
             x = event->xbutton.x;
             y = event->xbutton.y;
-            printf ("drawing cb: point 1 (%d,%d)\n", x,y);
+            //printf ("drawing cb: point 1 (%d,%d)\n", x,y);
             Mousex = (WCentx - (0.5*width-x)/WtoVScale);
             Mousey = (WCenty + (0.5*height-y)/WtoVScale);
             MouseEHandler( &MAINWIN, &BDOWN, &Mousex, &Mousey);
@@ -126,18 +149,28 @@ void drawing_area_callback (Widget widget, XtPointer client_data, XtPointer call
             XtVaGetValues (widget, XmNuserData, &gc, NULL);
             XDrawLine (event->xany.display, cbs->window, gc, x, y, 
                                    event->xbutton.x, event->xbutton.y);
+            /* draw into the pixmap as well for redrawing later */
+            XDrawLine (event->xany.display, pixmap, gc, x, y,
+            		event->xbutton.x, event->xbutton.y);
             x = event->xbutton.x;
             y = event->xbutton.y;
-            printf ("drawing cb: point 2 (%d,%d)\n", x,y);
+            //printf ("drawing cb: point 2 (%d,%d)\n", x,y);
             Mousex = (WCentx - (0.5*width-x)/WtoVScale);
             Mousey = (WCenty + (0.5*height-y)/WtoVScale);
             MouseEHandler( &MAINWIN, &BUP, &Mousex, &Mousey);
        }
     }
-    
-    if (cbs->reason == XmCR_ACTIVATE)
+    if (cbs->reason == XmCR_EXPOSE) {
+    	GC gc;
+    	/* get the DrawingArea widget */
+    	XtVaGetValues (widget, XmNuserData, &gc, NULL);
+    	XCopyArea (event->xany.display, pixmap, event->xany.window,
+    			gc, 0, 0, width, height, 0, 0);
+    }
+    if (cbs->reason == XmCR_ACTIVATE) {
         /* activated by pushbutton -- clear parent's window */
         XClearWindow (event->xany.display, XtWindow (XtParent (widget)));
+    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -154,6 +187,7 @@ void  WPigEraseMain(void)
     XSetForeground (XtDisplay (MainCanvas), gc,BlackPixelOfScreen (XtScreen (MainCanvas)));
 
     XFillRectangle (XtDisplay(MainCanvas), XtWindow(MainCanvas), gc, 0, 0, width, height );
+    XFillRectangle (XtDisplay(MainCanvas), pixmap, gc, 0, 0, width, height );
 
     XSetForeground (XtDisplay (MainCanvas), gc,WhitePixelOfScreen (XtScreen (MainCanvas)));
 
@@ -182,6 +216,9 @@ void  WPigSetWorldCoordinates(const double *xlow, const double *xhigh, const dou
     }
     WCentx = 0.5*(WorldX2 + WorldX1);
     WCenty = 0.5*(WorldY2 + WorldY1);
+
+    // Initializing pixmap here because dimensions of the pixmap are known here!!!
+    initPixmap();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -257,8 +294,10 @@ void  WPigDrawPolyLine(const int *NPoints, const double *xarray, const double *y
             points[NumPoints].x = 0.5*width + (xarray[NumPoints]-WCentx)*WtoVScale;
             points[NumPoints].y = 0.5*height - (yarray[NumPoints]-WCenty)*WtoVScale;
         }
-        XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
-            points, (int)*NPoints, CoordModeOrigin);
+        //XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+        //    points, (int)*NPoints, CoordModeOrigin);
+        XDrawLines(XtDisplay(MainCanvas), pixmap, gc, points, (int)*NPoints,
+        		CoordModeOrigin);
 #undef MAXFASTPOINTS
     } else {
 /* #define MAXFASTPOINTS 8192 */
@@ -280,7 +319,9 @@ void  WPigDrawPolyLine(const int *NPoints, const double *xarray, const double *y
 
             }
 
-            XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+            //XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+            //    points, n, CoordModeOrigin);
+            XDrawLines(XtDisplay(MainCanvas), pixmap, gc,
                 points, n, CoordModeOrigin);
     
         }
@@ -321,6 +362,7 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             segments[1].x2 = (short) x;
             segments[1].y2 = (short) y + xysize;
             XDrawSegments(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc, segments, Num);
+            XDrawSegments(XtDisplay(MainCanvas), pixmap, gc, segments, Num);
             break;
         }
         case WPSPLAT:
@@ -347,6 +389,8 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             segments[3].y2 = (short) y;
             XDrawSegments(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
                     segments, Num);
+            XDrawSegments(XtDisplay(MainCanvas), pixmap, gc,
+                    segments, Num);
             break;
         }
         case WPSQUARE:
@@ -367,6 +411,8 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             points[4].y = (short) y -  xysize;
             XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
                     points, Num, CoordModeOrigin);
+            XDrawLines(XtDisplay(MainCanvas), pixmap, gc,
+                    points, Num, CoordModeOrigin);
 
             break;
         }
@@ -385,6 +431,8 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             segments[1].x2 = (short) x -  xysize;
             segments[1].y2 = (short) y +  xysize;
             XDrawSegments(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+                    segments, Num);
+            XDrawSegments(XtDisplay(MainCanvas), pixmap, gc,
                     segments, Num);
 
             break;
@@ -407,7 +455,8 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             points[4].y = (short) (y);
             XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
                     points, Num, CoordModeOrigin);
-
+            XDrawLines(XtDisplay(MainCanvas), pixmap, gc,
+                    points, Num, CoordModeOrigin);
             break;
         }
         case WPPOINT:
@@ -428,13 +477,20 @@ void  WPigDrawSymbols (const int *NPoints, const double *xarray, const double *y
             points[4].y = (short) y +  xysize;
             XFillPolygon(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
                     points, Num, Complex, CoordModeOrigin);
-
+            XFillPolygon(XtDisplay(MainCanvas), pixmap, gc,
+                    points, Num, Complex, CoordModeOrigin);
             break;
         }
         case WPCIRCLE:
         {
             /* already have necessary info to draw a circle */
             XDrawArc(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+                    (int) x -  xysize,
+                    (int) y -  xysize,
+                    (int) 2 *  xysize,
+                    (int) 2 *  xysize,
+                    0, 360 * 64);
+            XDrawArc(XtDisplay(MainCanvas), pixmap, gc,
                     (int) x -  xysize,
                     (int) y -  xysize,
                     (int) 2 *  xysize,
@@ -463,6 +519,8 @@ void  WPigDrawFilledPolygon(const int *NPoints, const double *xarray, const doub
 
         XFillPolygon(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
             points, *NPoints, Complex, CoordModeOrigin);
+        XFillPolygon(XtDisplay(MainCanvas), pixmap, gc,
+             points, *NPoints, Complex, CoordModeOrigin);
 
       /*  XSetForeground(XtDisplay(MainCanvas), gc, CmsColourDefs[XForegrColour]);*/
 

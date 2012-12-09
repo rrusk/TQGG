@@ -71,5 +71,6 @@
 		<File RelativePath="..\..\src\gridedit\StraightLine.f"/>
 		<File RelativePath="..\..\src\dataio\Stspl.f"/>
 		<File RelativePath="..\..\src\dataio\stspldf.f"/>
-		<File RelativePath="..\..\src\dataio\WriteData.f90"/></Filter></Files>
+		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
+		<File RelativePath="..\..\src\vf_dialogs\Xsection.f"/></Filter></Files>
 	<Globals/></VisualStudioProject>

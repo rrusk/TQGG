@@ -110,7 +110,7 @@
 ! - PARAMETERS (constants)
 
       INTEGER INACTIVE_CW, INACTIVE_MW, CONFIG_CW,&
-     &    CRITERIA_CW, PANELMOD_CW,&
+     &    CRITERIA_CW, PANELMOD_CW,XSection_CW,&
      &    NODEINFO_CW, NODEINFO_MW,&
      &    TRIINFO_CW, TRIINFO_MW,&
      &    PLACEMARKERS_CW, PLACEMARKERS_MW,&
@@ -118,6 +118,7 @@
       PARAMETER (&
      &        INACTIVE_CW=-1,&
      &        INACTIVE_MW=INACTIVE_CW,&
+     &        XSection_CW=17,&
      &        CONFIG_CW=1,&
      &        CRITERIA_CW=2,&
      &        PANELMOD_CW=3,&
@@ -174,7 +175,7 @@
       integer HitNum
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
-      logical, save :: closeRHP, newfile
+      logical, save :: closeRHP, newfile, accept
       logical a, IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
       CHARACTER*3, save :: mmode
@@ -478,7 +479,7 @@
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry XSectionCB(a)
-          call MNU_MainMenuDisable
+!          call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
@@ -498,23 +499,12 @@
               endif
             endif
           endif
-!          call XSection( Quit,Change )
-            IF (itot.gt.1000) then
-              outlineonly = .TRUE.
-            else
-              outlineonly = .FALSE.
-            endif
-          FlagLin=.false.
-          FlagPolar=.false.
-          FlagMerc=.false.
-          FlagUTM=.false.
-          call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
-          if(.not.Quit) then
-          endif
-          Active_CW = INACTIVE_CW
+          
+          call XSection( Quit )
+          Active_CW = XSection_CW
           Active_MW = INACTIVE_MW
-          call MNU_MainMenuEnable
           return
+
         entry SampleCB(a)
           call MNU_MainMenuDisable
           if(itot.gt.0) then
@@ -1907,7 +1897,46 @@
         call PanelGetHitnum(MouseX, MouseY, Hitnum)
         if (Hitnum.eq.0) then
         else if (Hitnum.gt.0) then
-          if(Active_CW.eq.CRITERIA_CW) then
+          if(Active_CW.eq.XSection_CW) then
+            call XsecEHandler(hitnum,accept,quit)
+            if(accept) then
+              IF (itot.gt.1000) then
+                outlineonly = .TRUE.
+              else
+                outlineonly = .FALSE.
+              endif
+              FlagLin=.false.
+              FlagPolar=.false.
+              FlagMerc=.false.
+              FlagUTM=.false.
+              if(quit) then
+                FlagG = .false.
+                FlagN = .true.
+                DispNodes = .true.
+                call MNU_GridMenuDisable
+                call MNU_NodeMenuEnable
+                if(numpolys.gt.0) then
+                  call MNU_PolyMenuEnable
+                endif
+              else
+                FlagG = .true.
+                FlagN = .false.
+                DispNodes = .false.
+                call MNU_NodeMenuDisable
+                call MNU_GridMenuEnable
+                if(numpolys.gt.0) then
+                  call MNU_PolyMenuEnable
+                endif
+              endif
+              call InitVertexMarkers
+              call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
+              change = .true.
+              call DrwFig(change)
+            elseif(quit) then
+              Active_CW = INACTIVE_CW
+              Active_MW = INACTIVE_MW
+            endif
+          elseif(Active_CW.eq.CRITERIA_CW) then
             call criteria_ehandler(Hitnum)
           else if (Active_CW.eq.CONFIGNODES_CW) then
             call configNodes_ehandler(Hitnum)

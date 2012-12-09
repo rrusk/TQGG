@@ -197,6 +197,7 @@ extern double WtoVScale;
     void        CreateDialogs( Widget );
     void        CreateDrawTools( Widget );
     void        redraw();
+    void        setUsePixmap();
 
     int   WPigGetOpenFileName(char *prompt, char *name, char *tmpl, const int dummy_len1, const int dummy_len2, const int dummy_len3);
 
@@ -303,6 +304,7 @@ extern double WtoVScale;
     XGCValues    gcv;
     GC           gc;
     Dimension    width, height;
+    int          use_pixmap = 1;  // allows user to toggle pixmap on/off
 
 typedef struct _menu_item 
 {
@@ -791,6 +793,11 @@ int main (int argc, char *argv[])
     Arg          args[5];
 	int          n;
 
+	// App defaults to using pixmap
+    if (argc == 2 && strncmp(argv[1],"-nopm", 5) == 0) {
+    	use_pixmap = 0;  // but user can request no pixmap on command-line
+    }
+    setUsePixmap(use_pixmap);
     
 	XtSetLanguageProc (NULL, NULL, NULL);
 	toplevel = XtVaOpenApplication (&app, "Demos", NULL, 0, &argc, argv, NULL,
@@ -906,7 +913,9 @@ int main (int argc, char *argv[])
     XtAddCallback (MainCanvas, XmNinputCallback, drawing_area_callback, &mycall_data);
     XtVaGetValues (MainCanvas, XmNwidth, &width, XmNheight, &height, NULL);
     printf ("height,width= (%d,%d)\n", height, width);
-    XtAddCallback (MainCanvas, XmNexposeCallback, drawing_area_callback, &mycall_data);
+    if (use_pixmap) {
+    	XtAddCallback (MainCanvas, XmNexposeCallback, drawing_area_callback, &mycall_data);
+    }
 
     gcv.foreground = BlackPixelOfScreen (XtScreen (MainCanvas));
     gc = XCreateGC (XtDisplay (MainCanvas), RootWindowOfScreen (XtScreen (MainCanvas)), GCForeground, &gcv);
@@ -1024,9 +1033,12 @@ void MNU_MainMenuDisable ()
     XtSetSensitive(TopMenuW, False);
 }
 
+/* This function includes a kludge to redraw the MainCanvas - need a better way
+ * to ensure that pixmap is copied to MainCanvas even when no expose event occurs.
+ */
 void MNU_MainMenuEnable ()
 {
-    redraw(); // included here in case there is no expose event causing canvas redraw
+    if (use_pixmap) redraw(); // included here in case there is no expose event causing canvas redraw
     XtSetSensitive(TopMenuW, True);
 }
 

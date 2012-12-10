@@ -305,13 +305,12 @@ void  WPigDrawPolyLine(const int *NPoints, const double *xarray, const double *y
             points[NumPoints].y = 0.5*height - (yarray[NumPoints]-WCenty)*WtoVScale;
         }
 
-         if (use_pixmap) {
+         XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas),
+                     gc, points, (int)*NPoints, CoordModeOrigin);
+         if (use_pixmap)
         	 XDrawLines(XtDisplay(MainCanvas), pixmap, gc, points,
         			 (int)*NPoints, CoordModeOrigin);
-         } else {
-             XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas),
-            		 gc, points, (int)*NPoints, CoordModeOrigin);
-         }
+
 #undef MAXFASTPOINTS
     } else {
 /* #define MAXFASTPOINTS 8192 */
@@ -333,12 +332,11 @@ void  WPigDrawPolyLine(const int *NPoints, const double *xarray, const double *y
 
             }
 
-            if (use_pixmap) {
+            XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
+                        points, n, CoordModeOrigin);
+            if (use_pixmap)
             	XDrawLines(XtDisplay(MainCanvas), pixmap, gc, points, n, CoordModeOrigin);
-            } else {
-            	XDrawLines(XtDisplay(MainCanvas), XtWindow(MainCanvas), gc,
-            			points, n, CoordModeOrigin);
-            }
+
         }
         /* pause(); */
 #undef MAXFASTPOINTS

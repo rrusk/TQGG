@@ -196,7 +196,7 @@ extern double WtoVScale;
     void        set_color(Widget, XtPointer, XtPointer) ;
     void        CreateDialogs( Widget );
     void        CreateDrawTools( Widget );
-    void        redraw();
+    //void        redraw();
     void        setUsePixmap();
 
     int   WPigGetOpenFileName(char *prompt, char *name, char *tmpl, const int dummy_len1, const int dummy_len2, const int dummy_len3);
@@ -1038,7 +1038,7 @@ void MNU_MainMenuDisable ()
  */
 void MNU_MainMenuEnable ()
 {
-    if (use_pixmap) redraw(); // included here in case there is no expose event causing canvas redraw
+    //if (use_pixmap) redraw(); // included here in case there is no expose event causing canvas redraw
     XtSetSensitive(TopMenuW, True);
 }
 

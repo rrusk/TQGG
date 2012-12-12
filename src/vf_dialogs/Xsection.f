@@ -64,7 +64,7 @@
       call PanelText( 1, 7, 'Cross Section:', 14 )
       call PanelText( 3, 8, 'Points:', 7 )
       call PanelText( 3, 9, 'Distance:', 9 )
-      call PanelText( 1, 11, 'Between Sections:', 17 )
+      call PanelText( 1, 11, 'Along Sections:', 17 )
       call PanelText( 3, 12, 'Points:', 7 )
       call PanelText( 3, 13, 'Distance:', 9 )
       call PanelText( 1, 15, 'Element:', 8 )
@@ -223,13 +223,13 @@ c
               ENDIF
           ELSE IF ( hitnum .eq. 2 ) THEN
 !             - get srate
-            cstr = 'Enter N, For ReSelection Of Every ' //
-     +                  'Nth Point (<RTN> for default):'
+            cstr = 'Enter number of points across section:'
             vartype = 'I'
             call InputRealInt( srate, dumr, vartype, cstr )
             IF ( vartype .eq. 'D' ) THEN
               srate = defsrate
             ENDIF
+            srate = max(2,srate)
             Nth = .TRUE.
 !             - indicate with * that reselection will be by every Nth point
             call PigSetTextColour( NoHitColor )
@@ -259,13 +259,13 @@ c
             call PanelHit( 13, 9, 3, numtmp(1:9), 9 )
           ELSE IF ( hitnum .eq. 5 ) THEN
 !             - get srate
-            cstr = 'Enter N, For ReSelection Of Every ' //
-     +                  'Nth Point (<RTN> for default):'
+            cstr = 'Enter number of points along sections::'
             vartype = 'I'
             call InputRealInt( srate2, dumr, vartype, cstr )
             IF ( vartype .eq. 'D' ) THEN
               srate2 = defsrate
             ENDIF
+            srate2 = max(0,srate2-2)
             Nth2 = .TRUE.
 !             - indicate with * that reselection will be by every Nth point
             call PigSetTextColour( NoHitColor )
@@ -273,7 +273,7 @@ c
             call PanelText( 1, 13, ' ', 1 )
             call PanelText( 1, 12, '*', 1 )
             call PigSetTextColour( HitColor )
-            WRITE( numtmp, FMT = '(I6)' ) srate2
+            WRITE( numtmp, FMT = '(I6)' ) srate2+2
             call PanelHit( 16, 12, 5, numtmp(1:6), 6 )
           ELSE IF ( hitnum .eq. 6 ) THEN
 !             - get sdist
@@ -865,11 +865,15 @@ crho=dstry/(th2-thz)
       endif
       if(ny.gt.2) then
         if(nx.eq.2) then
-            do j=2,ny-1
+          do j=3,ny
             nL(1,j) = j+1
             nL(2,j) = j-1
-            i= 2*ny + nx -j -1
-            nL(1,i) = i+1
+            i= 2*ny -j+3
+            if(j.eq.3) then
+              nL(1,i) = 1
+            else
+              nL(1,i) = i+1
+            endif
             nL(2,i) = i-1
             nL(3,j) = i
             nL(3,i) = j

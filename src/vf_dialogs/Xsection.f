@@ -43,9 +43,9 @@
 !       - XSecCom stores parameters set in XSection.
       CHARACTER*80 XSFname
       REAL sdist, sdist2
-      integer srate, srate2
+      integer EType, srate, srate2
       LOGICAL Nth, Nth2
-      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,Nth,Nth2
+      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
 
 !----------------------------------------------------------------------
 
@@ -63,10 +63,10 @@
       call PanelText( 1,  4, 'File Name:', 10 )
       call PanelText( 1, 7, 'Cross Section:', 14 )
       call PanelText( 3, 8, 'Points:', 7 )
-      call PanelText( 3, 9, 'Distance:', 9 )
-      call PanelText( 1, 11, 'Along Sections:', 17 )
+!      call PanelText( 3, 9, 'Distance:', 9 )
+      call PanelText( 1, 11, 'Between Sections:', 17 )
       call PanelText( 3, 12, 'Points:', 7 )
-      call PanelText( 3, 13, 'Distance:', 9 )
+!      call PanelText( 3, 13, 'Distance:', 9 )
       call PanelText( 1, 15, 'Element:', 8 )
 
       call PigSetTextColour( HitColor )
@@ -86,7 +86,7 @@
       call PigSetTextColour( HitColor )
 !       - #3 : sample rate distance
       WRITE ( numtmp, FMT = '(F9.3)' ) sdist
-      call PanelHit( 13, 9, 3, numtmp(1:9), 9 )
+!      call PanelHit( 13, 9, 3, numtmp(1:9), 9 )
 
 !       - #5 : sample rate Nth point
       WRITE ( numtmp, FMT = '(I6)' ) srate2
@@ -100,10 +100,17 @@
       call PigSetTextColour( HitColor )
 !       - #6 : sample rate distance
       WRITE ( numtmp, FMT = '(F9.3)' ) sdist2
-      call PanelHit( 13, 13, 6, numtmp(1:9), 9 )
+!      call PanelHit( 13, 13, 6, numtmp(1:9), 9 )
 
 !       - #7 : "Element type"
-      call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
+      if(Etype.eq.0) then
+        call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
+      elseif(Etype.eq.1) then
+        call PanelHit( 12, 15, 7, 'Triangle', 8 )
+      elseif(Etype.eq.2) then
+        call PanelHit( 12, 15, 7, 'Quads   ', 8 )
+      endif
+!      call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
 
 !       - #8 : "ACCEPT"
       call PanelHit( 9, 17, 8, 'ACCEPT', 6 )
@@ -151,12 +158,13 @@
 !----------------------------------------------------------------------
 c
 !       - XSecCom stores parameters set in XSection.
-      CHARACTER*80 XSFname
-      REAL sdist, sdist2
-      integer srate, srate2
-      LOGICAL Nth, Nth2
-      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,
-     +                   Nth, Nth2
+      CHARACTER*80 :: XSFname='NONE'
+      REAL :: sdist=1., sdist2=1.
+      integer :: EType=0, srate=3, srate2=1
+      LOGICAL :: Nth=.true., Nth2=.true.
+!      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,
+!     +                   Nth, Nth2
+      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
 
 !----------------------------------------------------------------------
 
@@ -164,29 +172,30 @@ c
       CHARACTER*80 cstr, Fname
       CHARACTER*15 numtmp
       CHARACTER*1 vartype
-      REAL dumr, defsdist
-      integer dumi, defsrate, hitnum, fnlen
-      integer, save ::  EType
-      LOGICAL, save :: filein
+      REAL dumr
+      integer dumi, hitnum, fnlen
+      integer, save :: defsrate=3, defsrate2=0, defsdist=1.0
+      LOGICAL, save :: filein=.FALSE.
       logical PigGetOpenFileName
 
       !------------------START ROUTINE---------------------------------------
 
 !       - initialize defaults
-      defsdist = 1.0
-      defsrate = 4
-      filein = .FALSE.
+!      defsdist = 1.0
+!      defsrate = 3
+!      filein = .FALSE.
       Quit = .FALSE.
 !       - assign defaults
-      XSFname = 'NONE'
+!      XSFname = 'NONE'
       Fname = XSFname
-      sdist = defsdist
-      srate = defsrate
-      Nth = .TRUE.
-      sdist2 = defsdist
-      srate2 = defsrate/2
-      Nth2 = .TRUE.
-      EType = 0
+!      sdist = defsdist
+!      srate = defsrate
+!      Nth = .TRUE.
+!      defsrate2 = 0
+!      sdist2 = defsdist
+!      srate2 = 1
+!      Nth2 = .TRUE.
+!      EType = 0
 
 !       - create RH panel options & text
       call XSecInfo
@@ -263,9 +272,9 @@ c
             vartype = 'I'
             call InputRealInt( srate2, dumr, vartype, cstr )
             IF ( vartype .eq. 'D' ) THEN
-              srate2 = defsrate
+              srate2 = defsrate2
             ENDIF
-            srate2 = max(0,srate2-2)
+            srate2 = max(0,srate2)
             Nth2 = .TRUE.
 !             - indicate with * that reselection will be by every Nth point
             call PigSetTextColour( NoHitColor )
@@ -273,7 +282,7 @@ c
             call PanelText( 1, 13, ' ', 1 )
             call PanelText( 1, 12, '*', 1 )
             call PigSetTextColour( HitColor )
-            WRITE( numtmp, FMT = '(I6)' ) srate2+2
+            WRITE( numtmp, FMT = '(I6)' ) srate2
             call PanelHit( 16, 12, 5, numtmp(1:6), 6 )
           ELSE IF ( hitnum .eq. 6 ) THEN
 !             - get sdist
@@ -316,7 +325,7 @@ c
                 DispNodes = .true.
                 quit = .true.
               elseif(EType.eq.1.and.itot.gt.3) then
-                AutoGenFlag = 1 !.false.
+                AutoGenFlag = 0 !.false.
                 call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,
      &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,
      &  PtsThisBnd,Quit,AutoGenFlag)
@@ -385,10 +394,11 @@ c
 !       - XSecCom stores parameters set in XSection.
       CHARACTER*80 XSFname
       REAL sdist, sdist2
-      integer srate, srate2
+      integer EType, srate, srate2
       LOGICAL Nth, Nth2
-      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,
-     +                   Nth, Nth2
+!      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,
+!     +                   Nth, Nth2
+      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
 
 !----------------------------------------------------------------------
 

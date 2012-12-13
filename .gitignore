@@ -2,6 +2,8 @@
 *.mod
 *~
 bin/
+TQGGWS/TQGG/TQGG.suo
+TQGGWS/TQGG/TQGG.u2d
 TQGGWS/TQGG/Debug/
 TQGGWS/TQGG/Release/
 TQGGWS/TQGGx64/Debug/

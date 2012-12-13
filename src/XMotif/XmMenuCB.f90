@@ -502,18 +502,40 @@
               endif
             endif
           endif
-!          call XSection( Quit,Change )
+          call XSection( ncode1, Quit )
+          if(.not.quit) then
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else
               outlineonly = .FALSE.
             endif
-          FlagLin=.false.
-          FlagPolar=.false.
-          FlagMerc=.false.
-          FlagUTM=.false.
-!          call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
-          if(.not.Quit) then
+            FlagLin=.false.
+            FlagPolar=.false.
+            FlagMerc=.false.
+            FlagUTM=.false.
+            if(ncode1.eq.0) then
+              FlagG = .false.
+              FlagN = .true.
+              DispNodes = .true.
+              call MNU_GridMenuDisable
+              call MNU_NodeMenuEnable
+              if(numpolys.gt.0) then
+                call MNU_PolyMenuEnable
+              endif
+            else
+              FlagG = .true.
+              FlagN = .false.
+              DispNodes = .false.
+              call MNU_NodeMenuDisable
+              call MNU_GridMenuEnable
+              if(numpolys.gt.0) then
+                call MNU_PolyMenuEnable
+              endif
+            endif
+            call InitVertexMarkers
+!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
+            change = .true.
+            call DrwFig(change)
           endif
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW

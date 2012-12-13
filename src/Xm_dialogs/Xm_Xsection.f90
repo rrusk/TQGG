@@ -25,104 +25,7 @@
 
 !-----------------------------------------------------------------------*
 
-      SUBROUTINE XSecInfo
-
-! PURPOSE: To create right hand panel for XSection procedure.
-!   GIVEN: Data in Common XSEC.
-! RETURNS: None.
-! EFFECTS: Right hand panel is created with default or current values 
-!          displayed.
-!-----------------------------------------------------------------------*
-
-! - "INCLUDES"
-      include '../includes/graf.def'
-
-!----------------------------------------------------------------------
-
-!       - XSecCom stores parameters set in XSection.
-      CHARACTER*80 XSFname
-      REAL sdist, sdist2
-      integer EType, srate, srate2
-      LOGICAL Nth, Nth2
-      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
-
-!----------------------------------------------------------------------
-
-! - LOCAL VARIABLES
-      CHARACTER*15 numtmp
-
-!-----------------START ROUTINE----------------------------------------
-
-!       - clear right hand panel
-      call InitRHPanel
-
-      call PigSetTextColour ( LabelColor )
-      call PanelText( 5,  1, 'Cross Section', 13 )
-      call PanelText( 7,  2, 'Selection', 11 )
-      call PanelText( 1,  4, 'File Name:', 10 )
-      call PanelText( 1, 7, 'Cross Section:', 14 )
-      call PanelText( 3, 8, 'Points:', 7 )
-!      call PanelText( 3, 9, 'Distance:', 9 )
-      call PanelText( 1, 11, 'Between Sections:', 17 )
-      call PanelText( 3, 12, 'Points:', 7 )
-!      call PanelText( 3, 13, 'Distance:', 9 )
-      call PanelText( 1, 15, 'Element:', 8 )
-
-      call PigSetTextColour( HitColor )
-
-!       - #1 : DIGIT file 
-      call PanelHit( 1, 5, 1, XSFname, 24 )
-
-!       - #2 : sample rate Nth point
-      WRITE ( numtmp, FMT = '(I6)' ) srate
-      call PanelHit( 16, 8, 2, numtmp(1:6), 6 )
-      call PigSetTextColour( NoHitColor )
-!       - indicate with * that reselection will be done by every Nth point
-!       -- write blank first because it may interfere with *
-      call PanelText( 1, 9, ' ', 1 )
-      call PanelText( 1, 8, '*', 1 )
-
-      call PigSetTextColour( HitColor )
-!       - #3 : sample rate distance
-      WRITE ( numtmp, FMT = '(F9.3)' ) sdist
-!      call PanelHit( 13, 9, 3, numtmp(1:9), 9 )
-
-!       - #5 : sample rate Nth point
-      WRITE ( numtmp, FMT = '(I6)' ) srate2
-      call PanelHit( 16, 12, 5, numtmp(1:6), 6 )
-      call PigSetTextColour( NoHitColor )
-!       - indicate with * that reselection will be done by every Nth point
-!       -- write blank first because it may interfere with *
-      call PanelText( 1, 13, ' ', 1 )
-      call PanelText( 1, 12, '*', 1 )
-
-      call PigSetTextColour( HitColor )
-!       - #6 : sample rate distance
-      WRITE ( numtmp, FMT = '(F9.3)' ) sdist2
-!      call PanelHit( 13, 13, 6, numtmp(1:9), 9 )
-
-!       - #7 : "Element type"
-      if(Etype.eq.0) then
-        call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
-      elseif(Etype.eq.1) then
-        call PanelHit( 12, 15, 7, 'Triangle', 8 )
-      elseif(Etype.eq.2) then
-        call PanelHit( 12, 15, 7, 'Quads   ', 8 )
-      endif
-!      call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
-
-!       - #8 : "ACCEPT"
-      call PanelHit( 9, 17, 8, 'ACCEPT', 6 )
-
-!       - #9 : "QUIT"
-      call PanelHit( 10, 19, 9, 'QUIT', 4 )
-
-      RETURN
-      END
-
-!-----------------------------------------------------------------------*
-
-      SUBROUTINE XSection( Quit )
+      SUBROUTINE XSection( Etype, Quit )
 
 ! PURPOSE: To control the information screen in the right hand panel for 
 !          entering the cross section parameters, 
@@ -147,31 +50,36 @@
       use MainArrays
 
 ! - PASSED PARAMETERS
-        integer AutoGenFlag
-        logical  accept, Quit
+        integer AutoGenFlag, EType
+        logical Quit
 
 ! - "INCLUDES"
       include '../includes/defaults.inc'
       include '../includes/graf.def'
 
 !----------------------------------------------------------------------
-c
 !       - XSecCom stores parameters set in XSection.
       CHARACTER*80 :: XSFname='NONE'
       REAL :: sdist=1., sdist2=1.
-      integer :: EType=0, srate=3, srate2=1
+      integer :: srate=3, srate2=1
       LOGICAL :: Nth=.true., Nth2=.true.
-      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
+      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2
+
+!       - XSecCom stores parameters set in XSection.
+!      CHARACTER*80 XSFname
+!      REAL sdist, sdist2
+!      integer srate, srate2
+!      LOGICAL Nth, Nth2
+!      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,Nth, Nth2
 
 !----------------------------------------------------------------------
 
 ! - LOCAL VARIABLES
-      CHARACTER*80 cstr, Fname
-      CHARACTER*15 numtmp
+      CHARACTER*80 cstr, Fname, ans
       CHARACTER*1 vartype
       REAL dumr
       real :: defsdist=1.0
-      integer dumi, hitnum, fnlen
+      integer fnlen
       integer, save :: defsrate=3, defsrate2=0
       LOGICAL, save :: filein=.FALSE.
       logical PigGetOpenFileName
@@ -181,181 +89,93 @@ c
       Quit = .FALSE.
       Fname = XSFname
 
-!       - create RH panel options & text
-      call XSecInfo
-      return
+!     - get input file name
+      quit = .true.
+      if(PigGetOpenFileName('Open XSection File', FName,&
+                'XSec Files (*.xsc),*.xsc;All Files (*.*),*.*;')) then
+        quit = .false.
+        XSFname = Fname
+        fnlen = len_trim(XSFname)
+        filein = .TRUE.
+      else
+        return
+      ENDIF
 
-      entry XsecEHandler(hitnum,accept,quit)
-      
-        Quit = .FALSE.
-        accept = .false.
-      
-        call PigSetLineColour ( HitColor )
-        IF ( filein ) THEN
-          cstr = 'Set Parameters, Then Accept.'
-        ELSE
-          cstr = 'Specify File Name, Set Parameters, ' //
-     +             'Then Accept.'
+!      distance sampling does not work
+!      call PigMessageYesNo ('Sample by number (yes) or distance (no)? ',ans)
+      ans = 'Y'
+
+      if(ans(1:1).eq.'Y') then
+!             - get srate
+        cstr = 'Enter number of points ACROSS section:'
+        vartype = 'I'
+        call InputRealInt( srate, dumr, vartype, cstr )
+        IF ( vartype .eq. 'D' ) THEN
+          srate = defsrate
         ENDIF
-!           - ( filein )
-        call PigPutMessage ( cstr )
-!         - get menu option
-!           - valid menu pick, determine option
-          IF ( hitnum .eq. 1 ) THEN
-!             - get input digit file name
-              quit = .true.
-              if(PigGetOpenFileName('Open XSection File', FName,
-     +           'XSec Files (*.xsc),*.xsc;All Files (*.*),*.*;')
-     +           ) then
-              quit = .false.
-                XSFname = Fname
-              fnlen = len_trim(XSFname)
-                call PigSetTextColour( HitColor )
-              call PanelHit( 1, 5, 1, XSFname, 24 )
-                filein = .TRUE.
-              ENDIF
-          ELSE IF ( hitnum .eq. 2 ) THEN
-!             - get srate
-            cstr = 'Enter number of points across section:'
-            vartype = 'I'
-            call InputRealInt( srate, dumr, vartype, cstr )
-            IF ( vartype .eq. 'D' ) THEN
-              srate = defsrate
-            ENDIF
-            srate = max(2,srate)
-            Nth = .TRUE.
-!             - indicate with * that reselection will be by every Nth point
-            call PigSetTextColour( NoHitColor )
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 9, ' ', 1 )
-            call PanelText( 1, 8, '*', 1 )
-            call PigSetTextColour( HitColor )
-            WRITE( numtmp, FMT = '(I6)' ) srate
-            call PanelHit( 16, 8, 2, numtmp(1:6), 6 )
-          ELSE IF ( hitnum .eq. 3 ) THEN
+        srate = max(2,srate)
+        Nth = .TRUE.
+        
+      else
 !             - get sdist
-            cstr = 'Enter Distance Between ReSelected Points, ' //
-     +                  '<RTN> for default:'
-            vartype = 'R'
-            call InputRealInt( dumi, sdist, vartype, cstr )
-            IF ( vartype .eq. 'D' ) THEN
-              sdist = defsdist
-            ENDIF
-            Nth = .FALSE.
-!             - indicate with * that reselection will be by every Nth point
-            call PigSetTextColour( NoHitColor )
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 8, ' ', 1 )
-            call PanelText( 1, 9, '*', 1 )
-            WRITE ( numtmp, FMT = '(F9.3)' ) sdist
-            call PigSetTextColour( HitColor )
-            call PanelHit( 13, 9, 3, numtmp(1:9), 9 )
-          ELSE IF ( hitnum .eq. 5 ) THEN
+         cstr = 'Enter Distance Between ReSelected Points:'
+         vartype = 'R'
+         call InputRealInt( dumi, sdist, vartype, cstr )
+         IF ( vartype .eq. 'D' ) THEN
+           sdist = defsdist
+         ENDIF
+         Nth = .FALSE.
+       endif
+        
+      if(ans(1:1).eq.'Y') then
 !             - get srate
-            cstr = 'Enter number of points along sections::'
-            vartype = 'I'
-            call InputRealInt( srate2, dumr, vartype, cstr )
-            IF ( vartype .eq. 'D' ) THEN
-              srate2 = defsrate2
-            ENDIF
-            srate2 = max(0,srate2)
-            Nth2 = .TRUE.
-!             - indicate with * that reselection will be by every Nth point
-            call PigSetTextColour( NoHitColor )
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 13, ' ', 1 )
-            call PanelText( 1, 12, '*', 1 )
-            call PigSetTextColour( HitColor )
-            WRITE( numtmp, FMT = '(I6)' ) srate2
-            call PanelHit( 16, 12, 5, numtmp(1:6), 6 )
-          ELSE IF ( hitnum .eq. 6 ) THEN
+        cstr = 'Enter number of points BETWEEN sections::'
+        vartype = 'I'
+        call InputRealInt( srate2, dumr, vartype, cstr )
+        IF ( vartype .eq. 'D' ) THEN
+          srate2 = defsrate2
+        ENDIF
+        srate2 = max(0,srate2)
+        Nth2 = .TRUE.
+            
+      else
 !             - get sdist
-            cstr = 'Enter Distance Between ReSelected Points, ' //
-     +                  '<RTN> for default:'
-            vartype = 'R'
-            call InputRealInt( dumi, sdist2, vartype, cstr )
-            IF ( vartype .eq. 'D' ) THEN
-              sdist2 = defsdist
-            ENDIF
-            Nth2 = .FALSE.
-!             - indicate with * that reselection will be by every Nth point
-            call PigSetTextColour( NoHitColor )
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 12, ' ', 1 )
-            call PanelText( 1, 13, '*', 1 )
-            WRITE ( numtmp, FMT = '(F9.3)' ) sdist2
-            call PigSetTextColour( HitColor )
-            call PanelHit( 13, 13, 6, numtmp(1:9), 9 )
-          ELSE IF ( hitnum .eq. 7 ) THEN
-            EType = mod(Etype +1,3)
-            call PigSetTextColour( HitColor )
-            if(Etype.eq.0) then
-              call PanelHit( 12, 15, 7, 'Nodes   ', 8 )
-            elseif(Etype.eq.1) then
-              call PanelHit( 12, 15, 7, 'Triangle', 8 )
-            elseif(Etype.eq.2) then
-              call PanelHit( 12, 15, 7, 'Quads   ', 8 )
-            endif
-          ELSE IF ( hitnum .eq. 8 ) THEN
+        cstr = 'Enter distance increment between sections:'
+        vartype = 'R'
+        call InputRealInt( dumi, sdist2, vartype, cstr )
+        IF ( vartype .eq. 'D' ) THEN
+          sdist2 = defsdist
+        ENDIF
+        Nth2 = .FALSE.
+      endif
+            
+      call PigPrompt('Enter type: 0=nodes, 1=triangles, 2=quads', ans )
+      read(ans,'(i1)') EType
+      Etype = min(2,max(0,etype))
+
 !             - "ACCEPT" button hit
-            IF ( filein ) THEN
-              call PigEraseMessage
-              cstr = 'Reading File...[XSec] format.'
-              call PigPutMessage ( cstr )
-!               Fname = XSFname
-              call ReadXSecFile ( Quit, nx, ny )
-              call PigEraseMessage
-              if(EType.eq.0) then
-                DispNodes = .true.
-                quit = .true.
-              elseif(EType.eq.1.and.itot.gt.3) then
-                AutoGenFlag = 0 !.false.
-                call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,
-     &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,
+      IF ( filein ) THEN
+        call PigEraseMessage
+        cstr = 'Reading File...[XSec] format.'
+        call PigPutMessage ( cstr )
+!         Fname = XSFname
+        call ReadXSecFile ( Quit, nx, ny )
+        call PigEraseMessage
+        if(EType.eq.0) then
+        elseif(EType.eq.1.and.itot.gt.3) then
+          AutoGenFlag = 0 !.false.
+          call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,&
+     &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,&
      &  PtsThisBnd,Quit,AutoGenFlag)
-                DispNodes = .false.
-                quit = .false.
-              elseif(EType.eq.2) then
-                call GenerateQuads( Quit, nx, ny )
-                DispNodes = .false.
-                quit = .false.
-              endif
-              accept = .true.
-            ELSE IF ( .NOT. filein ) THEN
-              cstr = 'Please Specify a File Name.'
-              call PigMessageOK ( cstr,'XSection'C )
-            ENDIF
-!               - ( filein )
-          ELSE IF ( hitnum .eq. 9 ) THEN
-!             - "QUIT" button hit, check if latest reselection saved
-            Quit = .true.
-            call ClearRHPanel
-          ENDIF
-!             - ( hitnum = 1 )
-!           - refresh * that indicates Nth, in case of redraw
-        if(.not.quit) then
-          call PigSetTextColour ( NoHitColor )
-          IF ( Nth ) THEN
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 9, ' ', 1 )
-            call PanelText( 1, 8, '*', 1 )
-          ELSE
-!             - NOT Nth
-            call PanelText( 1, 8, ' ', 1 )
-            call PanelText( 1, 9, '*', 1 )
-          ENDIF
-!             - ( Nth )
-          IF ( Nth2 ) THEN
-!             - write blank first bacause it may interfere with *
-            call PanelText( 1, 13, ' ', 1 )
-            call PanelText( 1, 12, '*', 1 )
-          ELSE
-!             - NOT Nth2
-            call PanelText( 1, 12, ' ', 1 )
-            call PanelText( 1, 13, '*', 1 )
-          ENDIF
-!             - ( Nth )
+        elseif(EType.eq.2) then
+          call GenerateQuads( Quit, nx, ny )
         endif
+        quit = .true.
+      ELSE IF ( .NOT. filein ) THEN
+        cstr = 'Please Specify a File Name.'
+        call PigMessageOK ( cstr,'XSection' )
+      ENDIF
+      Quit = .false.
 
       RETURN
       END
@@ -378,17 +198,18 @@ c
 !       - XSecCom stores parameters set in XSection.
       CHARACTER*80 XSFname
       REAL sdist, sdist2
-      integer EType, srate, srate2
+      integer srate, srate2
       LOGICAL Nth, Nth2
-      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2,EType
+!      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,Nth, Nth2
+      COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2
 
 !----------------------------------------------------------------------
 
       REAL    XMAX, YMAX, XMIN, YMIN
 
-      real pdum(1001),yz(1001),ddum(1001),zorg(1001,50)
+      real pdum(1001),yz(1001),ddum(1001),zorg(1001,50) &
      &,xc(1001),yc(1001),yzy(1001),slt(1001),yzx(1001),ww(1001)
-      common/are/wt(1001),thet(1001),zz(1001,50),rds(1001)
+      common/are/wt(1001),thet(1001),zz(1001,50),rds(1001) &
      &,tct(1001),xct(1001),yct(1001),twg(1001,3),zws(1001)
       integer maxnscs, maxnpx
 
@@ -423,15 +244,14 @@ c
       ni=24
       fnlen = len_trim(XSFname)
       open(80,status='OLD',file=XSFname(:fnlen))
-copen(81,file='xsout')
-copen(82,file='top1')
+!open(81,file='xsout')
+!open(82,file='top1')
       pi=acos(-1.)
 !      print *,pi,ncl
 !      read(80,*,err=9901)nxp,ns,nint,ni
       read(80,*,err=9901)nxp
       if(nxp.gt.maxnscs) then
-        call PigMessageOK('Number of input crossections too large',
-     &        'ReadXsec'C) 
+        call PigMessageOK('Number of input crossections too large','ReadXsec') 
         go to 9903
       endif
       ni = srate-1
@@ -443,14 +263,11 @@ copen(82,file='top1')
       nscs=(nxp-1)*(nint+1)+1
       np=ni+1
       if(nscs.gt.maxnscs) then
-        call PigMessageOK(
-     *     'Interpolated number of crossections too large','ReadXsec'C) 
+        call PigMessageOK('Interpolated number of crossections too large','ReadXsec') 
           go to 9903
       endif
       if(np.gt.maxnpx) then
-        call PigMessageOK(
-     *     'Interpolated number of points in crossection too large',
-     &     'ReadXsec'C) 
+        call PigMessageOK('Interpolated number of points in crossection too large','ReadXsec') 
           go to 9903
       endif
       ncl=(np+1)/2
@@ -460,8 +277,7 @@ copen(82,file='top1')
 !  cross-section measurement reference line
         read(80,*,err=9901)ns,xl,yl,xr,yr,zref
         if(ns.gt.maxnpx) then
-          call PigMessageOK(
-     *   'Number of points in input crossection too large','ReadXsec'C) 
+          call PigMessageOK('Number of points in input crossection too large','ReadXsec') 
           go to 9903
         endif
         if(i.eq.1)zro=zref
@@ -479,7 +295,7 @@ copen(82,file='top1')
           call splndf(w          ,sigm,pdum,ddum,yz,dep  ,slp)
           zorg(i,j)=zref-dep
 50      continue
-2       format(10f7.2)
+!2       format(10f7.2)
 !       print *,pdum(ns),depth,slp
         dx=xl-xr
         dy=yl-yr
@@ -493,7 +309,7 @@ copen(82,file='top1')
           dy=yc(i)-yc(im)
           slt(i)=slt(im)+sqrt(dx**2+dy**2)
         end if
-cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
+!       write(81,*)i,slt(i),xc(i),yc(i),ww(i)
 !       write(*,*)i,slt(i),xc(i),yc(i),ww(i)
 !      ii=ii+nint+1
 10    continue
@@ -513,7 +329,7 @@ cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
       wt(1)=ww(1)
       do j=1,np
         zz(nscs,j)=zorg(nxp,j)
-15      zz(1,j)=zorg(1,j)
+        zz(1,j)=zorg(1,j)
       enddo
 !  find thalweg length
       xo=xx
@@ -528,7 +344,7 @@ cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
         s=s+ds
         if(i.eq.500)s=s-.01
         xo=xx
-16      yo=yy
+        yo=yy
       enddo
 !       print *,twgt,slt(nxp)
 !  interpolate x-sections into equal increments along thalweg
@@ -573,18 +389,18 @@ cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
         rds(i)=rho
         do 40 j=1,np
 40      zz(i,j)=xf*zorg(ip,j)+xm*zorg(im,j)
-cwrite(81,1)i,ss,xx,yy,thz,rho,wt(i),zz(i,ncl)
-1       format(i3,8f9.3)
+!       write(81,1)i,ss,xx,yy,thz,rho,wt(i),zz(i,ncl)
+!1       format(i3,8f9.3)
 !       write(*,1)i,ss,xx,yy,thz,rho,wt(i),zz(i,ncl)
         tt=tt+dt
 20    continue
-c
+
       TotIntPts = 0
       TotBndys = 1
       PtsThisBnd(1) = 2*np + 2*nscs -4
       IF ( np*nscs .gt. Mrec ) THEN
         cstr = 'INPUT HAS TOO MANY NODES'
-        call PigMessageOK ( cstr, 'ReadXsec'C )
+        call PigMessageOK ( cstr, 'ReadXsec' )
         Quit = .true.
         return
       ENDIF
@@ -628,13 +444,13 @@ c
 !          exist(indx) = .true.
 26      continue
 25    continue
-c
+
       nx = np
       ny = nscs
 
       Quit = .false.
       TotCoords = PtsThisBnd(1) + TotIntPts
-      DispNodes = .true.
+!      DispNodes = .true.
       itot = TotCoords
       nbtotr = 0
 
@@ -663,7 +479,7 @@ c
 9901  continue
 !     error reading TotCoords
       close(80)
-      call PigMessageOK('Error reading cross-section file','ReadXsec'C)
+      call PigMessageOK('Error reading cross-section file','ReadXsec')
       Quit = .true.
 
 9903  continue
@@ -681,7 +497,7 @@ c
         real wt,thet,zz,rds,tct,xct,yct,twg,zws
         real pi2,c,tp,xctr,yctr
 
-      common/are/wt(1001),thet(1001),zz(1001,50),rds(1001)
+      common/are/wt(1001),thet(1001),zz(1001,50),rds(1001) &
      &,tct(1001),xct(1001),yct(1001),twg(1001,3),zws(1001)
 !      common/are/wt(100),thet(100),zz(100,50),rds(100)
 !     &,tct(100),xct(100),yct(100),twg(100,3)
@@ -713,7 +529,7 @@ c
       call splndf(str     ,sigx,slt,xc,yzx,x2,dxs)
       call splndf(str     ,sigy,slt,yc,yzy,y2,dys)
       th2=atan2(dys,dxs)
-crho=dstry/(th2-thz)
+!     rho=dstry/(th2-thz)
 
       return
       end
@@ -727,12 +543,12 @@ crho=dstry/(th2-thz)
       real ww,thet,zz,rds,tct,xct,yct,twg,zws
       real wm,zm,zj,zd,tj,aj,cj
 
-      common/are/ww(1001),thet(1001),zz(1001,50),rds(1001)
+      common/are/ww(1001),thet(1001),zz(1001,50),rds(1001) &
      &,tct(1001),xct(1001),yct(1001),twg(1001,3),zws(1001)
 
 !     common/are/ww(100),thet(100),zz(100,50),rds(100)
 
-1     format(13f6.2)
+!1     format(13f6.2)
 !     write(*,1)(zz(i,j),j=1,jf)
       t=0.
       a=0.

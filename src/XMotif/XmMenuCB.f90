@@ -71,8 +71,11 @@
 !       PolyDisplay = 0 = display active polygon only.
 !                   = 1 = display all polygons.
 !                   = 2 = display NO polygons.
-      INTEGER PolyDisplay
-      COMMON /POLYSTATUS/ PolyDisplay
+      LOGICAL TrHiOff
+      COMMON /TH/ TrHiOff
+
+!      INTEGER PolyDisplay
+!      COMMON /POLYSTATUS/ PolyDisplay
 
       real, save :: RANGE = -999.
 
@@ -641,6 +644,9 @@
           endif
           return
 !   View menu
+        entry RedrawOnly()
+          call DrwFig(CHANGE)
+          return
         entry RedrawCB()
           outlineonly = .FALSE.
           call DrwFig(CHANGE)
@@ -812,7 +818,8 @@
           return
         entry EraseCheckCB()
 !          call FlagsEraseAll
-          call THiOff
+!          call THiOff
+          TrHiOff=.true.
           call VMarkOff
           call ErasePermMarkers
           DrwFlag = .TRUE.

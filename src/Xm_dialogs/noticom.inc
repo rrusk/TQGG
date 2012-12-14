@@ -27,6 +27,6 @@
       integer TestColour(1:NumOfTests,0:NumofBndryPts)
       INTEGER NumTest(1:NumOfTests)
 
-      CHARACTER*7 Colour(0:NumofColours)
+      !CHARACTER*7 Colour(0:NumofColours)
 
-      COMMON /NOTI_C/ Interval, TestColour, NumTest, Colour
+      COMMON /NOTI_C/ Interval, TestColour, NumTest  !, Colour

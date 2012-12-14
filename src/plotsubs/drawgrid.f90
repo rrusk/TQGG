@@ -9,8 +9,8 @@
 !           change = TRUE if triangle list needs to be updated.
 ! Returns : None.
 
-      use MainArrays
-
+      implicit none
+      
 !     - PASSED PARAMETERS
       LOGICAL change
 !      real    x1, x2, y1, y2
@@ -44,13 +44,6 @@
 ! Given   : nrec - nrec-1 is number of active nodes in the grid to be drawn
 !           change - TRUE if triangle list needs to be updated.
 ! Returns : None.
-! Modified: Steve Prestage and Daphne Connolly  May 1989
-! Modified: RFH Jan 90 and Aug 92
-! Comment : AGD Jun 94. Most of the time in this routine is spent inside
-!           PigDrawPolyline
-!           which is called with only 2 points very frequently...
-!           It is probably possible to optimize this performance by
-!           combining multiple edges for drawing.
 
       use MainArrays
 
@@ -59,7 +52,6 @@
       INCLUDE '../includes/graf.def'
 
 !     - PASSED PARAMETERS
-!      INTEGER Nrec
       LOGICAL change
 
       logical FlagN
@@ -76,15 +68,6 @@
 
       LOGICAL OUTLINEONLY
       COMMON /OUTLINE/ OUTLINEONLY
-
-!   - Only outline (boundaries) of grid drawn if OUTLINEONLY is .true. 
-
-!   - PolyDisplay indicates polygons to display on redraw.
-!       PolyDisplay = 0 = display active polygon only.
-!                   = 1 = display all polygons.
-!                   = 2 = display NO polygons.
-    integer PolyDisplay
-    COMMON /POLYSTATUS/ PolyDisplay
 
 !     - LOCAL VARIABLES
       INTEGER ncut
@@ -106,18 +89,18 @@
 
       if(FlagC) then
 !     Give contours the preference
-      if(change) then
-        call RemoveNotExist(itot,code,nbtot,nl)
-        call Element_Lister(CHANGE, .FALSE. , &
+        if(change) then
+          call RemoveNotExist(itot,code,nbtot,nl)
+          call Element_Lister(CHANGE, .FALSE. , &
                itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
                x0off,y0off,scaleX,scaleY,igridtype)
-        change = .false.
-      endif
+          change = .false.
+        endif
         call DrwContours()
-    else
+      else
 !     Colour triangles before drawing grid, if full shading
         if ( FULLCOLOUR ) then
-        call HiltTrs( change )
+          call HiltTrs( change )
         endif
       endif
 
@@ -126,11 +109,11 @@
         call PigSetLineColour( GridPColour )
         seccolour = .false.
         IF(itot.gt.MREC) then
-            call PigMessageOK('Grid.f itot.gt.MREC','drwtri')
-            return
+          call PigMessageOK('Grid.f itot.gt.MREC','drwtri')
+          return
         endif
 
-      DO j = 1, itot !Nrec-1
+        DO j = 1, itot
 !      Following checks moved from inner loop mar 1995
 !      boundaries when OUTLINEONLY is .TRUE.
           if(OUTLINEONLY.and.(CODE(J).eq.0.or.CODE(J).eq.90))then
@@ -138,110 +121,76 @@
 !          else if ( EXIST(j) ) then
           else if ( code(j).ge.0 ) then
 !        - get neighbor indices
-          xj = dxray(j)
-          yj = dyray(j)
+            xj = dxray(j)
+            yj = dyray(j)
 
-            if(FlagN) then
-!     Draw nodes
-          endif
-
-          if( .not.FlagG) then
-            cycle
-          endif
-
-          if ((.not.seccolour) .and. (j.ge.ncut)  ) then
-            seccolour = .true.
-            call PigSetLineColour( GridSColour )
-          endif
-          nedges = 0
-          DO k = 1, NBTOTR
-            if ( NL(k,j) .gt. j) then
-              nbndx = NL(k,j) 
-
-!           Following check introduced 20 Dec 94 to draw connections
-!           only to points in defined grid arrays.
-!            if(NBNDX.GT.MREC) then
-!               - suppress display, because nbndx beyond array definitions
-!           Following check introduced March 1995 to draw connections
-!           only to points in actual grid
-              if(NBNDX.GT.itot) then
+            if ((.not.seccolour) .and. (j.ge.ncut)  ) then
+              seccolour = .true.
+              call PigSetLineColour( GridSColour )
+            endif
+            nedges = 0
+            DO k = 1, NBTOTR
+              if ( NL(k,j) .gt. j) then
+                nbndx = NL(k,j) 
+                if(NBNDX.GT.itot) then
 !               - suppress display, because nbndx not in actual grid
 !           Following check introduced 14 Aug 92 to draw only
 !           boundaries when OUTLINEONLY is .TRUE.
-              else if((OUTLINEONLY).and.((CODE(NBNDX).eq.0).or.(CODE(NBNDX).eq.90))) then
+                else if((OUTLINEONLY).and.((CODE(NBNDX).eq.0).or.(CODE(NBNDX).eq.90))) then
 !               - suppress display, because not a boundary node on line
-              else
+                else
 
-!             Following 4 checks added 7 Jan 90 to check whether line is totally
-!             above, below, to right or to left of screen window - i.e. whether
-!             the lines bounding rectangle intersects the screen window
-! comment: agd march 1995.
-! this is equivalent to testing whether the bounding rectangles of the
-! screen and the line intersect.
-! there is a faster test for this, given the lower left and upper right
-! points for each rectangle. See Cormen et al., Algorithms. p 889.
-
-                xnbndx = DXRAY(nbndx)
-                ynbndx = DYRAY(nbndx)
-                linep1x = min(xj, xnbndx)
-                linep2x = max(xj, xnbndx)
-                linep1y = min(yj, ynbndx)
-                linep2y = max(yj, ynbndx)
+                  xnbndx = DXRAY(nbndx)
+                  ynbndx = DYRAY(nbndx)
+                  linep1x = min(xj, xnbndx)
+                  linep2x = max(xj, xnbndx)
+                  linep1y = min(yj, ynbndx)
+                  linep2y = max(yj, ynbndx)
         
-                if((linep2x.ge.cwxl).and.(cwxh.ge.linep1x).and.(linep2y.ge.cwyl).and.(cwyh.ge.linep1y) ) then
-!                 the bounding rectangles do intersect
+                  if((linep2x.ge.cwxl).and.(cwxh.ge.linep1x).and.(linep2y.ge.cwyl)&
+                              .and.(cwyh.ge.linep1y) ) then
+!                   the bounding rectangles do intersect
 
-                  if(nedges.eq.0) then
-                    px(2) = xj
-                    py(2) = yj
-                    px(1) = xnbndx
-                    py(1) = ynbndx
-                    nedges = 1
-                  else
-                    px(3) = xnbndx
-                    py(3) = ynbndx
-                    call PigDrawPolyline(3, px, py)
-                    nedges = 0
+                    if(nedges.eq.0) then
+                      px(2) = xj
+                      py(2) = yj
+                      px(1) = xnbndx
+                      py(1) = ynbndx
+                      nedges = 1
+                    else
+                      px(3) = xnbndx
+                      py(3) = ynbndx
+                      call PigDrawPolyline(3, px, py)
+                      nedges = 0
+                    endif
                   endif
                 endif
+                if(nedges.eq.1) call PigDrawPolyline(2, px, py)
+                nedges = 0
               endif
-              if(nedges.eq.1) call PigDrawPolyline(2, px, py)
-              nedges = 0
-            endif
-          enddo
-          if(nedges.eq.1) call PigDrawPolyline(2, px, py)
-          nedges = 0
+            enddo
+            if(nedges.eq.1) call PigDrawPolyline(2, px, py)
+            nedges = 0
           endif
         enddo
-    endif
+      endif
 
       if ( .NOT. FullColour ) then
-      call HiltTrs( change )
+        call HiltTrs( change )
       endif
 
 !     - DISPLAY OTHER FEATURES AS REQUIRED...
 
 !     - Contours and Boundaries are now drawn AFTER the grid has been drawn
       if(FlagD) then
-      call DispContBound
-    endif
+        call DispContBound
+      endif
 
 !     - polygons
-!      IF ( PolyDisplay .eq. 0 ) THEN
-!       - display active polygon if any
-         do j=1,numpolys
-           jj = j
-           call DisplayPoly ( jj )
-         enddo
-!      call DisplayPoly ( actvpoly )
-!      ELSE IF ( PolyDisplay .eq. 1 ) THEN
-!       - display all polygons
-!      call AllPolys ( .TRUE. )
-!      ELSE IF ( PolyDisplay .eq. 2 ) THEN
-!       - remove all polygons from display
-!      call AllPolys ( .FALSE. )
-!      ENDIF
-!       - ( PolyDisplay = 0 )
+      do j=1,numpolys
+        jj = j
+        call DisplayPoly ( jj )
+      enddo
 
       call PigSetLineColour(PrevColour)
 

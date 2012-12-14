@@ -414,14 +414,15 @@
 10    continue
 
 ! Turn off criteria drawing
-      call VMarkOff
+      !call VMarkOff
+      DrawVCrit = .FALSE.
 
       RETURN
       END
 
 
 !---------------------------------------------------------------------------*
-      SUBROUTINE VMarkOn
+      SUBROUTINE VMarkOn0
 
 ! Purpose: Turn on Vertex markers.
 ! Givens : None

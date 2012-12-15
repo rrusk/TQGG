@@ -54,7 +54,7 @@
 !  ------------------------------------------------------------------------- *
 
       SUBROUTINE MenuCBsubs
-
+        
       use MainArrays
         
       implicit none
@@ -71,8 +71,11 @@
 !       PolyDisplay = 0 = display active polygon only.
 !                   = 1 = display all polygons.
 !                   = 2 = display NO polygons.
-      INTEGER PolyDisplay
-      COMMON /POLYSTATUS/ PolyDisplay
+      LOGICAL TrHiOff
+      COMMON /TH/ TrHiOff
+
+!      INTEGER PolyDisplay
+!      COMMON /POLYSTATUS/ PolyDisplay
 
       real, save :: RANGE = -999.
 
@@ -186,7 +189,6 @@
       integer, save :: Index
       real    MouseX, MouseY
       character*(80)  Message
-!      character*(20), save :: Program_name
       integer, parameter :: BDOWN = 1, BUP = 2
       logical, save :: FirstPan=.false., LastPan=.false.
       logical, save :: FirstZoom=.false., LastZoom=.false.
@@ -605,6 +607,9 @@
           endif
           return
 !   View menu
+        entry RedrawOnly()
+          call DrwFig(CHANGE)
+          return
         entry RedrawCB(a)
           outlineonly = .FALSE.
           call DrwFig(CHANGE)
@@ -770,13 +775,14 @@
           Active_CW = CRITERIA_CW
           return
         entry EleCheckCB(a)
-          call FlagsTriangles_Init(change)
+          call FlagsTriangles_Init()
           Active_MW = INACTIVE_MW
           Active_CW = FLAGSTRIANGLES_CW
           return
         entry EraseCheckCB(a)
 !          call FlagsEraseAll
-          call THiOff
+!          call THiOff
+          TrHiOff=.true.
           call VMarkOff
           call ErasePermMarkers
           DrwFlag = .TRUE.
@@ -1149,7 +1155,6 @@
           Active_MW = GridDelnode_MW
           call PigStatusMessage('Pick an EXISTING point')
 !          call DelPro(CHANGE)
-!          call SORTEM
           CHANGE  = .TRUE.
           return
         entry MoveGridNodeCB(a)

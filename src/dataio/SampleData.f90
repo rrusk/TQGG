@@ -119,7 +119,7 @@
       nunit = 3
 
       if(.not.PigOpenFileCD(nunit,'Open Sample File', fle, &
-          'XYZ Files (*.xy*),*.xy*;All Files (*.*),*.*;')) then
+          'XYZ Files (*.[xn][yo]*),*.xy*;NOD Files (*.nod),*.nod;All Files (*.*),*.*;')) then
         fnlen = len_trim(fle)
         call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'
@@ -257,7 +257,7 @@
       endif
 
 ! *** interpolate and quit
-      call Sample_Boundary ()
+      call Sample_Boundary (ds)
 
       quit = .true.
 
@@ -265,14 +265,58 @@
 
 ! ********************************************************************
 
-      subroutine Sample_Boundary ()
+      subroutine Sample_Boundary (ds)
+
+      use MainArrays
 
       implicit none
 
 !     - local variables
+      integer j, k, icount, isave
+      real ds, ds2
+      real x0, y0, dx, dy, dl2
 
 ! *** start
-
+      ds2 = ds*ds
+      x0 = dxray(1)
+      y0 = dyray(1)
+      icount = 0
+      isave = 1
+!   outer boundary
+      do j= 1,PtsThisBnd(1)
+        icount = icount + 1
+        dx = x0 - dxray(icount)
+        dy = y0 - dyray(icount)
+        dl2 = dx*dx + dy*dy
+        if(dl2.ge.ds2) then !save it
+          isave = isave + 1
+          x0 = dxray(icount)
+          y0 = dyray(icount)
+          dxray(isave) = x0
+          dyray(isave) = y0
+        endif
+        PtsThisBnd(1) = isave
+      enddo
+!   loop over other boundaries
+      do k = 2,TotBndys
+        do j= 1,PtsThisBnd(k)
+          icount = icount + 1
+          dx = x0 - dxray(icount)
+          dy = y0 - dyray(icount)
+          dl2 = dx*dx + dy*dy
+          if(dl2.ge.ds2) then !save it
+            isave = isave + 1
+            x0 = dxray(icount)
+            y0 = dyray(icount)
+            dxray(isave) = x0
+            dyray(isave) = y0
+          endif
+          PtsThisBnd(k) = isave - PtsThisBnd(k-1)
+        enddo
+      enddo
+      TotCoords = isave
+      itot = isave
+      
       end subroutine
 
 ! ********************************************************************

@@ -102,6 +102,16 @@
 
 !---------------------------------------------------------------------------*
 
+    FUNCTION length ( s )
+        implicit none
+        character(len=*) :: s
+        integer length
+
+        do length = 0, len(s)-1, 1
+            if (s(length+1:length+1) .eq. char(0)) return
+        end do
+     end function length
+
       SUBROUTINE InfoFiles
 
 ! Purpose : Displays the default filenames currently in use during the
@@ -112,36 +122,54 @@
 
       INCLUDE '../includes/defaults.inc'
 
-      character*256 cstr
-      integer len1, len2, len3, len4, len5, len6
+      character*2048 cstr
+      integer len1, len2, len3, len4, len5, len6, lenx
 !-----------BEGIN------------------
 
       if(DispNodes) then
         len1 = len_trim(NodeRName)
+        lenx = length (NodeRName)
       else
         len1 = len_trim(GridRName)
+        lenx = length(GridRName)
       endif
+      len1 = min(len1, lenx)
+
       len2 = len_trim(LastInterim)
+      lenx = length(LastInterim)
+      len2 = min(len2, lenx)
+
       len3 = len_trim(ContFName)
+      lenx = length(ContFName)
+      len3 = min(len3, lenx)
+
       len4 = len_trim(BoundFName)
+      lenx = length(BoundFName)
+      len4 = min(len4, lenx)
+
       len5 = len_trim(VCritName)
+      lenx = length(VCritName)
+      len5 = min(len5, lenx)
+
       len6 = len_trim(TCritName)
+      lenx = length(TCritName)
+      len6 = min(len6, lenx)
 
       if(DispNodes) then
         cstr = &
-       'Node File: '// NodeRName(:len1)//char(13)//&
-       'Last Interim Node File: '// LastInterim(:len2)//char(13)//&
-       'Contours File: '// ContFName(:len3)//char(13)//&
-       'Boundary File: '// BoundFName(:len4)//char(13)//&
-       'Vertex Criterion File: '// VCritName(:len5)//char(13)//&
+       'Node File: '// NodeRName(:len1)//char(10)//&
+       'Last Interim Node File: '// LastInterim(:len2)//char(10)//&
+       'Contours File: '// ContFName(:len3)//char(10)//&
+       'Boundary File: '// BoundFName(:len4)//char(10)//&
+       'Vertex Criterion File: '// VCritName(:len5)//char(10)//&
        'Triangle Criterion File: '// TCritName(:len6)//char(0)
       else
         cstr = &
-       'Grid File: '// GridRName(:len1)//char(13)//&
-       'Last Interim Grid File: '// LastInterim(:len2)//char(13)//&
-       'Contours File: '// ContFName(:len3)//char(13)//&
-       'Boundary File: '// BoundFName(:len4)//char(13)//&
-       'Vertex Criterion File: '// VCritName(:len5)//char(13)//&
+       'Grid File: '// GridRName(:len1)//char(10)//&
+       'Last Interim Grid File: '// LastInterim(:len2)//char(10)//&
+       'Contours File: '// ContFName(:len3)//char(10)//&
+       'Boundary File: '// BoundFName(:len4)//char(10)//&
+       'Vertex Criterion File: '// VCritName(:len5)//char(10)//&
        'Triangle Criterion File: '// TCritName(:len6)//char(0)
       endif
 

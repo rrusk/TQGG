@@ -344,7 +344,7 @@ void WPigMessageOK( char *question, char *reply, const int dummy_len1, const int
     Cardinal        n;
 
     /*printf ("void WPigCursOK(%s)\n", question);*/ 
-    yesno_question_string = XmStringCreateSimple(question);
+    yesno_question_string = XmStringGenerate(question, NULL, XmCHARSET_TEXT, "TAGINFOFILE");
     n =  0;
     XtSetArg(args[n], XmNmessageString, yesno_question_string); n++;
     XtSetValues(messageok_dialog, args, n);

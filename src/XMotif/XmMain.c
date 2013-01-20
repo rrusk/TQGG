@@ -343,7 +343,6 @@ void WPigMessageOK( char *question, char *reply, const int dummy_len1, const int
     Arg             args[5];
     Cardinal        n;
 
-    /*printf ("void WPigCursOK(%s)\n", question);*/ 
     yesno_question_string = XmStringGenerate(question, NULL, XmCHARSET_TEXT, "TAGOK");
     n =  0;
     XtSetArg(args[n], XmNmessageString, yesno_question_string); n++;
@@ -832,7 +831,7 @@ int main (int argc, char *argv[])
     n = 0;
     xms = XmStringCreateLocalized ("initializing ok");
     XtSetArg (args[n], XmNmessageString, xms); n++;
-    messageok_dialog = XmCreateMessageDialog (menubar, "OK", args, n);
+    messageok_dialog = XmCreateMessageDialog (menubar, "INFO", args, n);
     XmStringFree (xms);    
     answer = 0;
     XtAddCallback (messageok_dialog, XmNokCallback, yesnoCB, (XtPointer) &answer);

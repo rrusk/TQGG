@@ -364,11 +364,24 @@
 
     Subroutine limits ( np,npmax,nbmax,bndmax )
     implicit none
+
+    character*40 str1,str2,str3,str4
+    character*160 result
+    integer lstr1,lstr2,lstr3,lstr4
     integer np,npmax,nbmax,bndmax    
-    write(*,*) 'np = ',np
-    write(*,*) 'npmax = ',npmax
-    write(*,*) 'nbmax = ',nbmax
-    write(*,*) 'bndmax = ',bndmax
+
+    write(str1,'(a,i7)') 'np     = ',np
+    write(str2,'(a,i7)') 'npmax  = ',npmax
+    write(str3,'(a,i7)') 'nbmax  = ',nbmax
+    write(str4,'(a,i7)') 'bndmax = ',bndmax
+    lstr1 = len_trim(str1)
+    lstr2 = len_trim(str2)
+    lstr3 = len_trim(str3)
+    lstr4 = len_trim(str4)
+    result = str1(:lstr1)//char(10)//str2(:lstr2)//char(10)//&
+        str3(:lstr3)//char(10)//str4(:lstr4)//char(10)//char(0)
+    call PigMessageOK(result, 'LIMITS')
+
     end
 
     Subroutine about (pname, version)

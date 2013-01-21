@@ -339,15 +339,19 @@ typedef struct dummy_struct_name{
 
 void WPigMessageOK( char *question, char *reply, const int dummy_len1, const int dummy_len2 ) 
 {
-    XmString    yesno_question_string;
+    XmString    yesno_question_string, title_string;
     Arg             args[5];
     Cardinal        n;
 
     yesno_question_string = XmStringGenerate(question, NULL, XmCHARSET_TEXT, "TAGOK");
+    title_string = XmStringGenerate(reply, NULL, XmCHARSET_TEXT, "TAGOK");
     n =  0;
     XtSetArg(args[n], XmNmessageString, yesno_question_string); n++;
     XtSetValues(messageok_dialog, args, n);
     XmStringFree(yesno_question_string);
+
+    XtVaSetValues(messageok_dialog, XmNdialogTitle, title_string, NULL);
+    XmStringFree(title_string);
 
     XtManageChild(messageok_dialog);
 

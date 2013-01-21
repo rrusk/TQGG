@@ -1,6 +1,8 @@
-
+  Prior to working on dialog boxes, fixed screen redraw issue when
+  backing store is not available (COMPLETED, Dec 4)
 
   Summary of dialog boxes in TQGG and perhaps the priority order.
+  ===============================================================
   
   /info/files - Create compound strings and display in text box. Need info from
                fortran part. Simple starting point.  (COMPLETED, JAN 18)

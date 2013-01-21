@@ -380,7 +380,7 @@
     lstr4 = len_trim(str4)
     result = str1(:lstr1)//char(10)//str2(:lstr2)//char(10)//&
         str3(:lstr3)//char(10)//str4(:lstr4)//char(10)//char(0)
-    call PigMessageOK(result, 'LIMITS')
+    call PigMessageOK(result, 'LIMITS'//char(0))
 
     end
 

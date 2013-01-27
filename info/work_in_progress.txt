@@ -12,7 +12,7 @@
 
   /info/elementcheck - Dialog box with pushbuttons. Each button has a fortran
                callback for specific tests. Top button toggles full color
-               or marker. Close on bottom.
+               or marker. Close on bottom.  (COMPLETED, JAN 26)
 
 	From Walter to Raymond (Dec 13)
 	  I just rewrote the element check code to provide an entry

@@ -45,9 +45,9 @@
       LOGICAL change
 
 !     - LOCAL VARIABLES
-      integer hitnum
-      character*1 ans
-      LOGICAL cmode
+!      integer hitnum
+!      character*3 ans
+!      LOGICAL cmode
       LOGICAL :: retro=.false.
 
 !---------- BEGIN --------------
@@ -63,18 +63,19 @@
       endif
       call PigEraseMessage
 
-      call PigMessageYesNo ('Full colour (or symbols)? ',ans)
-      if(ans(1:1).eq.'Y') then
-        cmode = .true.
-      else
-        cmode = .false.
-      endif
+      call WPigElementCheck
+!      call PigMessageYesNo ('Full colour (or symbols)? ',ans)
+!      if(ans(1:1).eq.'Y') then
+!        cmode = .true.
+!      else
+!        cmode = .false.
+!      endif
 
 !     tests: 1=eql, 2=dep, 3=a2d, 4=ccw, 5=g90, 6=code
-      call PigPrompt('Enter test number (1-5): ', ans )
-      read(ans,'(i1)') hitnum
+!      call PigPrompt('Enter test number (1-5): ', ans )
+!      read(ans,'(i1)') hitnum
 
-      call ElementCheck(hitnum,cmode)
+!      call ElementCheck(hitnum,cmode)
 
       END
 

@@ -2,6 +2,7 @@
 *.mod
 *~
 bin/
+.settings
 TQGGWS/TQGG/TQGG.suo
 TQGGWS/TQGG/TQGG.u2d
 TQGGWS/TQGG/Debug/

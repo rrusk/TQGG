@@ -14,27 +14,6 @@
                callback for specific tests. Top button toggles full color
                or marker. Close on bottom.  (COMPLETED, JAN 26)
 
-	From Walter to Raymond (Dec 13)
-	  I just rewrote the element check code to provide an entry
-	for the dialog callback. The idea is to set the colormode to
-	fullcolor (true) or marker (false), then call this subroutine
-	with the number for the test. The interface looks like void
-	ElementCheck( int *ntest, int *colormode)
-
-	From Walter to Raymond (Jan 20),
-	  I think we should start with the simplest dialogs first. Run
-	the win version to get an idea of what is contained in the dialogs.
-
-	The easiest is the elementcheck routine. The dialog has a
-	toggle on top to switch between fullcolor and markers, and
-	below are individual buttons that call specific tests. All
-	that is passed is a logical (fullcolour=TRUE/FALSE) and a test
-	number (1-6).
-
-	The next more complicated routines are nodecheck, nodeinfo,
-	and elementinfo. These display text in boxes and some boxes are
-	editable.
-
   /info/nodecheck - Multiple radio buttons for the various tests. Some require
                string input. OK and Close on bottom. OK initiates tests.
                

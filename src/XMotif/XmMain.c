@@ -45,131 +45,7 @@
 #define  NO 2
 #define  CANCEL 3
 
-#define  Initialiser  initialiser_
-#define  OpenGridFileCB  opengridfilecb_
-#define  AddGridFileCB  addgridfilecb_
-#define  OpenNodeFileCB  opennodefilecb_
-#define  AddNodeFileCB  addnodefilecb_
-#define  SampleCB  samplecb_
-#define  XSectionCB  xsectioncb_
-#define  SaveInterimCB  saveinterimcb_
-#define  SaveFinalCB  savefinalcb_
-#define  PrintCB  printcb_
-#define  QuitCB  quitcb_
-#define  RedrawCB  redrawcb_
-#define  OutlineCB  outlinecb_
-#define  FullsizeCB  fullsizecb_
-#define  ZoomCB  zoomcb_
-#define  ZoomOutCB  zoomoutcb_
-#define  PanCB  pancb_
-#define  LastViewCB  lastviewcb_
-#define  ScaleCB  scalecb_
-#define  ShiftCB  shiftcb_
-#define  RotateCB  rotatecb_
-#define  SPXCB  spxcb_
-#define  MercXCB  mercxcb_
-#define  TMXCB  tmxcb_
-#define  NodeInfoCB  nodeinfocb_
-#define  EleInfoCB  eleinfocb_
-#define  NodeCheckCB  nodecheckcb_
-#define  EleCheckCB  elecheckcb_
-#define  EraseCheckCB  erasecheckcb_
-#define  PMarkCB  pmarkcb_
-#define  PMDelLastCB  pmdellastcb_
-#define  PMDelAllCB  pmdelallcb_
-#define  SetRangeCB  setrangecb_
-#define  TooCloseCB  tooclosecb_
-#define  FileInfoCB  fileinfocb_
-#define  LimitInfoCB  limitinfocb_
-#define  GenOneFrontCB  genonefrontcb_
-#define  GenClusterCB  genclustercb_
-#define  GenOptionsCB  genoptionscb_
-#define  GenAllFrontsCB  genallfrontscb_
-#define  FrontOptionsCB  frontoptionscb_
-#define  GenHexCB  genhexcb_
-#define  GenSquaresCB  gensquarescb_
-#define  GenMixedCB  genmixedcb_
-#define  TriangulateCB  triangulatecb_
-#define  DeleteNodeCB  deletenodecb_
-#define  MoveNodeCB  movenodecb_
-#define  AddBndNodeCB  addbndnodecb_
-#define  ReverseBndCB  reversebndcb_
-#define  JoinBndCB  joinbndcb_
-#define  ReselectBndCB  reselectbndcb_
-#define  AddBndLineCB  addbndlinecb_
-#define  DeleteIslCB  deleteislcb_
-#define  AddIntNodeCB  addintnodecb_
-#define  AddIntLineCB  addintlinecb_
-#define  AddGridEdgeCB addgridedgecb_
-#define  DelGridEdgeCB delgridedgecb_
-#define  AddGridNodeCB addgridnodecb_
-#define  DelGridNodeCB delgridnodecb_
-#define  MoveGridNodeCB movegridnodecb_
-#define  MergeGridNodeCB mergegridnodecb_
-#define  CleaveGridNodeCB cleavegridnodecb_
-#define  InsertGridEdgeCB insertgridedgecb_
-#define  ExchangeGridEdgeCB exchangegridedgecb_
-#define  DekiteGridCB dekitegridcb_
-#define  ReshapeGridCB reshapegridcb_
-#define  ConvertGrid2NodesCB convertgrid2nodescb_
-#define  CreatePolyCB  createpolycb_
-#define  WholePolyCB  wholepolycb_
-#define  CyclePolyCB  cyclepolycb_
-#define  DeletePolyCB  deletepolycb_
-#define  ReadPolyCB  readpolycb_
-#define  WritePolyCB  writepolycb_
-#define  PolyDelBndCB  polydelbndcb_
-#define  PolyDelIntCB  polydelintcb_
-#define  PolyDelAllCB  polydelallcb_
-#define  PolyNodeCodeCB  polynodecodecb_
-#define  PolyEleCodeCB  polyelecodecb_
-#define  PolyDekiteCB  polydekitecb_
-#define  PolyReshapeCB  polyreshapecb_
-#define  PolyDelGridCB  polydelgridcb_
-#define  PolySplitGridCB  polysplitgridcb_
-#define  PolyRefineGridCB  polyrefinegridcb_
-#define  PolyCutGridCB  polycutgridcb_
-#define  PolySetDepthCB  polysetdepthcb_
-#define  PolyReDepthCB  polyredepthcb_
-#define  PlotNodeCB  plotnodecb_
-#define  ConfigNodeCB  confignodecb_
-#define  PlotGridCB  plotgridcb_
-#define  ConfigGridCB  configgridcb_
-#define  PlotContourCB  plotcontourcb_
-#define  ConfigContourCB  configcontourcb_
-#define  PlotDataCB  plotdatacb_
-#define  ConfigDataCB  configdatacb_
-#define  AboutCB  aboutcb_
-#define  HelpCB  helpcb_
-//#define  MenuCB  menucb_
-//#define  MouseEHandler  mouseehandler_
-#define  WPigElementCheck wpigelementcheck_
-#define  WPigMessageOK  wpigmessageok_
-#define  WPigStatusMessage  wpigstatusmessage_
-#define  WPigCursYesNo  wpigcursyesno_
-#define  WPigCursYesNoCancel  wpigcursyesnocancel_
-#define  WPigGetFileName  wpiggetfilename_
-#define  WPigGetString  wpiggetstring_
-#define  WPigSetLineColour  wpigsetlinecolour_
-#define  WPigSetFillColour  wpigsetfillcolour_
-#define  WPigSetSymbolColour  wpigsetsymbolcolour_
-#define  WPigSetSymbolNumber  wpigsetsymbolnumber_
-#define  WPigDrawPolyLine  wpigdrawpolyline_
-#define  WPigDrawSymbols  wpigdrawsymbols_
-#define  WPigDrawFilledPolygon  wpigdrawfilledpolygon_
-#define  WPigSetWorldCoordinates  wpigsetworldcoordinates_
-#define  WPigGetWorldCoordinates  wpiggetworldcoordinates_
-#define  WPigEraseMain  wpigerasemain_
-#define  WPigExit  wpigexit_
-#define  MNU_MainMenuEnable mnu_mainmenuenable_
-#define  MNU_MainMenuDisable mnu_mainmenudisable_
-#define  MNU_GridMenuEnable mnu_gridmenuenable_
-#define  MNU_GridMenuDisable mnu_gridmenudisable_
-#define  MNU_NodeMenuEnable mnu_nodemenuenable_
-#define  MNU_NodeMenuDisable mnu_nodemenudisable_
-#define  MNU_PolyMenuEnable mnu_polymenuenable_
-#define  MNU_PolyMenuDisable mnu_polymenudisable_
-#define  ElementCheck elementcheck_
+#include "f90_c.h"
 #include "pigdefs.h"
 
 extern double WCentx;
@@ -523,8 +399,8 @@ void WPigStatusMessage(char *message)
 }
 /*----------------------------------------------------------------------------*/
 
-int ntest = 1;
-int mode = 1;
+int ntest;
+int mode;
 
 void toggledModeCB (Widget widget, XtPointer client_data, XtPointer call_data)
 {
@@ -537,7 +413,6 @@ void toggledModeCB (Widget widget, XtPointer client_data, XtPointer call_data)
         	} else {
         		mode = 0;
         	}
-            ElementCheck(&ntest, &mode);
         } else {
         	mode = 0;
         }
@@ -550,42 +425,55 @@ void toggledTestCB (Widget widget, XtPointer client_data, XtPointer call_data)
 
         if (state->set == XmSET) {
          	ntest = which + 1;
-            ElementCheck(&ntest, &mode);
          } else {
          	ntest = 0;
          }
 }
 
-void destroy_dialog(Widget w, XtPointer client_data, XtPointer call_data)
+void destroyCB(Widget w, XtPointer client_data, XtPointer call_data)
 {
+	ntest = -1;
+	mode = -1;
+	ElementCheck(&ntest, &mode);
 	XtDestroyWidget (XtParent(w));
+}
+
+void checkCB(Widget w, XtPointer client_data, XtPointer call_data)
+{
+	ElementCheck(&ntest, &mode);
 }
 
 void  WPigElementCheck(void)
 {
-
+	ntest = 1;
+	mode = 1;
 	Widget dialog, rc, label, label2, label3, radio_box, radio_box2, separator, separator2;
 	Arg args0[6], args[6], args2[6], args3[6];
-	XmString t, title_string, close, title, title2, title3, fullcolor, colormarker, eql, dep, a2d, ccw, g90, c0d;
+	XmString t, title_string, check, close, title, title2, title3, fullcolor, colormarker,
+		eql, dep, a2d, ccw, g90, c0d;
 
 	int n = 0;
 	t = XmStringCreateLocalized("the title");
+	check = XmStringCreateLocalized("RUN CHECK");
 	close = XmStringCreateLocalized("CLOSE");
 	XtSetArg (args0[n], XmNselectionLabelString, t); n++;
 	XtSetArg (args0[n], XmNautoUnmanage, False); n++;
 	XtSetArg (args0[n], XmNuserData, 0); n++;
 	XtSetArg (args0[n], XmNcancelLabelString, close); n++;
+	XtSetArg (args0[n], XmNokLabelString, check); n++;
 	// Dialog could attached to prompt_dialog or another Widget rather than toplevel.
 	// Might also be able to customize XmCreateInformationDialog or another built-in menu
 	// rather than XmCreatePromptDialog.
 	dialog = XmCreatePromptDialog (toplevel, "ElementCheck", args0, n);
-	XtAddCallback(dialog, XmNcancelCallback, destroy_dialog, NULL);
+	XtAddCallback(dialog, XmNcancelCallback, destroyCB, NULL);
+	XtAddCallback(dialog, XmNokCallback, checkCB, NULL);
 	// Hide unwanted buttons
 	XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
 	XtUnmanageChild(XtNameToWidget(dialog, "Text"));
-	XtUnmanageChild(XtNameToWidget(dialog, "OK"));
+	//XtUnmanageChild(XtNameToWidget(dialog, "OK"));
 	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
 	XmStringFree(t);
+	XmStringFree(check);
 	XmStringFree(close);
 
 	// set title of popup dialog box
@@ -668,7 +556,7 @@ void  WPigElementCheck(void)
 	XtManageChild (rc);
 	XtManageChild (dialog);
 
-	ElementCheck(&ntest, &mode);
+	//ElementCheck(&ntest, &mode);
 }
 
 void  WPigExit(void)

@@ -25,7 +25,7 @@
       INTEGER vnum, actvpoly, numpolys
       REAL vertx(MAXPOLYS,MAXVERT+1), verty(MAXPOLYS,MAXVERT+1)
       INTEGER vertcnt(MAXPOLYS), PolyCode(MAXPOLYS), curpoly, scrnpoly
-      COMMON /POLYDEFS/ vertx, verty, vertcnt, PolyCode,                             &
-     &         vnum, actvpoly, curpoly, numpolys, scrnpoly
+      COMMON /POLYDEFS/ vertx, verty, vertcnt, PolyCode, vnum
+      COMMON /POLYDEFS2/   actvpoly, curpoly, numpolys, scrnpoly
 
 !---------------------END POLYSTOR.INC----------------------------------*

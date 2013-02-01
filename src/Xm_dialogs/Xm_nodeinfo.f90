@@ -177,17 +177,13 @@
        'Node File: '// NodeRName(:len1)//char(10)//&
        'Last Interim Node File: '// LastInterim(:len2)//char(10)//&
        'Contours File: '// ContFName(:len3)//char(10)//&
-       'Boundary File: '// BoundFName(:len4)//char(10)//&
-       'Vertex Criterion File: '// VCritName(:len5)//char(10)//&
-       'Triangle Criterion File: '// TCritName(:len6)//char(0)
+       'Boundary File: '// BoundFName(:len4)//char(0)
       else
         cstr = &
        'Grid File: '// GridRName(:len1)//char(10)//&
        'Last Interim Grid File: '// LastInterim(:len2)//char(10)//&
        'Contours File: '// ContFName(:len3)//char(10)//&
-       'Boundary File: '// BoundFName(:len4)//char(10)//&
-       'Vertex Criterion File: '// VCritName(:len5)//char(10)//&
-       'Triangle Criterion File: '// TCritName(:len6)//char(0)
+       'Boundary File: '// BoundFName(:len4)//char(0)
       endif
 
       call PigMessageOK(cstr, 'FILES')

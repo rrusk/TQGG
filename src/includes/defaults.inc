@@ -12,18 +12,18 @@
       CHARACTER*256 VCritName, TCritName
       PARAMETER( Fblank=' '  )
 
-      COMMON /FNames/ GridRName, GridIName, LastInterim,                &
-     &                ContFName, BoundFName, SoundFName,                &
-     &                VCritName, TCritName
+      COMMON /FNames/ GridRName, GridIName, LastInterim,VCritName
+      COMMON /FNames2/ ContFName, BoundFName, SoundFName,TCritName
 
       INTEGER GridSIndex
       INTEGER GridPColour, GridSColour, ContColour, BoundColour
       integer SoundColour, ModificationColour
       LOGICAL DispCont, DispBound, DispSound, GMerge, DispNodes
 
-      COMMON /DrawDefaults/ GridPColour, GridSColour, ContColour,       &
-     &       BoundColour, GridSIndex, DispCont, DispBound, GMerge,      &
-     &       ModificationColour, SoundColour, DispSound, DispNodes
+      COMMON /DrawDefaults/ GridPColour, GridSColour, ContColour
+      COMMON /DrawDefaults2/ BoundColour, GridSIndex, DispCont 
+      COMMON /DrawDefaults3/ DispBound, GMerge,ModificationColour
+      COMMON /DrawDefaults4/ SoundColour, DispSound, DispNodes
 
       INTEGER TitleColour
       PARAMETER( TitleColour = 3 )
@@ -50,10 +50,10 @@
       integer ModifColor, PendColor, InfoColor
       integer NodeMType, PendMType, MarkMType, MarkColor
 
-      COMMON /NODEDEFAULTS/ NodeIColor, NodeBColor, NodeSColor,         &
-     &        ContNColor,BoundNColor, NodeSIndex,                       & 
-     &        ModifColor, PendColor, NodeMType, PendMType, MarkMType,   &
-     &        MarkColor, InfoColor
+      COMMON /NODEDEFAULTS/ NodeIColor, NodeBColor, NodeSColor
+      COMMON /NODEDEFAULTS2/ ContNColor,BoundNColor, NodeSIndex
+      COMMON /NODEDEFAULTS3/ ModifColor, PendColor, NodeMType 
+      COMMON /NODEDEFAULTS4/ PendMType, MarkMType,MarkColor, InfoColor
 
       integer MaxMarkType,MinMarkType
       PARAMETER( MaxMarkType = 5 )

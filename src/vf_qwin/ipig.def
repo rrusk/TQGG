@@ -27,7 +27,7 @@
 !        
 ! Include the PUBLIC pig api declarations
 
-      include '../includes/graf.def'!
+      include '../includes/graf.def'
 
 ! ========================================================================= !        
 
@@ -45,9 +45,6 @@
 !-
 !- numbers used to define current publicly available window/viewport 
 !- normalization transformations
-!-      INTEGER   MAINWIN, MENUWIN, STATUSWIN, CONTROLWIN,
-!-     &            SCREENWIN
-!-
       INTEGER MENUWIN, STATUSWIN, SCREENWIN, blankwin, topwin, plotwin
 
 ! numbers used to define current window/viewport normalization
@@ -60,22 +57,22 @@
       PARAMETER       (topwin = STATUSWIN, plotwin = SCREENWIN)
 ! viewports
       REAL      XMinMainView, XMaxMainView, YMinMainView,YMaxMainView
-      REAL      XMinControlView, XMaxControlView, YMinControlView,      &
-     &          YMaxControlView
-      REAL      XMinStatusView, XMaxStatusView, YMinStatusView,         &
-     &          YMaxStatusView
-      REAL      XMinMenuView, XMaxMenuView, YMinMenuView,               &
-     &          YMaxMenuView
+      REAL      XMinControlView, XMaxControlView, YMinControlView
+      REAL      YMaxControlView
+      REAL      XMinStatusView, XMaxStatusView, YMinStatusView
+      REAL      YMaxStatusView
+      REAL      XMinMenuView, XMaxMenuView, YMinMenuView
+      REAL      YMaxMenuView
 !  initialize device coordinates parameters to define viewport
 !  these values assume the hardware is x in {0:1} y in {0:0.75}
-      PARAMETER  (XMinMainView = 0.0, XMaxMainView = 0.65,              &
-     &            YMinMainView = 0.0, YMaxMainView = 0.65)
-      PARAMETER  (XMinControlView = 0.655, XMaxControlView = 0.997,     &
-     &            YMinControlView = 0.0, YMaxControlView = 0.65)
-      PARAMETER  (XMinStatusView = 0.0, XMaxStatusView = 0.997,         &
-     &            YMinStatusView = 0.655, YMaxStatusView = 0.7)
-      PARAMETER  (XMinMenuView = 0.0, XMaxMenuView = 0.997,             &
-     &            YMinMenuView = 0.7, YMaxMenuView = 0.75)
+      PARAMETER  (XMinMainView = 0.0, XMaxMainView = 0.65)
+      PARAMETER  (YMinMainView = 0.0, YMaxMainView = 0.65)
+      PARAMETER  (XMinControlView = 0.655, XMaxControlView = 0.997)
+      PARAMETER  (YMinControlView = 0.0, YMaxControlView = 0.65)
+      PARAMETER  (XMinStatusView = 0.0, XMaxStatusView = 0.997)
+      PARAMETER  (YMinStatusView = 0.655, YMaxStatusView = 0.7)
+      PARAMETER  (XMinMenuView = 0.0, XMaxMenuView = 0.997)
+      PARAMETER  (YMinMenuView = 0.7, YMaxMenuView = 0.75)
 
 ! x and y world coordinates for each window (except mainwin)
       REAL      XCtrlMin, XCtrlMax, YCtrlMin, YCtrlMax
@@ -83,37 +80,37 @@
       REAL      XMenuMin, XMenuMax, YMenuMin, YMenuMax
 
 !  initialize world parameters to define windows
-      PARAMETER       (XCtrlMin = 0.0, XCtrlMax = 40,                   &
-     &                 YCtrlMin = 0.0, YCtrlMax = 100)
-      PARAMETER       (XStatusMin = 0.0, XStatusMax = 100.0,            &
-     &                 YStatusMin = 0.0, YStatusMax = 5.0)
-      PARAMETER       (XMenuMin = 0.0, XMenuMax = 100.0,                &
-     &                 YMenuMin = 0.0, YMenuMax = 5.0)
+      PARAMETER       (XCtrlMin = 0.0, XCtrlMax = 40)
+      PARAMETER       (YCtrlMin = 0.0, YCtrlMax = 100)
+      PARAMETER       (XStatusMin = 0.0, XStatusMax = 100.0)
+      PARAMETER       (YStatusMin = 0.0, YStatusMax = 5.0)
+      PARAMETER       (XMenuMin = 0.0, XMenuMax = 100.0)
+      PARAMETER       (YMenuMin = 0.0, YMenuMax = 5.0)
 
 !  coordinates for start of menu text for MENUWIN and STATUSWIN and CONTROLWIN viewports
-      REAL      STATUSX, STATUSY, CONTROLX, CONTROLY
-      PARAMETER       (STATUSX = 1.0, STATUSY = 1.5,                    &
-     &                 CONTROLX = 2.0, CONTROLY = 90.0)
+      REAL  STATUSX, STATUSY, CONTROLX, CONTROLY
+      PARAMETER  (STATUSX = 1.0, STATUSY = 1.5)
+      PARAMETER  (CONTROLX = 2.0, CONTROLY = 90.0)
 
 
 !- Text Alignment constants (general)
 
-       integer BASE_JUSTIFY, TOP_JUSTIFY, BOTTOM_JUSTIFY
-       parameter ( BASE_JUSTIFY=2, TOP_JUSTIFY=3, BOTTOM_JUSTIFY=4 )
+      integer BASE_JUSTIFY, TOP_JUSTIFY, BOTTOM_JUSTIFY
+      parameter ( BASE_JUSTIFY=2, TOP_JUSTIFY=3, BOTTOM_JUSTIFY=4 )
 
 ! 
 !  Text Justification constants
 ! 
-	integer NORMAL_JUSTIFY
+      integer NORMAL_JUSTIFY
       integer LEFT_JUSTIFY, CENTRE_JUSTIFY, RIGHT_JUSTIFY
-	PARAMETER     ( NORMAL_JUSTIFY = 0, LEFT_JUSTIFY = 1) 
-      PARAMETER     (CENTRE_JUSTIFY = 2, RIGHT_JUSTIFY = 3)
+      PARAMETER ( NORMAL_JUSTIFY = 0, LEFT_JUSTIFY = 1) 
+      PARAMETER (CENTRE_JUSTIFY = 2, RIGHT_JUSTIFY = 3)
 
 !- Text Alignment constants (for Windows)
 
-        integer LEFT_ALIGN, CENTRE_ALIGN, RIGHT_ALIGN,BASE_ALIGN,       &
-     &          TOP_ALIGN, BOTTOM_ALIGN
-        PARAMETER ( LEFT_ALIGN =1, CENTRE_ALIGN =2, RIGHT_ALIGN =3,     &
-     &          BASE_ALIGN = 4, TOP_ALIGN =5, BOTTOM_ALIGN =6)
+      integer LEFT_ALIGN, CENTRE_ALIGN, RIGHT_ALIGN,BASE_ALIGN
+      integer TOP_ALIGN, BOTTOM_ALIGN
+      PARAMETER ( LEFT_ALIGN =1, CENTRE_ALIGN =2, RIGHT_ALIGN =3)
+      PARAMETER (BASE_ALIGN = 4, TOP_ALIGN =5, BOTTOM_ALIGN =6)
 
 

@@ -23,7 +23,7 @@
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/></Configuration>
 		<Configuration Name="Debug|x64">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" FPS4Filenames="true" WarnInterfaces="true" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" FPS4Filenames="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="40000000"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
@@ -45,23 +45,21 @@
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath="..\..\src\vf_qwin\AboutLimitsgr.f90"/>
+		<File RelativePath="..\..\src\plotsubs\AllChecks.f90"/>
 		<File RelativePath="..\..\src\vf_dialogs\configurecontours.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\configuregrid.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\configurenodes.f"/>
 		<File RelativePath="..\..\src\plotsubs\dispcontbnd.f90"/>
 		<File RelativePath="..\..\src\plotsubs\drawgrid.f90"/>
-		<File RelativePath="..\..\src\vf_dialogs\elementcheck.f90"/>
-		<File RelativePath="..\..\src\vf_dialogs\elementinfo.f"/>
 		<File RelativePath="..\..\src\gridgen\GenClusters.f90"/>
 		<File RelativePath="..\..\src\gridgen\GenElementList.f90"/>
 		<File RelativePath="..\..\src\gridgen\GeneratePoints10-7-28b.f90"/>
 		<File RelativePath="..\..\src\gridgen\GroupEditSubs.f90"/>
 		<File RelativePath="..\..\src\vf_qwin\leftovers.f"/>
+		<File RelativePath="..\..\src\dataio\MainArrays.f90"/>
 		<File RelativePath="..\..\src\gridgen\Maintri10-7-30.f90"/>
 		<File RelativePath="..\..\src\gridedit\NEWEDITS.f90"/>
-		<File RelativePath="..\..\src\vf_dialogs\nodecheck.f90"/>
 		<File RelativePath="..\..\src\plotsubs\nodedisp.f"/>
-		<File RelativePath="..\..\src\vf_dialogs\nodeinfo.f"/>
 		<File RelativePath="..\..\src\gridedit\nodemod.f90"/>
 		<File RelativePath="..\..\src\gridedit\NodeReselect.f"/>
 		<File RelativePath="..\..\src\gridedit\NODEUPDT7-7-14.f"/>
@@ -70,6 +68,7 @@
 		<File RelativePath="..\..\src\plotsubs\permmark.f90"/>
 		<File RelativePath="..\..\src\gridedit\Piced1.f"/>
 		<File RelativePath="..\..\src\gridedit\piced2.f"/>
+		<File RelativePath="..\..\src\PigInterface\PigDisplaySubs.f90"/>
 		<File RelativePath="..\..\src\PigInterface\PigDrawSubs.f90"/>
 		<File RelativePath="..\..\src\PigInterface\PigMessage.f"/>
 		<File RelativePath="..\..\src\plotsubs\Plotsubs.f"/>
@@ -88,5 +87,9 @@
 		<File RelativePath="..\..\src\gridedit\StraightLine.f"/>
 		<File RelativePath="..\..\src\dataio\Stspl.f"/>
 		<File RelativePath="..\..\src\dataio\stspldf.f"/>
-		<File RelativePath="..\..\src\dataio\WriteData.f90"/></Filter></Files>
+		<File RelativePath="..\..\src\vf_dialogs\vf_allchecks.f90"/>
+		<File RelativePath="..\..\src\vf_dialogs\vf_elementinfo.f"/>
+		<File RelativePath="..\..\src\vf_dialogs\vf_nodeinfo.f"/>
+		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
+		<File RelativePath="..\..\src\vf_dialogs\Xsection.f"/></Filter></Files>
 	<Globals/></VisualStudioProject>

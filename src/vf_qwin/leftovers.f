@@ -1,114 +1,4 @@
 !-----------------------------------------------------------------------*
-
-      SUBROUTINE NewNode ( xn, yn, mess, ierr )
-
-!  PURPOSE: To ask user to pick a location for a new node.
-!    INPUT: xnew,ynew = (x,y) co-ordinates by user
-!    GIVEN: mess = message to prompt with, deleted after selection
-!  RETURNS: (xn,yn) as input by user
-!            ierr  = 1  if there is input
-!                  = 0 if no input, or invalid input.
-!  WRITTEN: May 1990 by JDM, for NODER.
-!----------------------------------------------------------------------*
-
-
-! - "INCLUDES"
-       include '../includes/graf.def'
-
-! - PASSED VARIABLES
-      REAL xn, yn
-      integer ierr
-      CHARACTER*(*) mess
-
-! - COMMON BLOCKS
-!      REAL cwxl, cwxh, cwyl, cwyh
-!      COMMON /CURWIN/ cwxl, cwxh, cwyl, cwyh
-
-      integer tnr
-      
-!-----------------START ROUTINE----------------------------------
-
-      ierr = 0
-      call PigPutMessage( mess )
-      DO WHILE ( ierr .eq. 0 )
-*       xn = ( cwxl+ cwxh)/2.0
-*       yn = ( cwyl+ cwyh)/2.0
-       call PigGetMouse(tnr, xn, yn)
-       IF ( tnr .eq. MAINWIN ) then
-              ierr = 1
-       else
-              call PigPutMessage('Select point from graphics window.')
-       endif
-      END DO
-      call PigEraseMessage
-      END
-
-C*--------------------------------------------------------------------------*
-
-      SUBROUTINE NewPt( xnew, ynew, imess, ierr )
-C
-C Purpose : To ask user to pick a location
-C Input   : xnew, ynew = (x,y) co-ordinates
-C Given   : imess = 0 if message is to be "Pick a point...",
-C                   1 if message is "Pick the mid-side point.."
-C                   2 if message is "Pick a NEW point..."
-C                   3 if message is "Pick an EXISTING point..."
-C                   4 if message is "Pick a NEW point..." using a rubber line
-c                   OTHER, message is "Pick a point..."
-C Return  : (xnew,ynew) as input
-C            ierr  = 0 if there is input
-C                  = 999 if want to quit
-C Modified: Steve Prestage and Daphne Connolly  May 1989
-
-
-
-C     - PASSED PARAMETERS
-      REAL xnew, ynew, x0, y0
-      integer ierr, imess
-
-C     - COMMON BLOCKS
-*      REAL cwxl, cwxh, cwyl, cwyh
-*      COMMON /CURWIN/ cwxl, cwxh, cwyl, cwyh
-
-C     - LOCAL VARIABLES
-*      integer istat
-C             - used for graphics input call : returns status of
-C             -- pick and ascii decimal equiv. of key hit.
-
-C--------------BEGIN---------------------
-	character*(80) mess
-C     - get the co-ordinates of the new point
-      IF ( imess .eq. 0 ) THEN
-	mess = 'Pick a point..'
-      ELSEIF (imess .eq. 1) then
-	mess = 'Pick the mid-side point..'
-      elseif (imess .eq. 2) then
-	mess = 'Pick a NEW point..'
-      elseif (imess .eq. 3) then
-	mess = 'Pick an EXISTING point..'
-      elseif (imess .eq. 4) then
-	mess = 'Pick a NEW point..'
-      else
-	mess = 'Pick a point..'
-      ENDIF
-      if(imess.eq.4)then
-	 call PigPutMessage(mess)
-	 x0=xnew
-	 y0=ynew
-	 call PigRubberLine(xnew,ynew,x0,y0)
-	 ierr = 0
-      else
-	 call NewNode(xnew, ynew,mess,ierr)
-	 if(ierr.eq.1) then
-	     ierr = 0
-	 else
-	     ierr = 1
-	 endif
-      end if
-      call PigEraseMessage
-      END
-
-!-----------------------------------------------------------------------*
  
       SUBROUTINE RubberNode ( xn, yn, xinit, yinit, mess, ierr )
 
@@ -151,7 +41,7 @@ C     - get the co-ordinates of the new point
 
 !-----------------------------------------------------------------------*
 
-	subroutine PigRubberLine(Xnew, Ynew, Xinit, Yinit)
+      subroutine PigRubberLine(Xnew, Ynew, Xinit, Yinit)
 
 *+ Purpose:  Displays a rubberline around Xinit, Yinit.  Used to
 *+           define any polygon area.
@@ -162,10 +52,10 @@ C     - get the co-ordinates of the new point
 *+ Effects:  Draws a rubberline from Xinit, Yinit to Xnew,Ynew until
 *+           the mouse is clicked.
 
-	REAL  Xnew, Ynew, Xinit, Yinit
+      REAL  Xnew, Ynew, Xinit, Yinit
 
-	Xnew = Xinit
-	Ynew = Yinit
+      Xnew = Xinit
+      Ynew = Yinit
 
       call WPigRubberLine(Xnew, Ynew, Xinit, Yinit)  !used in Visual Fortran version
 

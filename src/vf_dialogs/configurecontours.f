@@ -941,8 +941,8 @@ C Modified: JAN93 - JDM, to set VECCFG.INC values.
 C*--------------------------------------------------------------------------*
 
 
-	include '../includes/graf.def'
-	INCLUDE '../includes/cntcfg.inc'
+      include '../includes/graf.def'
+      INCLUDE '../includes/cntcfg.inc'
 !	INCLUDE '../includes/veccfg.inc'
 c	INCLUDE 'plotcfg.inc'
 

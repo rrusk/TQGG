@@ -55,8 +55,8 @@
       REAL        SMaxVal(NumDataTypes), SMinVal(NumDataTypes)
       REAL        PMaxVal(NumDataTypes), PMinVal(NumDataTypes)
 
-      COMMON /CNTCFG/ CntValues,SMaxVal,SMinVal,PMaxVal,PMinVal,                &
-     &                CntColors, NumCntValues,DataType,LabelsOn,                &
-     &                ScalePhase, TypeName      
+      COMMON /CNTCFG/ CntValues,SMaxVal,SMinVal,PMaxVal,PMinVal
+      COMMON /CNTCFG2/ CntColors, NumCntValues,DataType,LabelsOn
+      COMMON /CNTCFG3/ ScalePhase, TypeName      
 
 !-------------------- END CNTCFG.INC ---------------------------*

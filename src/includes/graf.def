@@ -24,8 +24,6 @@
 ! 
 !  numbers used to define current publicly available window/viewport 
 !  normalization transformations
-!       INTEGER   MAINWIN, CONTROLWIN, PROFILEWIN
-! 
       INTEGER   MAINWIN, CONTROLWIN, PROFILEWIN
 
 ! numbers used to define current window/viewport normalization
@@ -62,8 +60,8 @@
       integer BACKGR, FOREGR, RUBBER_COLOR, TITLECOLOR
       integer PROMPT_COLOR, MESSAGE_COLOR, DEBUG_BACKGR
       integer BLACK, WHITE, RED, GREEN, BLUE, YELLOW, CYAN, VIOLET
-        integer DKGRAY, LTGRAY, DKRED, DKGREEN, DKBLUE, ORANGE, DKCYAN
-        integer VIOBLUE
+      integer DKGRAY, LTGRAY, DKRED, DKGREEN, DKBLUE, ORANGE, DKCYAN
+      integer VIOBLUE
 
 !
 ! *** GKS Colours
@@ -93,7 +91,6 @@
 !                values are variable.
 !  LABELCOLOR = color for all field labels and titles.
  
-!       INTEGER HITCOLOR, NoHITCOLOR, LABELCOLOR
       INTEGER HITCOLOR, NoHITCOLOR, LABELCOLOR
 
       PARAMETER( HITCOLOR = CYAN )

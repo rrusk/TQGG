@@ -432,9 +432,6 @@ void toggledTestCB (Widget widget, XtPointer client_data, XtPointer call_data)
 
 void destroyCB(Widget w, XtPointer client_data, XtPointer call_data)
 {
-	ntest = -1;
-	mode = -1;
-	ElementCheck(&ntest, &mode);
 	XtDestroyWidget (XtParent(w));
 }
 

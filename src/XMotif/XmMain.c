@@ -25,195 +25,11 @@
   !***********************************************************************
 */
 
-#include <Xm/RowColumn.h>
-#include <Xm/MainW.h>
-#include <Xm/DrawingA.h>
-#include <Xm/CascadeBG.h>
-#include <Xm/PushB.h>
-#include <Xm/PushBG.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/MessageB.h>
-#include <Xm/DialogS.h>
-#include <Xm/SelectioB.h>
-#include <Xm/FileSB.h>
-#include <Xm/ToggleB.h>
-#include <Xm/ToggleBG.h>
-#include <Xm/Label.h>       /* Label */
-#include <stdlib.h>
-
-#define  YES 1
-#define  NO 2
-#define  CANCEL 3
-
-#include "f90_c.h"
+#include "XmMain.h"
 #include "pigdefs.h"
 
-extern double WCentx;
-extern double WCenty;
-extern double WtoVScale;
-extern void elementcheck_(int *num, int *mode);
-
-    Widget      toplevel;
-    Widget      TopMenuW;
-    Widget      GridEditW;
-    Widget      NodeEditW;
-    Widget      GroupEditW;
-    Widget      GridGenW, GridGen1W;
-    Widget      message_w;
-    Widget      messageok_dialog;
-    Widget      messageyesno_dialog;
-    Widget      messageyesnocancel_dialog;
-    Widget      files_dialog;
-    Widget      prompt_dialog;
-    Widget      MainCanvas;
-
-    void        exit( int exit_code );
-    void        fileok_cb(Widget, XtPointer, XtPointer);
-    void        filecancel_cb(Widget, XtPointer, XtPointer);
-    void        promptok_cb(Widget, XtPointer, XtPointer);
-    void        promptcancel_cb(Widget, XtPointer, XtPointer);
-    void        set_color(Widget, XtPointer, XtPointer) ;
-    void        CreateDialogs( Widget );
-    void        CreateDrawTools( Widget );
-    //void        redraw();
-    void        setUsePixmap();
-
-    int   WPigGetOpenFileName(char *prompt, char *name, char *tmpl, const int dummy_len1, const int dummy_len2, const int dummy_len3);
-
-    void  Initialiser(void);
-    void  OpenGridFileCB(void);
-    void  AddGridFileCB(void);
-    void  OpenNodeFileCB(void);
-    void  AddNodeFileCB(void);
-    void  SampleCB(void);
-    void  XSectionCB(void);
-    void  SaveInterimCB(void);
-    void  SaveFinalCB(void);
-    void  PrintCB(void);
-    void  QuitCB(void);
-    void  RedrawCB(void);
-    void  OutlineCB(void);
-    void  FullsizeCB(void);
-    void  ZoomCB(void);
-    void  ZoomOutCB(void);
-    void  PanCB(void);
-    void  LastViewCB(void);
-    void  ScaleCB(void);
-    void  ShiftCB(void);
-    void  RotateCB(void);
-    void  SPXCB(void);
-    void  MercXCB(void);
-    void  TMXCB(void);
-    void  NodeInfoCB(void);
-    void  EleInfoCB(void);
-    void  NodeCheckCB(void);
-    void  EleCheckCB(void);
-    void  EraseCheckCB(void);
-    void  PMarkCB(void);
-    void  PMDelLastCB(void);
-    void  PMDelAllCB(void);
-    void  SetRangeCB(void);
-    void  TooCloseCB(void);
-    void  FileInfoCB(void);
-    void  LimitInfoCB(void);
-    void  GenOneFrontCB(void);
-    void  GenClusterCB(void);
-    void  GenOptionsCB(void);
-    void  GenAllFrontsCB(void);
-    void  FrontOptionsCB(void);
-    void  GenHexCB(void);
-    void  GenSquaresCB(void);
-    void  GenMixedCB(void);
-    void  TriangulateCB(void);
-    void  DeleteNodeCB(void);
-    void  MoveNodeCB(void);
-    void  AddBndNodeCB(void);
-    void  ReverseBndCB(void);
-    void  JoinBndCB(void);
-    void  ReselectBndCB(void);
-    void  AddBndLineCB(void);
-    void  DeleteIslCB(void);
-    void  AddIntNodeCB(void);
-    void  AddIntLineCB(void);
-    void  AddGridEdgeCB(void);
-    void  DelGridEdgeCB(void);
-    void  AddGridNodeCB(void);
-    void  DelGridNodeCB(void);
-    void  MoveGridNodeCB(void);
-    void  MergeGridNodeCB(void);
-    void  CleaveGridNodeCB(void);
-    void  InsertGridEdgeCB(void);
-    void  ExchangeGridEdgeCB(void);
-    void  DekiteGridCB(void);
-    void  ReshapeGridCB(void);
-    void  ConvertGrid2NodesCB(void);
-    void  CreatePolyCB(void);
-    void  WholePolyCB(void);
-    void  CyclePolyCB(void);
-    void  DeletePolyCB(void);
-    void  ReadPolyCB(void);
-    void  WritePolyCB(void);
-    void  PolyDelBndCB(void);
-    void  PolyDelIntCB(void);
-    void  PolyDelAllCB(void);
-    void  PolyNodeCodeCB(void);
-    void  PolyEleCodeCB(void);
-    void  PolyDekiteCB(void);
-    void  PolyReshapeCB(void);
-    void  PolyDelGridCB(void);
-    void  PolySplitGridCB(void);
-    void  PolyRefineGridCB(void);
-    void  PolyCutGridCB(void);
-    void  PolySetDepthCB(void);
-    void  PolyReDepthCB(void);
-    void  PlotNodeCB(void);
-    void  ConfigNodeCB(void);
-    void  PlotGridCB(void);
-    void  ConfigGridCB(void);
-    void  PlotContourCB(void);
-    void  ConfigContourCB(void);
-    void  PlotDataCB(void);
-    void  ConfigDataCB(void);
-    void  AboutCB(void);
-    void  HelpCB(void);
-//    void  MenuCB( int *);
-//    void  MouseEHandler(int *, int *, float *, float *);
-    void  drawing_area_callback(Widget, XtPointer, XtPointer);
-
-    XGCValues    gcv;
-    GC           gc;
-    Dimension    width, height;
-    int          use_pixmap = 1;  // allows user to toggle pixmap on/off
-
-typedef struct _menu_item 
-{
-	char              *label;          /* the label for the item */
-	WidgetClass       *class;          /* pushbutton, label, separator... */
-	char               mnemonic;       /* mnemonic; NULL if none */
-	char              *accelerator;    /* accelerator; NULL if none */
-	char              *accel_text;     /* to be converted to compound string */
-	void             (*callback)();    /* routine to call; NULL if none */
-	XtPointer          callback_data;  /* client_data for callback() */
-	struct _menu_item *subitems;       /* pullright menu items, if not NULL */
-} MenuItem;
-
-typedef struct dummy_struct_name{
-    int     reason;
-    char    *answer;
-    char    *name; 
-}       XPCallback_data;
-
-    static  XPCallback_data  mycall_data; 
-
-    XtAppContext app;
- //   static  int     XSymbolColour, XSymbolNumber;
- //   static  int     XFillColour, XForegrColour, XBackgrColour,XTextColour, XLineColour;
-
-    static  int answer;
-//    static  int answer2;
-/*    static  double WorldX1, WorldX2, WorldY1, WorldY2, WCentx, WCenty,WtoVScale; 
-    static  double X1, X2, Y1, Y2; */
-
+static XPCallback_data mycall_data;
+static int answer;
 /*----------------------------------------------------------------------------*/
 
 void WPigMessageOK( char *question, char *reply, const int dummy_len1, const int dummy_len2 ) 
@@ -381,6 +197,7 @@ void WPigGetString(char *prompt, int *anslen, char *retstring )
     default:
         retstring[0] = '\0';
         *anslen = 0;
+        break;
     }
     printf ("int WPigGetString return (%s)\n", retstring);
 }  
@@ -398,163 +215,6 @@ void WPigStatusMessage(char *message)
     XmUpdateDisplay(message_w);
 }
 /*----------------------------------------------------------------------------*/
-
-int ntest;
-int mode;
-
-void toggledModeCB (Widget widget, XtPointer client_data, XtPointer call_data)
-{
-        int                           which = (int) client_data;
-        XmToggleButtonCallbackStruct *state = (XmToggleButtonCallbackStruct *) call_data;
-
-        if (state->set == XmSET) {
-        	if (which == 0) {
-        		mode = 1;
-        	} else {
-        		mode = 0;
-        	}
-        } else {
-        	mode = 0;
-        }
-}
-
-void toggledTestCB (Widget widget, XtPointer client_data, XtPointer call_data)
-{
-        int                           which = (int) client_data;
-        XmToggleButtonCallbackStruct *state = (XmToggleButtonCallbackStruct *) call_data;
-
-        if (state->set == XmSET) {
-         	ntest = which + 1;
-         } else {
-         	ntest = 0;
-         }
-}
-
-void destroyCB(Widget w, XtPointer client_data, XtPointer call_data)
-{
-	XtDestroyWidget (XtParent(w));
-}
-
-void checkCB(Widget w, XtPointer client_data, XtPointer call_data)
-{
-	ElementCheck(&ntest, &mode);
-}
-
-void  WPigElementCheck(void)
-{
-	ntest = 1;
-	mode = 1;
-	Widget dialog, rc, label, label2, label3, radio_box, radio_box2, separator, separator2;
-	Arg args0[6], args[6], args2[6], args3[6];
-	XmString t, title_string, check, close, title, title2, title3, fullcolor, colormarker,
-		eql, dep, a2d, ccw, g90, c0d;
-
-	int n = 0;
-	t = XmStringCreateLocalized("the title");
-	check = XmStringCreateLocalized("RUN CHECK");
-	close = XmStringCreateLocalized("CLOSE");
-	XtSetArg (args0[n], XmNselectionLabelString, t); n++;
-	XtSetArg (args0[n], XmNautoUnmanage, False); n++;
-	XtSetArg (args0[n], XmNuserData, 0); n++;
-	XtSetArg (args0[n], XmNcancelLabelString, close); n++;
-	XtSetArg (args0[n], XmNokLabelString, check); n++;
-	// Dialog could attached to prompt_dialog or another Widget rather than toplevel.
-	// Might also be able to customize XmCreateInformationDialog or another built-in menu
-	// rather than XmCreatePromptDialog.
-	dialog = XmCreatePromptDialog (toplevel, "ElementCheck", args0, n);
-	XtAddCallback(dialog, XmNcancelCallback, destroyCB, NULL);
-	XtAddCallback(dialog, XmNokCallback, checkCB, NULL);
-	// Hide unwanted buttons
-	XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
-	XtUnmanageChild(XtNameToWidget(dialog, "Text"));
-	//XtUnmanageChild(XtNameToWidget(dialog, "OK"));
-	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
-	XmStringFree(t);
-	XmStringFree(check);
-	XmStringFree(close);
-
-	// set title of popup dialog box
-    title_string = XmStringGenerate("ElementCheck", NULL, XmCHARSET_TEXT, "TAGOK");
-    XtVaSetValues(dialog, XmNdialogTitle, title_string, NULL);
-    XmStringFree(title_string);
-
-	XtSetLanguageProc (NULL, NULL, NULL);
-
-	fullcolor  = XmStringCreateLocalized ("Full Color");
-	colormarker  = XmStringCreateLocalized ("Color Marker");
-	eql  = XmStringCreateLocalized ("EQL");
-	dep  = XmStringCreateLocalized ("DEP");
-	a2d  = XmStringCreateLocalized ("A2D");
-	ccw  = XmStringCreateLocalized ("CCW");
-	g90  = XmStringCreateLocalized ("G90");
-	c0d  = XmStringCreateLocalized ("COD");
-
-	/* RowColumn manages labels, seperators and both radio boxes */
-	rc = XmCreateRowColumn(dialog, "rowcol", NULL, 0);
-
-	title = XmStringCreateLocalized("Color Triangles by Criteria");
-	n = 0;
-	XtSetArg( args[n], XmNlabelString, title); n++;
-	label = XmCreateLabel(rc, "label", args, n);
-	XmStringFree (title);
-
-	separator = XmCreateSeparatorGadget (rc, "sep", NULL, 0);
-
-	title2 = XmStringCreateLocalized("Select Coloring Mode");
-	n = 0;
-	XtSetArg( args2[n], XmNlabelString, title2); n++;
-	label2 = XmCreateLabel(rc, "label2", args2, n);
-	XmStringFree (title2);
-
-	radio_box = XmVaCreateSimpleRadioBox (rc,
-			"radio_box",
-			0,  /* the inital choice */
-			toggledModeCB, /* the callback routine */
-			XmVaRADIOBUTTON, fullcolor,  NULL, NULL, NULL,
-			XmVaRADIOBUTTON, colormarker,  NULL, NULL, NULL,
-			NULL);
-
-	separator2 = XmCreateSeparatorGadget (rc, "sep2", NULL, 0);
-
-	title3 = XmStringCreateLocalized("Select Criteria");
-	n = 0;
-	XtSetArg( args3[n], XmNlabelString, title3); n++;
-	label3 = XmCreateLabel(rc, "label3", args3, n);
-	XmStringFree (title3);
-
-	radio_box2 = XmVaCreateSimpleRadioBox (rc,
-			"radio_box2",
-			0,  /* the inital choice */
-			toggledTestCB, /* the callback routine */
-			XmVaRADIOBUTTON, eql, NULL, NULL, NULL,
-			XmVaRADIOBUTTON, dep,  NULL, NULL, NULL,
-			XmVaRADIOBUTTON, a2d,  NULL, NULL, NULL,
-			XmVaRADIOBUTTON, ccw, NULL, NULL, NULL,
-			XmVaRADIOBUTTON, g90, NULL, NULL, NULL,
-			XmVaRADIOBUTTON, c0d, NULL, NULL, NULL,
-			NULL);
-
-	XmStringFree (fullcolor);
-	XmStringFree (colormarker);
-	XmStringFree (eql);
-	XmStringFree (dep);
-	XmStringFree (a2d);
-	XmStringFree (ccw);
-	XmStringFree (g90);
-	XmStringFree (c0d);
-
-	XtManageChild (label);
-	XtManageChild (separator);
-	XtManageChild (label2);
-	XtManageChild (radio_box);
-	XtManageChild (separator2);
-	XtManageChild (label3);
-	XtManageChild (radio_box2);
-	XtManageChild (rc);
-	XtManageChild (dialog);
-
-	//ElementCheck(&ntest, &mode);
-}
 
 void  WPigExit(void)
 {
@@ -835,6 +495,8 @@ int main (int argc, char *argv[])
 	// App defaults to using pixmap
     if (argc == 2 && strncmp(argv[1],"-nopm", 5) == 0) {
     	use_pixmap = 0;  // but user can request no pixmap on command-line
+    } else {
+    	use_pixmap = 1;
     }
     setUsePixmap(use_pixmap);
     
@@ -866,7 +528,7 @@ int main (int argc, char *argv[])
     
     /* build dialogs */
 
-    CreateDialogs (toplevel);
+    //CreateDialogs (toplevel);
     
     n = 0;
     xms = XmStringCreateLocalized ("initializing ok");

@@ -320,7 +320,7 @@
       rho = 1.
       xint=1./(nint+1)
       stry=.01
-      call LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz,rho)
+      call LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz) !,rho)
       tct(1)=stry
       xct(1)=xx
       yct(1)=yy
@@ -378,7 +378,7 @@
           ip=ip+1
           goto 22
         endif
-        call LOCGEOM(ss,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz,rho)
+        call LOCGEOM(ss,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz) !,rho)
         xf=(ss-slt(im))/(slt(ip)-slt(im))
         xm=1.-xf
         tct(i)=ss

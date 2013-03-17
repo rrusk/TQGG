@@ -254,7 +254,7 @@ C           - ( ierr eq 999 )
 C         - ( ans ne Q )
 	if ( ans(1:1) .eq. 'C' ) then
 C         - get new location by cursor
-	  call NEWPT( xnew, ynew, 2, ierr )
+	  !call NEWPT( xnew, ynew, 2, ierr )
 	  if ( ierr .eq. 999 ) then
 	    call PigPutMessage( 'ERROR locating point...ABORTED' )
 	    ans(1:1) = 'Q'

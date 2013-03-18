@@ -138,7 +138,8 @@
 !      integer hitnum !, anslen
 !      LOGICAL  Success, IEXIS
 !      logical, save :: Accepted, Erase
-      CHARACTER*80 ans
+!      CHARACTER*80 ans
+      logical ans
 !      CHARACTER*6 inum
 !      CHARACTER*11 rnum
 !      logical PigGetOpenFileName
@@ -148,23 +149,26 @@
       OkDummy = .true.
       DrawVCrit = .true.
 
-      call PigMessageYesNo ('Code (yes) or neighbor (no) checks? ',ans)
-      if(ans(1:1).eq.'Y') then
-        TheCriteria = .false.
-        TheCriteria(2) = .true.
-        TheCriteria(3) = .true.
-        TheCriteria(6) = .true.
-        TheCriteria(7) = .true.
-        TheCriteria(8) = .true.
-      else
-        TheCriteria = .false.
-        TheCriteria(12) = .true.
-        USER_NCOUNT = 8
-        TheCriteria(13) = .true.
-        USER_NCOUNT1 = 4
-        TheCriteria(14) = .true.
-        USER_NCOUNT2 = 4
-      endif
+      call WPigNodeCheck(ans, USER_NCOUNT, USER_NCOUNT1, USER_NCOUNT2, TheCriteria, MaxCrit)
+
+!      call PigMessageYesNo ('Code (yes) or neighbor (no) checks? ',ans)
+!      if(ans(1:1).eq.'Y') then
+!      if(ans) then
+!        TheCriteria = .false.
+!        TheCriteria(2) = .true.
+!        TheCriteria(3) = .true.
+!        TheCriteria(6) = .true.
+!        TheCriteria(7) = .true.
+!        TheCriteria(8) = .true.
+!      else
+!        TheCriteria = .false.
+!        TheCriteria(12) = .true.
+!        USER_NCOUNT = 8
+!        TheCriteria(13) = .true.
+!        USER_NCOUNT1 = 4
+!        TheCriteria(14) = .true.
+!        USER_NCOUNT2 = 4
+!      endif
 
       return
 

@@ -26,7 +26,8 @@ all:
 		src/dataio/*.f src/dataio/*.f90 \
 		src/Xm_dialogs/*.f90 \
 		src/XMotif/*.f90
-	$(CC) $(C_FLAGS) -c src/XMotif/XmMain.c \
+	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
 	$(FC) *.o -o bin/TQGGdbl $(LIBS)

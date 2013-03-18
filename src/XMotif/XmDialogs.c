@@ -193,6 +193,106 @@ void  WPigElementCheck(void)
 	XtManageChild (rc);
 	XtManageChild (dialog);
 
-	/*----------------------------------------------------------------------------*/
+}
 
+/*----------------------------------------------------------------------------*/
+
+// The following code implements the info/node check menu item
+
+int *theCriteria, *userNcount, *userNcount1, *userNcount2, *maxCrit;
+
+unsigned long toggles_set = (unsigned long) 0 ; /* has the bits of which toggles are set */
+
+char *strings[] = { "C0", "C1", "C2", "C3", "C4", "C5", "C6", "NC0",
+	"DLT", "DGT", "DBTW", "NBGT", "NBLT", "NBE", "EXT", "C=?"};
+
+/* callback for all ToggleButtons of WPigNodeCheck.*/
+void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_data)
+{
+	int bit = (int) client_data;
+	XmToggleButtonCallbackStruct *toggle_data = (XmToggleButtonCallbackStruct *) call_data;
+
+	if (toggle_data->set == XmSET) /* if the toggle button is set, flip its bit */
+		toggles_set |= (1 << bit);
+	else /* if the toggle is "off", turn off the bit. */
+		toggles_set &= ~(1 << bit);
+}
+
+/* used by check_bits callback for WPigNodeCheck */
+void setupOutput() {
+	int i;
+	for (i = 0; i < *maxCrit; i++) { //XtNumber (strings); i++) {
+		if (toggles_set & (1<<i)) {
+			theCriteria[i] = 1;
+		} else {
+			theCriteria[i] = 0;
+		}
+	}
+}
+
+/* callback for "Run Check" (aka OK) button used by WPigNodeCheck */
+void check_bits (Widget widget, XtPointer client_data, XtPointer call_data)
+{
+	int parm1 = 0;
+	int change = 1;
+
+    setupOutput();
+	DrwFig(&parm1, &change);
+}
+
+void WPigNodeCheck(int *ans, int *user_ncount, int *user_ncount1, int *user_ncount2,
+			int TheCriteria[], int *maxcrit)
+{
+	Widget       rowcol, toggle_box, w, t, check, close;
+	int          i;
+	Arg          args[4];
+
+	theCriteria = TheCriteria;
+	userNcount = user_ncount;
+	userNcount1 = user_ncount1;
+	userNcount2 = user_ncount2;
+	maxCrit = maxcrit;
+
+	// hard-coded here so that this skeleton code replicates
+	// functionality of older version
+    *userNcount = 8;
+    *userNcount1 = 4;
+    *userNcount2 = 4;
+
+	XtSetLanguageProc (NULL, NULL, NULL);
+
+	int n = 0;
+	t = XmStringCreateLocalized("Numerical Input");
+	check = XmStringCreateLocalized("RUN CHECK");
+	close = XmStringCreateLocalized("CLOSE");
+	XtSetArg (args[n], XmNselectionLabelString, t); n++;
+	XtSetArg (args[n], XmNautoUnmanage, False); n++;
+	XtSetArg (args[n], XmNuserData, 0); n++;
+	XtSetArg (args[n], XmNcancelLabelString, close); n++;
+	XtSetArg (args[n], XmNokLabelString, check); n++;
+	rowcol = XmCreatePromptDialog (toplevel, "NodeCheck", args, n);
+	XtAddCallback(rowcol, XmNcancelCallback, destroyCB, NULL);
+	XtAddCallback(rowcol, XmNokCallback, check_bits, NULL);
+
+	// hides Numeric Input box
+	XtUnmanageChild(XtNameToWidget(rowcol, "Selection"));
+	XtUnmanageChild(XtNameToWidget(rowcol, "Text"));
+
+	i = 0;
+	XtSetArg (args[i], XmNpacking, XmPACK_COLUMN); i++;
+	XtSetArg (args[i], XmNnumColumns, 3); i++;
+	toggle_box = XmCreateRowColumn (rowcol, "togglebox", args, i);
+
+	/* simply loop thru the strings creating a widget for each one */
+	for (i = 0; i < XtNumber (strings); i++) {
+			w = XmCreateToggleButtonGadget (toggle_box, strings[i], NULL, 0);
+			XtAddCallback (w, XmNvalueChangedCallback, toggledNodeCheckCB, (XtPointer) i);
+			XtManageChild (w);
+	}
+
+	w = XmCreateSeparatorGadget (rowcol, "sep", NULL, 0);
+	XtManageChild (w);
+
+	XtManageChild (rowcol);
+	XtManageChild (toggle_box);
 }

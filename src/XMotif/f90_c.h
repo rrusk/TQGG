@@ -133,5 +133,7 @@
 #define  MNU_PolyMenuEnable mnu_polymenuenable_
 #define  MNU_PolyMenuDisable mnu_polymenudisable_
 #define  ElementCheck elementcheck_
+#define  WPigNodeCheck wpignodecheck_
+#define  DrwFig drwfig_
 
 #endif /* F90_C_H_ */

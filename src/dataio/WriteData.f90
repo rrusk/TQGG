@@ -103,7 +103,7 @@
 
 !*--------------------------------------------------------------------------*
 
-      SUBROUTINE SaveFinal( Quit )
+      SUBROUTINE SaveFinal( change, Quit )
 
 ! Purpose: Save final Grid and optionally the TRIANGLE and CRITERIA lists.
 ! Givens : data in MainArrays
@@ -126,7 +126,7 @@
       LOGICAL ListTri,ListCri
       logical PigOpenFileCD, ResOK
 
-      change = .true.
+      !change = .true.
       
       ans = ' '
       nunit = 9

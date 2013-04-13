@@ -119,7 +119,7 @@
       nunit = 3
 
       if(.not.PigOpenFileCD(nunit,'Open Sample File', fle, &
-          'XYZ Files (*.[xn][yo]*),*.xy*;NOD Files (*.nod),*.nod;All Files (*.*),*.*;')) then
+          'XYZ Files (*.[xn][yo][zd]),*.xy*;NOD Files (*.nod),*.nod;All Files (*.*),*.*;')) then
         fnlen = len_trim(fle)
         call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'
@@ -144,7 +144,12 @@
       elseif(firstline(1:4).eq."#NOD") then  !nod point file
         rewind nunit
         call ReadNodeFile ( Quit )
-      else
+      elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
+        call PigMessageOK('Cannot sample from xye file ','Sample')
+        quit = .true.
+      elseif(firstline(1:4).eq."#XYZ") then  !xyz  file, new format
+        call ReadXYZData (Quit)
+      else  !then just parse the file for coordinates
         read(firstline,*,iostat=stat) xtest,ytest,ztest,segcode  !xyc file
         if(stat.eq.0) then
           gridcode = 1

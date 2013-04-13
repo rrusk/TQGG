@@ -179,7 +179,7 @@
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
       logical, save :: closeRHP, newfile, accept
-      logical a, IN_BOX
+      logical IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
       CHARACTER*3, save :: mmode
       INTEGER PolyId, numvert
@@ -196,7 +196,7 @@
 
 ! ------------------------------------------------------------------------- *
 
-      entry Initialiser(a)
+      entry Initialiser()
         Active_CW =INACTIVE_CW
         Active_MW =INACTIVE_MW
 
@@ -283,7 +283,7 @@
 ! BEGIN, set menu flags
 
 !  File menu
-        entry OpenGridFileCB(a) !open grid
+        entry OpenGridFileCB() !open grid
           call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
@@ -292,14 +292,14 @@
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
-                    call SaveFinal(Quit)
+                    call SaveFinal( change,Quit)
                   endif
                 endif
               else 
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             endif
@@ -340,7 +340,7 @@
           endif
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry AddGridFileCB(a) !add grid
+        entry AddGridFileCB() !add grid
           call MNU_MainMenuDisable
           IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
             IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
@@ -387,7 +387,7 @@
           endif
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry OpenNodeFileCB(a)
+        entry OpenNodeFileCB()
           call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
@@ -396,14 +396,14 @@
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
-                    call SaveFinal(Quit)
+                    call SaveFinal( change,Quit)
                   endif
                 endif
               else 
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             endif
@@ -436,7 +436,7 @@
           call MNU_NodeMenuEnable
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry AddNodeFileCB(a)
+        entry AddNodeFileCB()
           call MNU_MainMenuDisable
           IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
             IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
@@ -480,7 +480,7 @@
           call MNU_NodeMenuEnable
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry XSectionCB(a)
+        entry XSectionCB()
 !          call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
@@ -489,14 +489,14 @@
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
-                    call SaveFinal(Quit)
+                    call SaveFinal( change,Quit)
                   endif
                 endif
               else 
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             endif
@@ -507,7 +507,7 @@
           Active_MW = INACTIVE_MW
           return
 
-        entry SampleCB(a)
+        entry SampleCB()
           call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
@@ -516,14 +516,14 @@
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
-                    call SaveFinal(Quit)
+                    call SaveFinal( change,Quit)
                   endif
                 endif
               else 
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             endif
@@ -545,7 +545,7 @@
           endif
           call MNU_MainMenuEnable
           return
-        entry SaveInterimCB(a)
+        entry SaveInterimCB()
           if(itot.gt.0) then
             if(DispNodes) then
               call SaveNInterim(Quit)
@@ -556,7 +556,7 @@
             call PigPutMessage('There are no nodes to save')
           endif
           return
-        entry SaveFinalCB(a)
+        entry SaveFinalCB()
           call MNU_MainMenuDisable
           if(itot.gt.0) then
             IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
@@ -564,14 +564,14 @@
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             else 
               if(DispNodes) then
                 call SaveNFinal(Quit)
               else
-                call SaveFinal(Quit)
+                call SaveFinal( change,Quit)
               endif
             endif
           else
@@ -579,9 +579,9 @@
           endif
           call MNU_MainMenuEnable
           return
-        entry PrintCB(a)
+        entry PrintCB()
           return
-        entry QuitCB(a)
+        entry QuitCB()
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE file before quitting?').EQ.'Y') THEN
               IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
@@ -589,36 +589,36 @@
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
-                    call SaveFinal(Quit)
+                    call SaveFinal( change,Quit)
                   endif
                 endif
               else 
                 if(DispNodes) then
                   call SaveNFinal(Quit)
                 else
-                  call SaveFinal(Quit)
+                  call SaveFinal( change,Quit)
                 endif
               endif
             endif
           endif
           cstr='Do you really want to quit?'
           IF (PigCursYesNo(cstr) .EQ. 'Y') THEN
-            stop !call wpigexit()
+            call wpigexit()
           endif
           return
 !   View menu
         entry RedrawOnly()
           call DrwFig(CHANGE)
           return
-        entry RedrawCB(a)
+        entry RedrawCB()
           outlineonly = .FALSE.
           call DrwFig(CHANGE)
           return
-        entry OutlineCB(a)
+        entry OutlineCB()
           outlineonly = .TRUE.
           call DrwFig(CHANGE)
           return
-        entry FullsizeCB(a)
+        entry FullsizeCB()
           if(itot.gt.0) then
             xmin = minval(dxray(1:itot))
             xmax = maxval(dxray(1:itot))
@@ -631,56 +631,56 @@
             call DrwFig(CHANGE)
           endif
           return
-        entry ZoomCB(a)
+        entry ZoomCB()
           Active_CW = INACTIVE_CW
           Active_MW = Zoomin_MW
           call PigStatusMessage('Zoom ACTIVE: Drag area')
           FirstZoom=.true.
           LastZoom=.false.
           return
-        entry ZoomOutCB(a)
+        entry ZoomOutCB()
           call DisplayOut (Redrw)
           if(FlagPolar) then
             call PolarShift
           endif
           IF (Redrw) call DrwFig(CHANGE)
           return        
-        entry PanCB(a)
+        entry PanCB()
           Active_CW = INACTIVE_CW
           Active_MW = Pan_MW
           call PigStatusMessage('Pan ACTIVE: Drag to new location')
           FirstPan=.true.
           LastPan=.false.
           return
-        entry LastViewCB(a)
+        entry LastViewCB()
           call DisplayLast (Redrw)
           if(FlagPolar) then
             call PolarShift
           endif
           IF (Redrw) call DrwFig(CHANGE)
           return
-         entry ScaleCB(a)
+         entry ScaleCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (1)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
-        entry ShiftCB(a)
+        entry ShiftCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (2)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
-        entry RotateCB(a)
+        entry RotateCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (3)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
-       entry SPXCB(a)
+       entry SPXCB()
           FlagPolar = .not.FlagPolar
 ! *** check for existing transform
           if(FlagUTM) then
@@ -704,7 +704,7 @@
             IF (Redrw) call DrwFig(CHANGE)
           endif
           return
-        entry MercXCB(a)
+        entry MercXCB()
           FlagMerc = .not.FlagMerc
 ! *** check for existing transform
           if(FlagPolar) then
@@ -728,7 +728,7 @@
             IF (Redrw) call DrwFig(CHANGE)
           endif
           return
-        entry TMXCB(a)
+        entry TMXCB()
           FlagUTM = .not.FlagUTM
 ! *** check for existing transform
         if(FlagPolar) then
@@ -754,7 +754,7 @@
           return
 
 ! Info menu
-        entry NodeInfoCB(a)
+        entry NodeInfoCB()
 !          mmode = 'CHG'   !  mmode = 'INF'
           call Init_Info()
           Active_CW = NODEINFO_CW
@@ -762,7 +762,7 @@
           closeRHP = .false.
           call PigStatusMessage('Info ACTIVE: Pick a point')        
           return
-        entry EleInfoCB(a)
+        entry EleInfoCB()
           Active_CW = TRIINFO_CW
           Active_MW = TRIINFO_MW
           call InfoTriangle( change )
@@ -774,12 +774,12 @@
           Active_MW = INACTIVE_MW
           Active_CW = CRITERIA_CW
           return
-        entry EleCheckCB(a)
+        entry EleCheckCB()
           call FlagsTriangles_Init()
           Active_MW = INACTIVE_MW
           Active_CW = FLAGSTRIANGLES_CW
           return
-        entry EraseCheckCB(a)
+        entry EraseCheckCB()
 !          call FlagsEraseAll
 !          call THiOff
           TrHiOff=.true.
@@ -789,28 +789,28 @@
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
-        entry PMarkCB(a)
+        entry PMarkCB()
           Active_MW = PLACEMARKERS_MW
           Active_CW = INACTIVE_CW
 !          call PlaceMarkers_Init
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
          return
-        entry PMDelLastCB(a)
+        entry PMDelLastCB()
           Active_CW = INACTIVE_CW
           Active_MW = PLACEMARKERS_MW
           call RemoveLastMarker( Success )
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
           return
-        entry PMDelAllCB(a)
+        entry PMDelAllCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ErasePermMarkers
           call PigEraseMessage
           return
-        entry SetRangeCB(a)
+        entry SetRangeCB()
           call ConfigXhr(range)
           return
-        entry TooCloseCB(a)
+        entry TooCloseCB()
           IF (numpolys.eq.0) then
             call PigMessageOK('Please define a polygon first.','TooClose')
           elseIF (actvpoly.le.0) then
@@ -840,16 +840,16 @@
             call DrwFig(.false.)
           endif
           return
-        entry FileInfoCB(a)
+        entry FileInfoCB()
           call InfoFiles
           return
-        entry LimitInfoCB(a)
+        entry LimitInfoCB()
           nrec = itot
           call Limits( nrec, mrec, nbtot, maxnnb )
           return
 
 !    GridGen menu
-        entry GenOneFrontCB(a)          
+        entry GenOneFrontCB()          
           if(DispNodes.and.itot.ge.3.and.TotIntPts.eq.0) then
               AutoGenFlag = 1  !.true.
           elseif(.not.DispNodes.and.AutoGenFlag.eq.1) then
@@ -887,7 +887,7 @@
             call PigPutMessage('Cannot generate front')
           endif
           return
-        entry GenClusterCB(a)
+        entry GenClusterCB()
           if(DispNodes.and.itot.ge.3.or.AutoGenFlag.gt.0) then
             IF (numpolys.eq.0.or.actvpoly.le.0) then
               call WholePoly(Ok)
@@ -921,10 +921,10 @@
             call PigPutMessage('Cannot generate without boundary nodes')
           endif
           return
-        entry GenOptionsCB(a)
+        entry GenOptionsCB()
           call SetGenDisplayOptions
           return
-        entry GenAllFrontsCB(a)           
+        entry GenAllFrontsCB()           
           if(DispNodes.and.itot.ge.3.and.TotIntPts.eq.0) then
             AutoGenFlag = 4  !.true.
           else
@@ -965,10 +965,10 @@
             call PigPutMessage('Cannot generate front')
           endif
           return
-        entry FrontOptionsCB(a)
+        entry FrontOptionsCB()
           call PigMessageOK('Under construction','options')
           return
-        entry GenHexCB(a)
+        entry GenHexCB()
 !          nogen = .TRUE.
           CHANGE  = .TRUE.
 !          call LdTrLt(CHANGE)
@@ -986,7 +986,7 @@
           call DrwFig(CHANGE)
           change = .true.
           return
-        entry GenSquaresCB(a)
+        entry GenSquaresCB()
 !          nogen = .TRUE.
           CHANGE  = .TRUE.
 !          call LdTrLt(CHANGE)
@@ -1005,7 +1005,7 @@
           call DrwFig(CHANGE)
           change = .true.
           return
-        entry GenMixedCB(a)
+        entry GenMixedCB()
 !          nogen = .TRUE.
           CHANGE  = .TRUE.
 !          call LdTrLt(CHANGE)
@@ -1024,7 +1024,7 @@
           call DrwFig(CHANGE)
           change = .true.
           return
-        entry TriangulateCB(a)
+        entry TriangulateCB()
           if(DispNodes.and.itot.ge.3) then
             AutoGenFlag = 0  !.false.
             call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,nbtotr,NL,maxtri,TotTr,&
@@ -1056,12 +1056,12 @@
           return
 
 ! Node edit menus
-        entry DeleteNodeCB(a)
+        entry DeleteNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeDelBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
           return
-        entry MoveNodeCB(a)
+        entry MoveNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeMoveBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
@@ -1069,19 +1069,19 @@
           NextPoint=.false.
 !          call MovTypNode (2)
           return
-        entry AddBndNodeCB(a)
+        entry AddBndNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeAddBnd_MW
           call PigStatusMessage('Pick a NEW boundary point')
 !          call AddBdNode
           return
-        entry ReverseBndCB(a)
+        entry ReverseBndCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeRevBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary')
 !          call ReverseBoundary
           return
-        entry JoinBndCB(a)
+        entry JoinBndCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeJoinBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
@@ -1089,7 +1089,7 @@
           NextPoint=.false.
 !          call JoinBoundaries
           return
-        entry ReselectBndCB(a)
+        entry ReselectBndCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeResBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
@@ -1097,7 +1097,7 @@
           NextPoint=.false.
 !          call ReSelBndNodes
           return
-        entry AddBndLineCB(a)
+        entry AddBndLineCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeStrBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
@@ -1105,19 +1105,19 @@
           NextPoint=.false.
 !          call StraightBnd (nrec)
           return
-        entry DeleteIslCB(a)
+        entry DeleteIslCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeDelIsl_MW
           call PigStatusMessage('Select Any Node On The Island To Delete.')
 !          call DelIsland
           return
-        entry AddIntNodeCB(a)
+        entry AddIntNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeAddInt_MW
           call PigStatusMessage('Pick a NEW interior point')
 !          call AddInNode
           return
-        entry AddIntLineCB(a)
+        entry AddIntLineCB()
           Active_CW = INACTIVE_CW
           Active_MW = NodeStrInt_MW
           call PigStatusMessage('Pick first EXISTING interior point')
@@ -1127,7 +1127,7 @@
           return
 
 !  Grid edit menus
-        entry AddGridEdgeCB(a)
+        entry AddGridEdgeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridADDLINE_MW
           call PigStatusMessage('Pick a point')
@@ -1136,28 +1136,28 @@
 !            call AddLine_Init()
           CHANGE  = .TRUE.
           return
-        entry AddGridNodeCB(a)
+        entry AddGridNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridAddNode_MW
           call PigStatusMessage('Pick a NEW point')
 !          call AddPro(CHANGE, NREC)
           CHANGE  = .TRUE.
           return
-        entry DelGridEdgeCB(a)
+        entry DelGridEdgeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridDelLine_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call DelSeg(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
-        entry DelGridNodeCB(a)
+        entry DelGridNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridDelnode_MW
           call PigStatusMessage('Pick an EXISTING point')
 !          call DelPro(CHANGE)
           CHANGE  = .TRUE.
           return
-        entry MoveGridNodeCB(a)
+        entry MoveGridNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridMove_MW
           call PigStatusMessage('Move ACTIVE: Pick first EXISTING point')
@@ -1165,7 +1165,7 @@
           NextPoint=.false.
 !            call LNCHG2(CHANGE, CHANGEV, NREC)
           return
-        entry MergeGridNodeCB(a)
+        entry MergeGridNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridMerge_MW
           call PigStatusMessage('Merge ACTIVE: Pick first EXISTING point')
@@ -1173,35 +1173,35 @@
           NextPoint=.false.
           CHANGE  = .TRUE.
           return
-        entry CleaveGridNodeCB(a)
+        entry CleaveGridNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridCleave_MW
           call PigStatusMessage('Cleave ACTIVE: Pick an EXISTING point')
 !          call Cleave(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
-        entry InsertGridEdgeCB(a)
+        entry InsertGridEdgeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridInsert_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call Insert(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
-        entry ExchangeGridEdgeCB(a)
+        entry ExchangeGridEdgeCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridExchange_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call Xchange(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
-        entry DekiteGridCB(a)
+        entry DekiteGridCB()
           Active_CW = INACTIVE_CW
           Active_MW = GridDekite_MW
           call PigStatusMessage('Pick an EXISTING 4-point')
 !          call DeKite(CHANGE,NREC)
           CHANGE  = .TRUE.
           return
-        entry ReshapeGridCB(a)
+        entry ReshapeGridCB()
           call PigStatusMessage('Reshaping in display window only-please wait')
           if(change) then
             call RemoveNotExist(itot,code,nbtot,nl)
@@ -1222,7 +1222,7 @@
           Call DRWFIG(CHANGE)
           call PigEraseMessage
           return
-        entry ConvertGrid2NodesCB(a)
+        entry ConvertGrid2NodesCB()
           change=.true.
           retrowanted=.true.
           call RemoveNotExist(itot,code,nbtot,nl)
@@ -1232,7 +1232,7 @@
           return
 
 !  polygon generation
-        entry CreatePolyCB(a)
+        entry CreatePolyCB()
           Ok = .FALSE.
           Active_CW = INACTIVE_CW
           Active_MW = PolyDef_MW
@@ -1240,20 +1240,20 @@
           FirstPoint=.true.
           NextPoint=.false.
           return
-        entry WholePolyCB(a)
+        entry WholePolyCB()
           call WholePoly(Ok)
           if(.not.dispnodes) then
             call MNU_PolyMenuEnable
           endif               
           return
-        entry CyclePolyCB(a)
+        entry CyclePolyCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           else
             call CyclePoly
           endif
           return
-        entry DeletePolyCB(a)
+        entry DeletePolyCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           else
@@ -1265,7 +1265,7 @@
             endif
           endif
           return
-        entry WritePolyCB(a)
+        entry WritePolyCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           else
@@ -1280,7 +1280,7 @@
             ENDIF
           endif
           return
-        entry ReadPolyCB(a)
+        entry ReadPolyCB()
           call ReadEPoly (Ok)
           IF (.NOT. Ok) THEN
             cstr = 'ERROR reading file.'
@@ -1294,7 +1294,7 @@
           return
 
 !  node polygon operations
-        entry PolyDelBndCB(a)
+        entry PolyDelBndCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1316,7 +1316,7 @@
             itot = Totcoords
           endif
           return
-        entry PolyDelIntCB(a)
+        entry PolyDelIntCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1338,7 +1338,7 @@
             itot = Totcoords
           endif
           return
-        entry PolyDelAllCB(a)
+        entry PolyDelAllCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1362,7 +1362,7 @@
           return
 
 !  Grid polygon operations
-        entry PolyNodeCodeCB(a)
+        entry PolyNodeCodeCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1389,7 +1389,7 @@
             call DrwFig(change)
           endif
           return
-        entry PolyEleCodeCB(a)
+        entry PolyEleCodeCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1424,7 +1424,7 @@
             call DrwFig(change)
           endif
           return
-        entry PolyDekiteCB(a)
+        entry PolyDekiteCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1448,7 +1448,7 @@
             call DrwFig(CHANGE)
             endif
             return
-        entry PolyReshapeCB(a)
+        entry PolyReshapeCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1479,7 +1479,7 @@
             call DrwFig(CHANGE)
           endif
           return
-        entry PolyDelGridCB(a)
+        entry PolyDelGridCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1503,7 +1503,7 @@
             call DrwFig(CHANGE)
           endif
           return
-        entry PolySplitGridCB(a)
+        entry PolySplitGridCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1527,7 +1527,7 @@
             call DrwFig(CHANGE)
           endif
           return
-        entry PolyRefineGridCB(a)
+        entry PolyRefineGridCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1580,7 +1580,7 @@
             change = .true.
           endif
           return
-        entry PolyCutGridCB(a)
+        entry PolyCutGridCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1627,7 +1627,7 @@
             call DrwFig(CHANGE)
           endif
           return
-        entry PolySetDepthCB(a)
+        entry PolySetDepthCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1661,7 +1661,7 @@
             call DrwFig( CHANGE)
           endif
           return
-        entry PolyReDepthCB(a)
+        entry PolyReDepthCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
           elseIF (actvpoly.le.0) then
@@ -1686,33 +1686,33 @@
           return
 
 !  configure menus
-        entry PlotNodeCB(a)
+        entry PlotNodeCB()
           FlagN = .not.FlagN
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry ConfigNodeCB(a)
+        entry ConfigNodeCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigNodes_Init
           Active_CW = CONFIGNODES_CW
           return
-        entry PlotGridCB(a)
+        entry PlotGridCB()
           FlagG = .not.FlagG
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry ConfigGridCB(a)
+        entry ConfigGridCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigLines_Init
           Active_CW = CONFIG_CW
           return
-        entry PlotContourCB(a)
+        entry PlotContourCB()
           FlagC = .not.FlagC
           inton = FlagC
           bndon = FlagC
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry ConfigContourCB(a)
+        entry ConfigContourCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigCntrs_init
@@ -1720,11 +1720,11 @@
           bndon = FlagC
           Active_CW = CONFIGDEPCONT_CW
           return
-        entry PlotDataCB(a)
+        entry PlotDataCB()
           FlagD = .not.FlagD
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
-        entry ConfigDataCB(a)
+        entry ConfigDataCB()
           Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigBoundaries_Init
@@ -1732,12 +1732,12 @@
           return
 
 !  about
-        entry AboutCB(a)
+        entry AboutCB()
 !          call About(Program_name, '$Revision: 12.7 $')
           return
 
 !  help
-        entry HelpCB(a)
+        entry HelpCB()
           call GridGenHelp
           return
 

@@ -122,19 +122,8 @@
 !         real        y       [far, reference]
 !     End
 
-!     Interface to subroutine WPigGetRubberMouseAndButton[C](Window, Button, x, y)
-!         integer     Window  [far, reference]
-!         integer     Button  [far, reference]
-!         real        x       [far, reference]
-!         real        y       [far, reference]
-!     End
-
 !     Interface to subroutine WPigEraseMain[C] ()
 !     End
-
-!       Interface to subroutine WPigUWait[C] (delay_secs)
-!           real delay_secs
-!       End
 
 !       Interface to subroutine WPigGetString[C] (PromptString,
 !     +           CharLen, RetString)
@@ -241,11 +230,11 @@
         integer Clen
         character*(120) Message
         character*(80) String
-        logical a
+!        logical a
  
         call PigInitFont
  
-        call PigOpenGraphicPkg(0.0,1.0,0.0,1.0)
+        call WPigOpenGraphicPkg(0.0,1.0,0.0,1.0)
 
 !*******************************
 !
@@ -254,7 +243,7 @@
 !*******************************
 !       RetVal must be set to MENU_EVENT, MOUSE_EVENT, KEYBOARD_EVENT or QUIT_EVENT
  
-        call Initialiser(a)
+        call Initialiser()
         retval = MOUSE_EVENT
  
         String = ' '
@@ -346,23 +335,29 @@
 !            RetVal = MOUSE_EVENT
 !          endif
         end do
-!*******************************
-!
-! DONE, TIDY UP
-!
-!*******************************
-!       !QUIT_EVENT, return to caller for tidy up and exit
-! close graphics prior to return        
-        call PigCloseGraphicPkg
 
+      end
+!!  ======================================================================== *
 
+      subroutine WPigExit()
+      
+      USE DFLIB
+      
+      integer status
+      
+! Clear the workstation
+      call clearscreen( $GCLEARSCREEN )
+      status = SETEXITQQ(QWIN$EXITNOPERSIST)
+
+      stop
+      
       end
 
 !!  ======================================================================== *
 !!                         open/close routines                               *
 !* ========================================================================= *
 
-	subroutine IWPigOpenClose
+      subroutine IWPigOpenClose
 
         USE DFLIB
 
@@ -534,7 +529,7 @@
 ! Set the active window      
       call PigSetWindowNum( MAINWIN )
 ! Position mouse - default is in centre of MAINWIN
-      call PigSetMouse(MAINWIN, ((x1+x2)/2.), ((y1+y2)/2.))
+    !!  call PigSetMouse(MAINWIN, ((x1+x2)/2.), ((y1+y2)/2.))
 
 ! Register the mouse events
       moustatus = REGISTERMOUSEEVENT(0,MOUSE$LBUTTONDOWN,MouseEventCB)
@@ -547,23 +542,6 @@
       result = SETWSIZEQQ(0, winfo)
 
       RETURN
-
-! ------------------------------------------------------------------------- *
-	entry WPigCloseGraphicPkg
-!       PUBLIC
-
-!       entry PigCloseGraphicPkg
-!  Call Sequence:
-!        call PigCloseGraphicPkg
-!  Purpose: To shut down GKS and return to DOS
-!  Givens : None
-!  Returns: None
-!  Effects: Terminates workstation, and returns to DOS
-
-
-! Clear the workstation
-      call clearscreen( $GCLEARSCREEN )
-      status = SETEXITQQ(QWIN$EXITNOPERSIST)
 
       END
 
@@ -805,10 +783,6 @@
 !           call PigGetWorldCoordinates(x1, x2, y1, y2)	  
       End
  
-!      subroutine WPigUWait (delay_secs)
-!           real delay_secs
-!      End
-
 !*******************************
 !
 ! Drawing routines
@@ -1198,106 +1172,6 @@
       return
 
       end
-
-! ------------------------------------------------------------------------- *
-
-      subroutine WPigGetMouseAndButton (Window, Button, x, y)
-
-        USE DFLIB
-
-        include 'ipig.def'
-        integer     Window, button
-        integer     MouseEvent, MouseItem
-        real        x, y
-        real        MouseX, MouseY
-
-! Loop until valid input
-        MouseEvent = Null_Event
-        do while (MouseEvent.eq.Null_Event)
-          call sleepqq(50)
-          call GetMouseOption(Window,MouseItem,MouseX,MouseY)
-          if(MouseItem.ne.Null_Event) then
-            MouseEvent = MouseItem
-          endif
-        enddo
-
-        x = mousex
-        y = mousey
-        Button = 0
-
-      End
-
-! ------------------------------------------------------------------------- *
-
-      subroutine WPigGetRubberMouseAndButton (Win, Button, xdif, ydif)
-
-        USE DFLIB
-        include 'ipig.def'
-        integer     Button, dummy
-
-        type (xycoord) t2
-        integer(2) ipx1,ipy1,ipx2,ipy2,stat2
-        integer result,mevent,keystate,ipx,ipy
-        integer win
-!        integer PrevWin, PrevColour
-        REAL Xend, Yend, Xinit, Yinit, Xdif, Ydif
-
-        dummy = button
-
-        call PigSetWindowNum( MAINWIN )
-!        call PigSetLineColour(RUBBER_COLOR)
-
-!  establish viewport
-        Win = MAINWIN
-        call PigGetWN( Win, x1, x2, y1, y2 )
-        dxWN = x2 - x1
-        dyWN = y2 - y1
-        call PigGetVP( Win, x1, x2, y1, y2 )
-        dxVP = x2 - x1
-        dyVP = y2 - y1
-
-        call PigPutMessage('Drag point to new location')
-        call PigSetLineColour(RUBBER_COLOR)
-
-	mevent=MOUSE$LBUTTONDOWN
-	Xinit = -9999.
-	Yinit = -9999.
-	do while(Xinit.lt.x1.or.Xinit.gt.x2.or.Yinit.lt.y2.or.Yinit.gt.y1)
-	  result=WaitOnMouseEvent(mevent,keystate,ipx,ipy)
-	  Xinit = ipx
-	  Yinit = ipy
-	ENDDO
-
-	ipx1 = Xinit-x1
-	ipy1 = Yinit-y2
-	Xend = Xinit
-	Yend = Yinit
-	mevent=MOUSE$LBUTTONUP.OR.MOUSE$MOVE
-	do while (keystate.eq.MOUSE$KS_LBUTTON)
-	  call sleepqq(50)
-          result=WaitOnMouseEvent(mevent,keystate,ipx,ipy)
-	  stat2 = setwritemode( $GXOR )
-	  call moveto(ipx1,ipy1,t2)
-	  ipx2 = Xend-x1
-	  ipy2 = Yend-y2
-	  stat2 = lineto(ipx2,ipy2)
-	  Xend = ipx
-	  Yend = ipy
-	  ipx2 = Xend-x1
-	  ipy2 = Yend-y2
-	  call moveto(ipx1,ipy1,t2)
-	  stat2 = lineto(ipx2,ipy2)
-	enddo
-      Xdif = Xinit-Xend
-	Ydif = Yinit-Yend
-! convert to world coordinates
-      Xdif = Xdif*dxWN/dxVP
-      Ydif = Ydif*dyWN/dyVP
-
-	stat2 = setwritemode( $GPSET )
-        call PigSetMouse(win, XLoc, YLoc)
-
-        End
 
 ! ------------------------------------------------------------------------- *
 
@@ -1817,7 +1691,7 @@
 
 !***********************************************************************
 
-        subroutine WPigGetZoomArea (XLow, XHigh, YLow, YHigh)
+        subroutine WPigGetZoomArea0 (XLow, XHigh, YLow, YHigh)
 
           USE DFLIB
 
@@ -1882,7 +1756,7 @@
           YHigh = YLow + abs(Ydif)
 
           stat2 = setwritemode( $GPSET )
-          call PigSetMouse(win, XLoc, YLoc)
+    !!      call PigSetMouse(win, XLoc, YLoc)
           return
 
         End

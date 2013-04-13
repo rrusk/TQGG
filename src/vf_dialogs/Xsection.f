@@ -504,7 +504,7 @@ cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
       rho = 1.
       xint=1./(nint+1)
       stry=.01
-      call LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz,rho)
+      call LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz)
       tct(1)=stry
       xct(1)=xx
       yct(1)=yy
@@ -562,7 +562,7 @@ cwrite(81,*)i,slt(i),xc(i),yc(i),ww(i)
           ip=ip+1
           goto 22
         endif
-        call LOCGEOM(ss,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz,rho)
+        call LOCGEOM(ss,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz)
         xf=(ss-slt(im))/(slt(ip)-slt(im))
         xm=1.-xf
         tct(i)=ss
@@ -700,9 +700,9 @@ c
 
 !----------------------------------------------------------------------
 
-      SUBROUTINE LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz,rho)
+      SUBROUTINE LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz)
 
-      real stry,sigx,sigy,xx,yy,thz,rho,dstry,dxs,dys,str,x2,y2,th2
+      real stry,sigx,sigy,xx,yy,thz,dstry,dxs,dys,str,x2,y2,th2
       real slt(1001),xc(1001),yc(1001),yzx(1001),yzy(1001)
 
       dstry=.01

@@ -38,18 +38,8 @@ C use statement functions (in panelmod.inc) to define four transformations,
 C for {x,y} to/from {col,row}. This should make it simpler to change the
 C coordinate system used in the CONTROLWIN, which will probably be necessary
 C when porting to other GUI platforms.
-C 
-C
-C Modifications: OCT91 - JDM - following changes made:                  *
-C                      - New routine SetPanelText() added, used         *
-C                        internally in this module only.                *
-C                      - New routine BlankArea() added.                 *
-C                      - Changes to existing routines bracketed by      *
-C                        "(OCT91" and "OCT91)".                         *
-C                      - Code from previous version, where disabled,    *
-C                        is commented out with "cc".                    *
 C                                                                       *
-C       Contains routines for using right hand panel, PigSetWindowNum( CONTROLWIN ),      *
+C       Contains routines for using right hand panel                    *
 C       as a menu area in a standard format. Panel is subdivided into   *
 C       24 row and 24 columns, creating 576 squares. Each square is     *
 C       intended to be one character high and one character wide. With  *
@@ -100,9 +90,8 @@ C       - Following PigSetWindowNum definition has been made in INIT.FOR        
 C         The coordinate system for the CONTROLWIN IS
 C          0.0=<X<=40.0, 0.0<=Y<=100.0
 C       - Character attributes contained in PANELMOD.INC                *
-C Written: Mar/91 (JDM).                                                *
-C Modified: 1993, 1994 AGD - Changed to use PIGS, Moved into PIGS.                                                                      *
 C*----------------------------------------------------------------------*
+
       SUBROUTINE InitRHPanel()
 
 C Purpose: To initialize the right hand panel.
@@ -110,7 +99,6 @@ C Given  : None.
 C Returns: None.
 C Effects: PigSetWindowNum( CONTROLWIN ) is defined and made active, text attributes are set,
 C          right hand panel area is cleared, and an outline box is drawn.
-C Written: Mar/91 (JDM).
 
 !	INCLUDE 'ipig.def'
 
@@ -124,6 +112,7 @@ C       - Initialize text
 	END
 
 C*----------------------------------------------------------------------*
+
       SUBROUTINE ClearRHPanel()
 
 C Purpose: To clear the right hand panel.
@@ -134,7 +123,6 @@ C          MessStr line is cleared, PigSetWindowNum( CONTROLWIN ) is left active
 C          defined is set = 0. NOTE: WriteID, when linked in, should be
 C          appropriate title screen routine for program using this module,
 C          not necessarily WriteID from MAINGR.FOR.
-C Written: Mar/91 (JDM).
 
 	INCLUDE 'ipig.def'
 
@@ -151,153 +139,9 @@ C       - reset # of hit areas
 	END
 
 C*----------------------------------------------------------------------*
-      SUBROUTINE DisablePanelHit( hitnum )
-C Purpose: To suppress a panel hit. If text, then it is redrawn in nohitcolor
-C Assumes: ISetNumHits() has been called to define the number of active hit
-C          areas, PanelHit() and/or PanelHitBox() have been called
-C          as many times as ISetNumHits() was set to. This is because a
-C          contiguous search is made from 1 to numhits in looking for hits.
-C          All array values in COMMON /PHITS/ in PANELMOD.INC from 1 to
-C          numhits should be valid.
-C Given  : Hitnum > 0.
-C Returns: none.
-C Effects: A search is made from 1 to numhits to find a hit.
-C          The stored text is redrawn in the nohitcolor, and the hit
-C          is suppressed.
-C See Also: ReenablePanelHit(hitnum) to reverse the effects of this call.
-C Written: Mar/94 (AGD).
-C---------------------------------------------------------------------------*
-      integer hitnum
-
-      include 'ipig.def'
-      integer i, prev_color
-      include 'panelmod.inc'
-
-      i = 1
-      do while (i.le.numhits)
-	  if(hitnums(i).eq.hitnum) then
-	      if(hitenabled(i)) then
-		  if(hitistext(i)) then
-		      call PigGetTextColour(prev_color)
-		      call PigSetTextColour(nohitcolor)
-		      call PanelText(hitcols(i), hitrows(i),
-     +                    hittext(i), hitlengs(i))
-		      call PigSetTextColour(prev_color)
-		  endif
-		  hitenabled(i) = .false.
-	      end if
-	      return
-	  end if
-	  i = i+1
-      end do
-      end
-
-C*----------------------------------------------------------------------*
-      SUBROUTINE ReenablePanelHit( hitnum )
-C Purpose: To enable a panel hit. If text, then it is redrawn in hitcolor
-C Assumes: ISetNumHits() has been called to define the number of active hit
-C          areas, PanelHit() and/or PanelHitBox() have been called
-C          as many times as ISetNumHits() was set to. This is because a
-C          contiguous search is made from 1 to numhits in looking for hits.
-C          All array values in COMMON /PHITS/ in PANELMOD.INC from 1 to
-C          numhits should be valid.
-C Given  : Hitnum > 0.
-C Returns: none.
-C Effects: A search is made from 1 to numhits to find a hit.
-C          The stored text is redrawn in the nohitcolor, and the hit
-C          is suppressed.
-C See Also: ReenablePanelHit(hitnum) to reverse the effects of this call.
-C Written: Mar/94 (AGD).
-C---------------------------------------------------------------------------*
-      integer hitnum
-
-      include 'ipig.def'
-      integer i
-      integer prev_color
-      include 'panelmod.inc'
-
-      i = 1
-      do while (i.le.numhits)
-	  if(hitnums(i).eq.hitnum) then
-	      if(.not.hitenabled(i)) then
-		  if(hitistext(i)) then
-		      call PigGetTextColour(prev_color)
-		      call PigSetTextColour(hitcolor)
-		      call PanelText(hitcols(i), hitrows(i),
-     +                    hittext(i), hitlengs(i))
-		      call PigSetTextColour(prev_color)
-		  endif
-		  hitenabled(i) = .true.
-	      end if
-	      return
-	  end if
-	  i = i+1
-      end do
-      end
-
-C*----------------------------------------------------------------------*
-      SUBROUTINE GetPanelHit( hitnum )
-C Purpose: To obtain an input location, and then
-C          determine if a valid hit has been made in the right hand panel,
-C          and to return the hit number of any valid hit.
-C Assumes: ISetNumHits() has been called to define the number of active hit
-C          ares, PanelHit() and/or PanelHitBox() have been called
-C          as many times as ISetNumHits() was set to. This is because a
-C          contiguous search is made from 1 to numhits in looking for hits.
-C          All array values in COMMON /PHITS/ in PANELMOD.INC from 1 to
-C          numhits should be valid.
-C Given  : None.
-C Returns: hitnum = 0 if a valid hit was NOT made,
-C                 = number of hit made if hit was valid, this is the same
-C                   number that was supplied as 'hith' in PanelHit() or
-C                   PanelHitBox().
-C Effects: A search is made from 1 to numhits to find a hit.
-C Written: Mar/91 (JDM).
-C Modified: OCT91 - JDM - Hilite area around selected hit changed to
-C                         be based on size of text, not # of squares in
-C                         hit. Search "OCT91" for changes.
-C           MAR93 - disable hilighting of hit area using 'GOTO 123'
-C---------------------------------------------------------------------------*
-c - next line changed from pig.def to ipig.def, preparing to move panel        
-c   routines inside the pig package.
-
-	 INCLUDE 'ipig.def'
-
-C       - PASSED PARAMETERS
-	integer hitnum
-
-C       - LOCAL PARAMETERS
-	integer tnr
-	REAL xinp, yinp
-*       LOGICAL rfound
-*       logical cfound
-	logical hfound
-C       - (OCT91
-*       integer lnth
-	integer  prev_tn, PrevLineColour, PrevTextColour
-
-	INCLUDE 'panelmod.inc'
-C------------------BEGIN----------------------
-
-	call PigGetWindowNum( prev_tn )
-	call PigSetWindowNum( CONTROLWIN )
-
-	call PigGetLineColour(PrevLineColour)
-	call PigGetTextColour(PrevTextColour)
-	hfound = .false.
-	hitnum = 0
-	do while (hitnum.le.0)
-	  call PigGetMouse (tnr, xinp, yinp)
-C         - determine option # (hit) chosen
-	  IF (tnr .eq. CONTROLWIN)
-     +  call PanelGetHitnum(xinp, yinp, Hitnum)
-	END DO
-	call PigSetWindowNum( prev_tn )
-	call PigSetLineColour(PrevLineColour)
-	call PigSetTextColour(PrevTextColour)
-	END
 
       SUBROUTINE PanelGetHitnum(MouseX, MouseY, Hitnum)
+
 C Purpose: To test an input location, and
 C          determine if a valid hit has been made in the right hand panel,
 C          and to return the hit number of any valid hit.
@@ -314,16 +158,7 @@ C                 = number of hit made if hit was valid, this is the same
 C                   number that was supplied as 'hith' in PanelHit() or
 C                   PanelHitBox().
 C Effects: A search is made from 1 to numhits to find a hit.
-C Written: Mar/91 (JDM).
-C Modified: OCT91 - JDM - Hilite area around selected hit changed to
-C                         be based on size of text, not # of squares in
-C                         hit. Search "OCT91" for changes.
-C           MAR93 - disable hilighting of hit area using 'GOTO 123'
-C Modified: Mar 94 - agd - created from GetPanelHit, to take a supplied
-C                         mouse position already in the CONTROLWIN.
 C---------------------------------------------------------------------------*
-c - next line changed from pig.def to ipig.def, preparing to move panel        
-c   routines inside the pig package.
 
 	 INCLUDE 'ipig.def'
 
@@ -400,7 +235,9 @@ C                 - column found
 	endif
       end
 C*----------------------------------------------------------------------*
+
       SUBROUTINE PanelTextPrevJust( colt, rowt, string, length_p )
+
 C Purpose: To display a text string in the right hand panel using row and
 C          column numbers for location.
 C Assumes: Character attributes (suggested):
@@ -420,16 +257,6 @@ C Effects: Text is displayed at given row, column location. Arguement 'length'
 C          may be modified if it is greater than '25 - colt', ie: the text  
 C          will not fit in the space between the column given and the edge of
 C          the panel.
-C Written: Mar/91 (JDM).
-C Modified: OCT91 (JDM) - call to BlankArea() added to clear the area
-C                          the string will be written to before writing.
-C Modified: May93 (AGD) - Changed handling of length parameter, to ensure that
-C                         it is not modified. (It is often called with a constant)
-* Modified: Jun93 (AGD) - Changed to calculate length internally, ignoring
-*                         the length_p argument.
-* Modified: Jun93 (AGD) - Undid change to calculate length internally.
-*                         Blanking previous text requires it. Changed to use
-*                         len(string) instead.
 
       include 'ipig.def'
 C       - PASSED PARAMETERS
@@ -469,15 +296,6 @@ C------------------BEGIN----------------------
 !	  call PigFatal('Invalid justification in PanelTextPrevJust')
       endif
 
-C     - make sure string is not too long
-*     IF ( length .gt. (25 - colt) ) THEN
-*         length = 25 - colt
-*     ENDIF
-C     - set string location
-c      xcoord = coltox(colt)
-c      ycoord = rowtoy(rowt)
-c      call BlankArea(colt, rowt, length)
-
 C     - write string
       call PigDrawText( xcoord, ycoord, string(:length) )
 
@@ -491,7 +309,9 @@ C     - refresh outline box of RH Panel in case text interferes with it
       END
 
 C*----------------------------------------------------------------------*
-      SUBROUTINE PanelTextLeft( colt, rowt, string, length_p )
+
+      SUBROUTINE PanelText( colt, rowt, string, length_p )
+
 C Purpose: To display a text string in the right hand panel using row and
 C          column numbers for location.
 C Assumes: Character attributes (suggested):
@@ -511,17 +331,6 @@ C Effects: Text is displayed at given row, column location. Arguement 'length'
 C          may be modified if it is greater than '25 - colt', ie: the text  
 C          will not fit in the space between the column given and the edge of
 C          the panel.
-C Written: Mar/91 (JDM).
-C Modified: OCT91 (JDM) - call to BlankArea() added to clear the area
-C                          the string will be written to before writing.
-C Modified: May93 (AGD) - Changed handling of length parameter, to ensure that
-C                         it is not modified. (It is often called with a constant)
-* Modified: Jun93 (AGD) - Changed to calculate length internally, ignoring
-*                         the length_p argument.
-* Modified: Jun93 (AGD) - Undid change to calculate length internally.
-*                         Blanking previous text requires it. Changed to use
-*                         len(string) instead.
-
 
       include 'ipig.def'
 
@@ -533,7 +342,7 @@ C       - LOCAL VARIABLES
 	integer  prev_just
 
 C------------------BEGIN----------------------
-	entry PanelText( colt, rowt, string, length_p )
+!	entry PanelText( colt, rowt, string, length_p )
 	call PigGetJustification(prev_just)
 	call PigSetJustification(LEFT_JUSTIFY)
 	call PanelTextPrevJust( colt, rowt, string, length_p )
@@ -541,24 +350,7 @@ C------------------BEGIN----------------------
 	END
 
 C*----------------------------------------------------------------------*
-      SUBROUTINE PanelTextCentre( colt, rowt, string, length_p )
 
-      include 'ipig.def'
-
-C       - PASSED PARAMETERS
-	integer rowt, colt, length_p
-	CHARACTER*(*) string
-
-C       - LOCAL VARIABLES
-	integer  prev_just
-
-C------------------BEGIN----------------------
-	call PigGetJustification(prev_just)
-	call PigSetJustification(CENTRE_JUSTIFY)
-	call PanelTextPrevJust( colt, rowt, string, length_p )
-	call PigSetJustification(prev_just)
-	END
-C*----------------------------------------------------------------------*
       SUBROUTINE PanelTextRight( colt, rowt, string, length_p )
 
       include 'ipig.def'
@@ -577,6 +369,7 @@ C------------------BEGIN----------------------
 	call PigSetJustification(prev_just)
 	END
 C*----------------------------------------------------------------------*
+
       SUBROUTINE SetPanelText( )
 
 C Purpose: To initialize text character attributes for any text displayed
@@ -585,7 +378,6 @@ C Assumes: Character attributes supplied in PANELMOD.INC.
 C   Given: None.
 C Returns: None.
 C Effects:  PigSetWindowNum( CONTROLWIN ) is selected and text attributes are set.
-C Written: OCT91 (JDM).
 
       include 'ipig.def'
 	integer  prev_tn
@@ -603,6 +395,7 @@ C------------------BEGIN----------------------
         END
 
 C*----------------------------------------------------------------------*
+
       SUBROUTINE BlankArea( colb, rowb, length )
 
 C Purpose: To clear an area in RH Panel where a string would be written.
@@ -619,7 +412,6 @@ C          (area to blank). If PigGetTextExtent call fails area is
 C          not blanked. A dummy string filled, with 'B's, is used for 
 C          PigGetTextExtent call. Clears only area where string would write,
 C          existing text outside that area will not be cleared.
-C Written: OCT91 (JDM).
 
       include 'ipig.def'
 
@@ -636,17 +428,9 @@ c	, cpx, cpy, xext(4), yext(4)
 c	, msg
 	integer prev_win
 
-C	The following line was commented out by STEVE 95/09/14
-C	logical PigPrinting
-
 	INCLUDE 'panelmod.inc'
 
-C       DATA string/'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'/
-C        DATA string/'ABABABABABABABABABABABABABABABBBBBBBBBBBBBBBBB'/
-
 C------------------BEGIN---------------------- 
-C	The following line was commented out by STEVE 95/09/14
-C	if(PigPrinting()) return
 
 	do i=1,min(length,len(string))
 * too wide for win prop fonts            string(i:i) = 'A'
@@ -667,7 +451,9 @@ C       - determine WC coords of start of string
         END
 
 C*----------------------------------------------------------------------*
+
       SUBROUTINE PanelHit( colh, rowh, hitnum, string, length )
+
 C Purpose: To create and display text for a hit area in the right hand panel
 C          that will be detectable by GetPanelHit().
 C Given  : colh = column location for hit text, from 1 to 24,
@@ -690,10 +476,6 @@ C          between the column given and the edge of the panel. Text color is
 C          set to Hitcolor.
 C          If the hitnum has already been used, then the slot is reassigned.
 C          The screen area previously used is unchanged - i.e. not blanked.
-C Written: Mar/91 (JDM).
-C Modified: Mar/94 agd
-c - next line changed from pig.def to ipig.def - the panelmod routines should        
-c   move inside pig soon...
 
 	INCLUDE 'ipig.def'
 
@@ -750,6 +532,7 @@ C       - store the hit information
 	END
 
 C*----------------------------------------------------------------------*
+
       SUBROUTINE PanelHitBox( colh, rowh, hitnum, length, hcolor)
 
 C Purpose: To create and display a colored box for a hit area in the right
@@ -771,13 +554,6 @@ C          is greater than 25 - colt, ie: the box will not fit in the space
 C          between the column given and the edge of the panel.
 C          If the hitnum has already been used, then the slot is reassigned.
 C          The screen area previously used is unchanged - i.e. not blanked.
-C Written: Mar/91 (JDM).
-C Modified May93 (AGD) Modified to pass in integer variables and copy to
-C                      integer*2 variables locally.
-C
-
-c - next line changed from pig.def to ipig.def - the panelmod routines should        
-c   move inside pig soon...
 
 	INCLUDE 'ipig.def'
 
@@ -835,6 +611,7 @@ C       - store the hit information
 	END
 
 C*----------------------------------------------------------------------*
+
       SUBROUTINE PanelHitSym( colh, rowh, hitnum, SymbolNum, hcolor)
 
 C Purpose: To create and display a colored symbol for a hit area in the right
@@ -853,7 +630,6 @@ C          PANELMOD.INC is updated to include the new hit area, row, column,
 C          and length are stored. 
 C          If the hitnum has already been used, then the slot is reassigned.
 C          The screen area previously used is unchanged - i.e. not blanked.
-C
 
 	INCLUDE 'ipig.def'
 
@@ -887,7 +663,6 @@ C       - define the box
 
 C*----------------------------------------------------------------------*
 
-C*----------------------------------------------------------------------*
       SUBROUTINE ISetNumHits( num )
 
 C Purpose: To define the number of hit areas active in the right hand panel.
@@ -897,8 +672,6 @@ C Effects: if num < MaxHits then numhits (in PANELMOD.INC) = num,
 C          else numhits = MaxHits
 C          GetPanelHit() will look for hits from 1 to num when determining if
 C          a valid hit has been made.
-C Written: Mar/91 (JDM).
-
 
 C       - PASSED PARAMETERS
 	integer num
@@ -906,12 +679,6 @@ C       - PASSED PARAMETERS
 *       SAVE
 C------------------BEGIN----------------------
 
-C       - check that MaxHits not exceeded
-c        if ( num .gt. MaxHits ) then
-cc next line is illegal modification, since this routine is often called
-cc with constant arguments.
-c          num = MaxHits
-c        endif
 	numhits = num
 	if(numhits .gt. MaxHits) numhits = MaxHits
 	return
@@ -920,24 +687,8 @@ c        endif
 	num = numhits
 
 	END
+
 *--------------------------------------------------------
-
-	SUBROUTINE SetNumHits( num )
-C Obsolete, do not call. Replaced by ISetNumHits(num)
-	integer num
-
-!	call PigFatal(
-!     + 'Subroutine SetNumHits(num) called. No longer user callable.')
-	return
-
-	entry GetNumHits(num)
-
-C       Obsolete, just keep compiler happy.
-	num = 1
-
-!	call PigFatal(
-!     + 'Subroutine GetNumHits(num) called. No longer user callable.')
-      end
 *
 * define statement functions for calculating row, col to/from x,y
 *
@@ -974,10 +725,6 @@ C*--------------------------------------------------------------------------*
 
       SUBROUTINE PigFillArea( xmin, xmax, ymin, ymax, colour )
 
-*+
-*+      SUBROUTINE PigFillArea( xmin, xmax, ymin, ymax, colour )
-*+ Call Sequence:
-*+      call PigFillArea( xmin, xmax, ymin, ymax, colour )
 *+ Purpose:  To fill a rectangle
 *+ Givens :  
 *+      real Xmin, Xmax: the range in X coordinates
@@ -985,7 +732,6 @@ C*--------------------------------------------------------------------------*
 *+      integer Colour: the fill colour.
 *+ Returns : None
 *+ Effects:  The given rectangle is filled in with the given colour.
-*+
 
       REAL xmin, xmax, ymin, ymax
       integer colour
@@ -1014,6 +760,7 @@ C*--------------------------------------------------------------------------*
 *+ Givens :  integer     NewJustification: the new text justification
 *+ Returns:  None
 *+ Effects:  Changes the current text justification to NewJustification
+
 	include 'ipig.def'
 
       integer, save :: Justification = 1
@@ -1038,14 +785,11 @@ C*--------------------------------------------------------------------------*
       return
 
       end
+
 * ========================================================================= *
+
         subroutine IPigSetTextAlignment(Horizontal, Vertical)
-*
-*       PUBLIC
-*+
-*+      subroutine IPigSetTextAlignment(Horizontal, Vertical)
-*+ Call Sequence:
-*+       call IPigSetTextAlignment(Horizontal, Vertical)
+
 *+ Purpose: To set the text aligment both horizontally and vertically.
 *+ Givens : integer      Horizontal   : horizontal alignment
 *+          integer      Vertical     : vertical alignment
@@ -1095,40 +839,6 @@ C*--------------------------------------------------------------------------*
 !       call WPigSetTextAlignment(Horizontalp, Verticalp)
 
         return
-
-* --------------------------------------------------------------------------
-        entry IPigGetTextAlignment(Horizontal, Vertical)
-*
-*       PUBLIC
-*+
-*+      entry IPigGetTextAlignment(Horizontal, Vertical)
-*+ Call Sequence:
-*+       call IPigGetTextAlignment(Horizontal, Vertical)
-*+ Purpose: To get the text aligment both horizontally and vertically.
-*+ Givens : none
-*+ Returns: integer      Horizontal   : horizontal alignment
-*+          integer      Vertical     : vertical alignment
-*+ Effects: Returns current settings of text alignment.
-*+
-        if (Horizontalp .eq. LEFT_ALIGN) then
-           Horizontal = LEFT_JUSTIFY
-        elseif (Horizontalp .eq. CENTRE_ALIGN) then
-           Horizontal = CENTRE_JUSTIFY
-        elseif (Horizontalp .eq. RIGHT_ALIGN) then
-           Horizontal = RIGHT_JUSTIFY
-        else
-!            call PigFatal('Error in Horizontal justification')
-        endif
-        if (Verticalp .eq. BASE_ALIGN) then
-           Vertical = BASE_JUSTIFY
-        elseif (Verticalp .eq. BOTTOM_ALIGN) then
-           Vertical = BOTTOM_JUSTIFY
-        elseif (Verticalp .eq. TOP_ALIGN) then
-           Vertical = TOP_JUSTIFY
-        else
-!            call PigFatal('Error in vertical justification')
-        endif
-
         end
 
 CC*----------------------------------------------------------------------*

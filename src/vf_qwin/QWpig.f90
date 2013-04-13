@@ -36,338 +36,6 @@
 !+          a graphics system.
 !+
 !******************************************************************************
-	subroutine IPigOpenClose
-
-!       PRIVATE
-!-
-!-      subroutine IPigOpenClose
-!- Call Sequence:
-!-       Not callable
-!- Purpose: To open the graphis package, set defaults and windows
-!- Givens : None
-!- Returns: None
-!- Effects: Not directly callable
-
-	include 'ipig.def'
-	logical         pig_open
-	real            x1, x2, y1, y2
-
-
-	data		pig_open        /.false./
-!        save
-
-!	call PigFatal('Cannot call IPigOpenClose directly.')
-	return
-
-! ------------------------------------------------------------------------- *
-	entry PigOpenGraphicPkg(x1, x2, y1, y2)
-
-!       PUBLIC
-!+
-!+      entry PigOpenGraphicPkg(x1, x2, y1, y2)
-!+ Call Sequence:
-!+       call PigOpenGraphicPkg(x1, x2, y1, y2)
-!+ Purpose:  To initialize a graphics package, open and connect all graphics
-!+           devices that are required for the Trigrid program to utilize
-!+           a graphic system.
-!+ Givens :  real        x1, x2, y1, y2 : world coordinates of (any) two
-!+                                        diagonally oposite corners
-!+ Returns:  None
-!+ Effects:  Four default Window and Viewport transformations will be defined:
-!+                    1 = MENUWIN, 2 = STATUSWIN, 3 = CONTROLWIN, and 4 = MAINWIN
-!+           All devices initialized and error logging enabled.  If an error
-!+           file already exists, it is deleted before the new error file
-!+           is created.
-
-      if(pig_open) then
-!	    call PigFatal('Call to PigOpenGraphicPkg detected when already open.')
-      endif
-
-      call WPigOpenGraphicPkg(x1, x2, y1, y2)
-
-      call PigSetWindowNum(MAINWIN)
-!      call WPigSetForegrColour(Foregr)
-!      call PigSetBackgroundColour(BLACK)
-
-
-!***** sets up colour and text defaults
- !     call IPigSetDefaults
-
-
-! set fill style to solid
-!	 call IPigSetFillInteriorStyle(1)
-
-! Set line type and colour then draw a box around each window/viewport.
-	 call PigSetLineColour(FOREGR)
-	 call PigSetTextColour(FOREGR)
-	 call PigSetFillColour(FOREGR)
-
-	 call PigSetWorldCoordinates(x1,x2,y1,y2)
-      call PigSetWindowNum( MAINWIN )
-
-	 call PigErase(MAINWIN)
-	 call PigErase(STATUSWIN)
-!	 call PigErase(MENUWIN)
-	 call PigErase(CONTROLWIN)
-
-
-! Make the MAINWIN window current and set the priority of the 0 viewport lower
-! than all other viewports.
-! Window priority order:     MAINWIN = CONTROLWIN = STATUSWIN = MENUWIN > DEFAULT
-! Equivalent integer values:   1  =    2    =   3    =  4   >    0
-
-! Set the active window      
-      call PigSetWindowNum( MAINWIN )
-      pig_open = .true.
-      RETURN
-
-! ------------------------------------------------------------------------- *
-	entry PigCloseGraphicPkg
-!       PUBLIC
-!+
-!+      entry PigCloseGraphicPkg
-!+ Call Sequence:
-!+       call PigCloseGraphicPkg
-!+ Purpose: To shut down GKS and return to DOS
-!+ Givens : None
-!+ Returns: None
-!+ Effects: Terminates workstation, and returns to DOS
-
-      call WPigCloseGraphicPkg
-
-      pig_open = .false.
-      END
-
-! END IPigOpenClose
-
-!------------------------------------------------------------------*
-	subroutine IPigMouseRoutines
-
-!       PRIVATE
-!-
-!-      subroutine IPigMouseRoutines
-!- Call Sequence:
-!-      NOT CALLABLE
-!- Purpose: To contain all mouse handling routines
-!- Givens : None
-!- Returns: None
-!- Effects: Not directly callable
-
-	include 'ipig.def'
-	integer         Window
-
-	integer         MouseButton
-	real            ipx, ipy
-
-	integer         PrevMouseWindow, PrevWindow
-	real            PrevMouseX, PrevMouseY
-
-	integer		curWindow
-	
-!        save
-
-	return
-
-! ------------------------------------------------------------------------- *
-	entry PigGetMouseAndButton(Window, MouseButton, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      entry PigGetMouseAndButton(Window, MouseButton, ipx, ipy)
-!+ Call Sequence:
-!+       call PigGetMouseAndButton(Window, MouseButton, ipx, ipy)
-!+ Purpose:  To activate the mouse. PigGetMouse returns the world
-!+           coordinates (ipx, ipy) and the current normalization
-!+           transformation number (Window number) of the current
-!+           mouse location when the mouse button is released. To
-!+           ensure the mouse cursor doesn't 'fly away' each time
-!+           the mouse is clicked, PigGetMouse should be called
-!+           with the same values as it returned on the previous
-!+           call.
-!+ Givens :  None
-!+ Returns:  integer     Window: the normalization transformation number
-!+                               where the mouse was clicked
-!+           integer     MouseButton: Button number, from (0..n)
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Effects:  Routine waits for mouse input
-
-! Move the window number into an integer*2 var. and re-initialize the
-! last x/y coords.
-	  
-	  ipx = PrevMouseX
-	  ipy = PrevMouseY
-
-	  call WPigGetMouseAndButton (Window, MouseButton, ipx, ipy)
-
-	  PrevMouseWindow = Window
-	  PrevMouseX = ipx
-	  PrevMouseY = ipy
-
-	return
-
-	entry PigGetRubberMouseAndButton(Window, MouseButton, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      entry PigGetRubberMouseAndButton(Window, MouseButton, ipx, ipy)
-!+ Call Sequence:
-!+       call PigGetRubberMouseAndButton(Window, MouseButton, ipx, ipy)
-!+ Purpose:  To activate the mouse.
-!+           Identical to PigGetMouseAndButton, except that a rubber line is drawn
-!+           following the mouse, until clicked.
-!+           PigGetRubberMouseAndButton returns the world
-!+           coordinates (ipx, ipy) and the current normalization
-!+           transformation number (Window number) of the current
-!+           mouse location when the mouse button is released. To
-!+           ensure the mouse cursor doesn't 'fly away' each time
-!+           the mouse is clicked, PigGetMouseAndButton should be called
-!+           with the same values as it returned on the previous
-!+           call.
-!+ Givens :  None
-!+ Returns:  integer     Window: the normalization transformation number
-!+                               where the mouse was clicked
-!+           integer     MouseButton: Button number, from (0..n)
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Effects:  Routine waits for mouse input
-
-! Move the window number into an integer*2 var. and re-initialize the
-! last x/y coords.
-	  
-
-	  call PigGetWindowNum(PrevWindow)
-	  call PigSetWindowNum(Window)
-	  call PigGetWindowNum(CurWindow)
-	  Window = -1
-	  PrevMouseX = ipx
-	  PrevMouseY = ipy
-	  do while(Window.ne.CurWindow)
-	  	ipx = PrevMouseX
-	  	ipy = PrevMouseY
- 	    call WPigGetRubberMouseAndButton(Window, MouseButton, ipx, ipy)
-	  end do
-
-	  PrevMouseWindow = Window
-	  PrevMouseX = ipx
-	  PrevMouseY = ipy
-
-	  call PigSetWindowNum(PrevWindow)
-	return
-
-! ------------------------------------------------------------------------- *
-	entry PigSetMouse(Window, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      entry PigSetMouse(Window, ipx, ipy)
-!+ Call Sequence:
-!+       call PigSetMouse(Window, ipx, ipy)
-!+ Purpose:  To set the saved mouse position.
-!+ Givens :  integer     Window: the normalization transformation number
-!+                               in which to position the mouse
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Returns:  None
-!+ Effects:  Routine waits for mouse input
-!+
-! Written:  Adrian Dolling -- June 1993
-
-! Move the window number into an integer*2 var. and re-initialize the
-! last x/y coords.
-	PrevMouseWindow = Window
-	PrevMouseX = ipx
-	PrevMouseY = ipy
-	return
-
-! ------------------------------------------------------------------------- *
-	entry PigGetMousePrev(Window, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      entry PigGetMousePrev(Window, ipx, ipy)
-!+ Call Sequence:
-!+       call PigGetMousePrev(Window, ipx, ipy)
-!+ Purpose:  To retrieve the last known position of the mouse. 
-!+           PigGetMousePrev returns the world
-!+           coordinates (ipx, ipy) and the current normalization
-!+           transformation number (Window number) of the last known
-!+           mouse location when the mouse button was released. 
-!+ Givens :  None
-!+ Returns:  integer     Window: the normalization transformation number
-!+                               in which to position the mouse
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Effects:  None.
-!+
-! Written:  Adrian Dolling -- June 1993
-
-! Move the window number into an integer*2 var. and re-initialize the
-! last x/y coords.
-	Window = PrevMouseWindow
-	ipx = PrevMouseX
-	ipy = PrevMouseY
-	return
-      end
-! ------------------------------------------------------------------------- *
-	subroutine PigGetMouse(Window, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      subroutine PigGetMouse(Window, ipx, ipy)
-!+ Call Sequence:
-!+       call PigGetMouse(Window, ipx, ipy)
-!+ Purpose:  To activate the mouse. PigGetMouse returns the world
-!+           coordinates (ipx, ipy) and the current normalization
-!+           transformation number (Window number) of the current
-!+           mouse location when the mouse button is released. To
-!+           ensure the mouse cursor doesn't 'fly away' each time
-!+           the mouse is clicked, PigGetMouse should be called
-!+           with the same values as it returned on the previous
-!+           call.
-!+ Givens :  None
-!+ Returns:  integer     Window: the normalization transformation number
-!+                               where the mouse was clicked
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Effects:  Routine waits for mouse input
-
-	integer Window
-	integer MouseButton
-	real    ipx, ipy
-	call PigGetMouseAndButton(Window, MouseButton, ipx, ipy)
-	end
-
-	subroutine PigGetRubberMouse(Window, ipx, ipy)
-
-!       PUBLIC
-!+
-!+      subroutine PigGetRubberMouse(Window, ipx, ipy)
-!+ Call Sequence:
-!+       call PigGetRubberMouse(Window, ipx, ipy)
-!+ Purpose:  To activate the mouse. 
-!+           Identical to PigGetMouse, except that a rubber line is drawn
-!+           following the mouse, until clicked.
-!+           PigGetRubberMouse returns the world
-!+           coordinates (ipx, ipy) and the current normalization
-!+           transformation number (Window number) of the current
-!+           mouse location when the mouse button is released. To
-!+           ensure the mouse cursor doesn't 'fly away' each time
-!+           the mouse is clicked, PigGetRubberMouse should be called
-!+           with the same values as it returned on the previous
-!+           call.
-!+ Givens :  None
-!+ Returns:  integer     Window: the normalization transformation number
-!+                               where the mouse was clicked
-!+           real        ipx   : the x world coordinate of the mouse location
-!+           real        ipy   : the y world coordinate of the mouse location
-!+ Effects:  Routine waits for mouse input
-
-	integer Window
-	integer MouseButton
-	real    ipx, ipy
-	call PigGetRubberMouseAndButton(Window, MouseButton, ipx, ipy)
-	end
 
 ! ========================================================================= *
 
@@ -608,4 +276,301 @@
         end
 
 ! ========================================================================= * 
+
+      SUBROUTINE DefPoly ( xpos, ypos, success )
+
+! PURPOSE: To let the user map out a polygon. This polygon will be the
+!          active area for node manipulation. The only restriction is
+!          that the polygon can have no more than 'maxvert' sides.
+!   INPUT: Interactive input from user,
+!   GIVEN: Previously existing polygons defined in Common POLYDEFS.
+! RETURNS: success = TRUE if user defines and confirms a polygon,
+!                    else FALSE
+!          In Common POLYDEFS;
+!               actvpoly = polygon defined, if success, else no change.
+! EFFECTS: Polygon is drawn as created, and saved in POLYDEFS. User can choose 
+!          cursor, keyboard entry, or mixed (prompt at each vertex for cursor 
+!          or keyboard) as method of defining a polygon. If entering the 4th 
+!          or greater vertex by keyboard entry, then prompt for coordinate
+!          includes '<C>lose' to automatically join up with the 1st vertex and 
+!          close the polygon.
+! BUG: Mar94 . It is possible to create more polygons than MAXPOLYS,
+!          or at least for some of the arrays declared in size as MAXPOLYS
+!          to be accessed outide their bounds.
+!-----------------------------------------------------------------------*
+
+! - PASSED VARIABLES
+       LOGICAL success
+
+! - "INCLUDES"
+       include '../includes/defaults.inc'
+       include '../includes/edpolys.inc'
+
+! - COMMON BLOCKS
+!   - PolyDisplay indicates polygons to display on redraw.
+!       PolyDisplay = 0 = display active polygon only.
+!                   = 1 = display all polygons.
+!                   = 2 = display NO polygons.
+       INTEGER PolyDisplay
+       COMMON /POLYSTATUS/ PolyDisplay
+
+       REAL cwxl, cwxh, cwyl, cwyh
+       COMMON /CURWIN/ cwxl, cwxh, cwyl, cwyh
+
+!       - display array needs 1 extra point to connect 1st & last points
+       REAL vx(maxvert+1), vy(maxvert+1)
+       COMMON /VLOCAL/ vx, vy
+
+! - LOCAL VARIABLES
+       integer, parameter :: ii1=1,i2=2
+       REAL xpos, ypos
+       INTEGER i, j,jj, ierr, tmpactv
+       CHARACTER cstr*80, ans*1
+       CHARACTER*3 char_nump, char_scrnp
+       LOGICAL polydone, In_Box
+       REAL v1xmin, v1xmax, v1ymin, v1ymax, prange
+!          to define range box around 1st polyon vertex to close polygon
+       INTEGER InpType
+!       - InpType is method chosen to define polygon: 
+!               1 = cursor, 2 = keyboard, 3 = mixed
+!       - InpChoice, if InpType = 3, then choice of method for specifying
+!                    current vertex: 1 = cursor, 2 = keyboard
+
+!------------------START ROUTINE----------------------------------------
+
+       if(numpolys .ge. MAXPOLYS) then
+         cstr='Too many polygons already defined. Please delete some.'
+         call PigMessageOK( cstr, 'defpoly' )
+         return
+       endif
+
+!       - store currently active polygon, if any
+       tmpactv = 0
+       IF ( PolyDisplay .lt. 2 ) THEN
+!         - other polygons may be displayed
+         IF ( actvpoly .gt. 0 ) THEN
+!           - there is an active polygon now, draw it in red
+           tmpactv = actvpoly
+           actvpoly = 0
+           call DisplayPoly ( tmpactv )
+         ENDIF
+!           - ( actvpoly > 0 )
+       ENDIF
+!         - ( PolyDisplay < 2 )
+
+!       - get method of defining polygon
+       InpType = 1
+       ans(1:1) = 'C'
+
+!       - start new polygon
+ !      call PigSetLineColour ( yellow )
+       i = 1
+       success = .FALSE.
+       polydone = .FALSE.
+       call PigDrawModifySymbol (xpos, ypos)
+       DO WHILE ( .NOT. polydone )
+!         - get a polygon vertex location
+         IF ( InpType .eq. 1) THEN
+!           - cursor input
+           ierr = 0
+           cstr = 'Pick Vertices, pick first again to close polygon.'
+           IF ( i .eq. 1 ) THEN
+!             - first vertex, no rubberband
+             vx(1) = xpos
+             vy(1) = ypos
+             ierr = 1
+             i = 2
+             cycle
+           ELSE
+!             - not first vertex, use rubber band
+             call RubberNode( xpos, ypos, vx(i-1), vy(i-1),cstr, ierr)
+           ENDIF
+!            - ( i = 1 )
+         ENDIF
+!           - ( InpType = 1 )
+         IF ( ierr .eq. 1 ) THEN
+!           - vertex chosen successfully, check if valid
+           IF ( In_Box(xpos,ypos) ) THEN
+             vx(i) = xpos
+             vy(i) = ypos
+             prange = 0.1*sqrt((xpos-vx(i-1))**2 + (ypos-vy(i-1))**2)
+!             - check if polygon is to be closed now
+             v1xmin = vx(1) - prange
+             v1xmax = vx(1) + prange
+             v1ymin = vy(1) - prange
+             v1ymax = vy(1) + prange
+             i1=max0(1,i-1)
+             IF (((i.gt.1).AND.(vx(i).ge.v1xmin).AND.(vx(i).le.v1xmax)&
+                          .AND.(vy(i).ge.v1ymin).AND.(vy(i).le.v1ymax))&
+               .OR.((i .gt. 2).AND.(vx(i) .eq. vx(i1)).AND.(vy(i).eq.vy(i1)))&
+               .OR.  (i .eq. maxvert))  THEN
+!               - close polygon
+              IF ( i .eq. maxvert ) THEN
+!                 - put marker and line for maxvert
+                call PigDrawLine ( i, vx, vy, ii1 )
+                i = i + 1
+              ENDIF
+!                 - ( i = maxvert )
+!               - connect last to first
+              vx(i) = vx(1)
+              vy(i) = vy(1)
+              call PigDrawLine ( i, vx, vy, ii1 )
+              IF ( i .lt. 4 ) THEN
+!                 - reject polygon for too few vertices
+                cstr = 'Invalid polygon, 3 vertices minimum.'
+                call PigMessageOK ( cstr , 'polygon')
+!                call PigUWait ( seconds )
+!                 - remove from display
+                call PigDrawLine ( i, vx, vy, i2 )
+                i = 1
+                polydone = .FALSE.
+              ELSE
+!                 - enough vertices in polygon
+                cstr ='Polygon OK ?:'
+                call PigMessageYesNo(cstr, ans)
+                IF ( ans(1:1) .eq. 'Y' ) THEN
+!                   - polygon OK
+                  polydone = .TRUE.
+                  success = .TRUE.
+                ELSE
+!                   - polygon rejected, remove from display
+                  call PigDrawLine ( i, vx, vy, i2 )
+                  polydone = .TRUE.
+                  success = .FALSE.
+                  i = 1
+                ENDIF
+!                   - ( ans = Y ) polygon OK
+              ENDIF
+!                 - ( i < 4 )
+             ELSE
+!               - not closing polygon, put a marker at location
+!              call RedrawMark( vx(i), vy(i), yellow )
+              IF ( i .gt. 1 ) THEN
+!                 - more than 1 vertex, draw a line connecting to prev. vertex
+                call PigDrawLine ( i, vx, vy, ii1 )
+              ENDIF
+!                 - ( i > 1 )
+              i = i + 1
+             ENDIF
+!               - ( closing polygon )
+           ELSE
+!             - invalid point, not in current window
+             cstr = 'Invalid point, pick again.'
+             call PigPutMessage ( cstr )
+           ENDIF
+!             - ( In_Box(xpos, ypos) )
+         ELSE
+!           - error in choosing a vertex
+           cstr = 'Invalid point, pick again.'
+           call PigPutMessage ( cstr )
+         ENDIF
+!           - ( ierr =  1 ) NewNode
+       END DO
+!         - ( NOT donepoly )
+
+       IF ( success ) THEN
+!         - a new polygon has been created
+         numpolys = numpolys + 1
+!         call PigDrawLine ( i, vx, vy, ii1 )
+         vnum = i !- 1
+         DO j = 1, vnum
+           vertx(numpolys,j) = vx(j)
+           verty(numpolys,j) = vy(j)
+         END DO
+         vertcnt(numpolys) = vnum
+         PolyCode(numpolys) = numpolys
+         actvpoly = numpolys
+!         scrnpoly = curpoly
+         curpoly = curpoly + 1
+         do j=1,numpolys
+           jj = j
+           call DisplayPoly ( jj )
+         enddo
+         char_nump = '   '
+         char_scrnp = '   '
+         WRITE ( char_nump, '(I3)' ) numpolys
+         WRITE ( char_scrnp, '(I3)' ) actvpoly
+!          - put up message
+         cstr = 'Polygon '//char_scrnp//' of '// char_nump // '.'
+         call PigStatusMessage ( cstr )
+       ELSE
+!         - not success, restore original active poly if there was one
+         IF ( tmpactv .ne. 0 ) THEN
+!           - tmpactv was used to store previously active poly
+           actvpoly = tmpactv
+           call DisplayPoly ( actvpoly )
+         ELSE
+!           - there was no previously active poly
+           actvpoly = 0
+         ENDIF
+!           - ( tmpactv ne 0 )
+       ENDIF
+!         - ( success )
+
+       END
+
+!-----------------------------------------------------------------------*
+ 
+      SUBROUTINE RubberNode ( xn, yn, xinit, yinit, mess, ierr )
+
+! PURPOSE: To ask user to pick a location for a point.
+!   INPUT: xn,yn = (x,y) co-ordinates by user,
+!   GIVEN: mess = message to prompt with,
+!          xinit, yinit = coordinates of initial cursor location,
+! RETURNS: (xn,yn) as input by user
+!            ierr  = 1  if there is input
+!                  = 0 if no input, or invalid input.
+! EFFECTS: New point is selected, and a "rubber band" line is drawn
+!          connecting point (xinit,yinit) to cursor while point is chosen.
+! WRITTEN: May 1990 by JDM, for NODER.
+!----------------------------------------------------------------------*
+
+
+! - "INCLUDES"
+       include '../includes/graf.def'
+
+! - PASSED VARIABLES
+      REAL xn, yn, xinit, yinit
+      integer ierr
+      CHARACTER*(*) mess
+
+! - COMMON BLOCKS
+      REAL cwxl, cwxh, cwyl, cwyh
+      COMMON /CURWIN/ cwxl, cwxh, cwyl, cwyh
+
+       xn = ( cwxl+ cwxh)/2.0
+       yn = ( cwyl+ cwyh)/2.0
+!        ierr = 0
+
+!      DO WHILE ( ierr .eq. 0 )
+       call PigPutMessage( mess )
+       call PigRubberLine(xn, yn, xinit, yinit)
+!        IF (tnr .eq. MAINWIN) ierr = 1
+!      END DO
+       ierr = 1
+      END
+
+!-----------------------------------------------------------------------*
+
+      subroutine PigRubberLine(Xnew, Ynew, Xinit, Yinit)
+
+!+ Purpose:  Displays a rubberline around Xinit, Yinit.  Used to
+!+           define any polygon area.
+!+ Givens :  real       Xinit   : initial x location in WC
+!+           real       Yinit   : initial y location in WC
+!+ Returns:  real       XNew    : final x location in WC
+!+           real       YNew    : final y location in WC
+!+ Effects:  Draws a rubberline from Xinit, Yinit to Xnew,Ynew until
+!+           the mouse is clicked.
+
+      REAL  Xnew, Ynew, Xinit, Yinit
+
+      Xnew = Xinit
+      Ynew = Yinit
+
+      call WPigRubberLine(Xnew, Ynew, Xinit, Yinit)  !used in Visual Fortran version
+
+      end
+
+!*--------------------------------------------------------------------------*
 !******************************************************************************

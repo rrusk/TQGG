@@ -34,6 +34,8 @@
 ! Returns: None
 ! Effects: Results of test displayed in color with grid.
 
+      use MainArrays, only: TotTr,CritLt
+
       implicit none
       
 !     - PASSED PARAMETERS
@@ -50,6 +52,9 @@
 
 ! Local Variables
       LOGICAL :: Start=.TRUE.
+      CHARACTER*256 fle
+      integer j,Fnlen, nunit,istat
+      logical PigOpenFileCD
       
 !--------------BEGIN-------------
 
@@ -61,6 +66,29 @@
         call Nup_Fparams()
         start = .FALSE.
       ENDIF
+      
+      if(test.eq.7) then
+        if(.not.PigOpenFileCD(nunit,'Open Ext File', fle,&
+     &     'External criteria (*.dat),*.dat;All Files (*.*),*.*;')) then
+          fnlen = len_trim( Fle )
+          call PigMessageOK('Error opening file '//fle(:fnlen),'OpenExt')
+          return
+        endif
+        
+        do j=1,TotTr
+          read(nunit,*,IOSTAT=istat) CritLt(j)
+          if(istat.lt.0) then
+            call PigMessageOK('ERROR premature end of file','ReadExt')
+            close(nunit)
+            return
+          elseif(istat.gt.0) then
+            call PigMessageOK('ERROR reading Ext file: Most likely a format error','ReadExt')
+            close(nunit)
+            return
+          endif 
+        enddo
+        close(nunit)     
+      endif
 
       call ReDrawOnly()
 
@@ -91,14 +119,16 @@
       integer Default_TestColour(1:NumOfTests,0:NumofColours)
       INTEGER Default_NumTest(1:NumOfTests)
 
-      data Default_Numtest/3,5,4,1,1,6,0/
+      data Default_Numtest/3,5,4,1,1,15,15/
       data (Default_TestColour(1,I),I=0,15)/black,blue,yellow,red,12*black/
       data (Default_TestColour(2,I),I=0,15) /red,yellow,green,cyan,blue,violet,10*black/
       data (Default_TestColour(3,I),I=0,15) /blue,cyan,green,yellow,red,11*black/
       data (Default_TestColour(4,I),I=0,15)/red,15*black/
       data (Default_TestColour(5,I),I=0,15)/red,15*black/
-      data (Default_TestColour(6,I),I=0,15) /black,red,yellow,green,cyan,blue,violet,9*black/
-      data (Default_TestColour(7,I),I=0,15)/16*black/
+      data (Default_TestColour(6,I),I=0,15) /black,red,yellow,green,cyan,blue,violet,dkcyan,&
+                                   dkgreen,vioblue,orange,dkgray,dkblue,ltgray,dkred,white/
+      data (Default_TestColour(7,I),I=0,15)/black,red,dkgreen,blue,dkcyan,yellow,dkblue,cyan,&
+                                   vioblue,green,orange,dkgray,ltgray,dkred,violet,white/
 
       data (Default_Interval(1,I),I=1,15)/1.2,1.4,2.0,0.,0.,10*0./
       data (Default_Interval(2,I),I=1,15)/10.,20.,30.,40.,50.,10*0./
@@ -459,7 +489,10 @@
           ENDIF
 
           IF((Cr.eq.MaxCrit).and.(TVal.eq.999999.)) cycle
-          IF( TVal .lt. Interval(Cr,1)) THEN
+          IF(Cr.ge.MaxCrit-1) then
+            I = mod(NINT(Tval),16)
+            CALL ShdTr(Tr,TestColour(Cr,I))
+          ELSEIF( TVal .lt. Interval(Cr,1)) THEN
             CALL ShdTr(Tr,TestColour(Cr,0))
           ELSEIF( TVal .ge. Interval(Cr,NumTest(Cr))) THEN
             CALL ShdTr(Tr,TestColour(Cr,NumTest(Cr)))

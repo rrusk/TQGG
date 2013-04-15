@@ -184,11 +184,13 @@
           Quit = .true.
           return
         ENDIF
+        
+        IEcode = 1
 
 ! Convert from node and triangle data to NEIGH format and output
 
         nindx = maxnp
-        CALL ALTER (nindx,np,ncode,maxngh,numngh,nbrs,ne,nen,IECode,&
+        CALL ALTER (nindx,np,ncode,maxngh,numngh,nbrs,ne,nen,&  !IECode,&
                      numbnd,NumIntBnd,numbndpts)
 
         numngh = maxngh !expand to full size for editing
@@ -198,7 +200,7 @@
 
 ! *********************************************************************
 
-    SUBROUTINE ALTER(nindx,np,ncode,maxngh,numngh,nbrs,ne,nen,IECode,&
+    SUBROUTINE ALTER(nindx,np,ncode,maxngh,numngh,nbrs,ne,nen,& !IECode,&
                      numbnd,NumIntBnd,numbndpts)
 
 ! ***********************************************************************
@@ -211,7 +213,7 @@
 ! *** passed VARIABLES ***
       integer nindx
       integer np,ncode(np),maxngh,numngh,nbrs(maxngh,np)
-      integer ne,nen(4,ne),IECode(ne)
+      integer ne,nen(4,ne) !,IECode(ne)
       integer numbnd,NumIntBnd,NumBndPts(NumBnd)
 
 ! *** LOCAL VARIABLES ***
@@ -246,7 +248,7 @@
 
         pass1 = .true.
         DO 101 JJ = 1, ne
-            IECode(JJ) = 1 
+!            IECode(JJ) = 1 
 ! *** Check each vertex in current triangle
           DO 102 II = 1, 3
 ! *** Choose current vertex

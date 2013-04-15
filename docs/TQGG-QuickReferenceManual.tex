@@ -1,0 +1,1287 @@
+% This file was converted to LaTeX by Writer2LaTeX ver. 1.2
+% see http://writer2latex.sourceforge.net for more info
+\documentclass{article}
+\usepackage[ascii]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts,textcomp}
+\usepackage{array}
+\usepackage{supertabular}
+\usepackage{hhline}
+\usepackage{graphicx}
+\usepackage{listings}
+\lstset{frame=lrtb,xleftmargin=\fboxsep,xrightmargin=-\fboxsep}
+\makeatletter
+\newcommand\arraybslash{\let\\\@arraycr}
+\makeatother
+\setlength\tabcolsep{1mm}
+\renewcommand\arraystretch{1.3}
+\newcounter{Figure}
+\renewcommand\theFigure{\arabic{Figure}}
+\title{GridGen Users Manual}
+\begin{document}
+
+
+\title{Triangle-Quadrilateral Grid Generation (TQGG) User Manual}
+
+\author{Roy Walters \\
+  Ocean-River Hydrodynamics \\
+\and
+  Clayton Hiles \\
+  Cascadia Coast Research Ltd. \\
+%\date{5 Oct 2012}
+\and
+Insert Appropriate References}
+
+\maketitle
+
+
+\section*{Table of Contents}
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+
+\section{TQGG Program Description}
+
+\label{bkm:Ref406485171}\label{bkm:Ref406484745}\subsection{Introduction}
+This program uses interactive graphics to read geometric and grid data, to create a background grid from the geometric data, to create a model grid, and to allow examination and modification of an existing grid. At the end of an editing session, this program can output a triangle list in addition to the modified grid. The program permits the user to display various properties of the grid, such as coordinates of individual vertices. It also provides means of displaying various properties of vertices and triangles that normally cannot be judged by eye. For instance, colour markers can be placed at all vertices where water depth exceeds a specified value.
+
+Changes can also be made to the grid. For instance, vertices and connections between vertices can be added or deleted; vertices can be moved or merged with one another; and triangle shape can be adjusted. The user directs changes in purely graphical terms, by suitable positioning of a cursor on the displayed grid; the program keeps account of all corresponding changes in vertex coordinates and interconnections between vertices. Any proposed changes are displayed immediately, for confirmation or cancellation.
+
+\subsection{Use of TQGG}
+This program is invoked from the command line by typing the name of the executable file (typically 'TQGG'). A frame for the grid editing area is drawn in black on the screen and a menu along the top of the panel allows interation with the program. At this point, the user chooses a menu item that leads to node or grid input, whichever is desired. The initial display shows the entire grid being edited.  If the grid is larger than 1000 nodes, only the outline is shown initially. The entire grid can be displayed by selecting \textbf{\{View\}Redraw} from the View menu.
+
+Editor options are presented to the user in menus that appear across the top of the screen, and additional prompts are displayed when necessary. Selections from the menus are made by means of the mouse, but some editing operations require keyboard input also.
+
+The various editor options are discussed below, menu-by-menu. One important editor facility which should be noted is the interim save option; it is recommended that the current version of the grid should be saved at regular intervals during long editing sessions, in case of power failures or computer gremlins.
+
+\subsection{Contents of top menu}
+When the program begins, the following top-level menu appears across the top of the screen:
+\\
+
+\noindent
+\framebox{\textbf{File|View|Info|GridGen|NodeEdit|GridEdit|Polygons|EditInPoly|Configure}}
+\\
+
+The entries in this menu indicate further sub-menus, which can be selected by placing the cursor on the appropriate word in the menu and then clicking the mouse, i.e. pressing any button on the mouse.
+
+In the following discussion, each menu item is prefixed or followed by a reminder in curly brackets of which menu the option appears in, e.g. option EditNode in the TOP menu will be referred to as ''\{TOP\}\textbf{EditNode{}}'', ''\textbf{EditNode} \ in \{TOP\}'' or as \textbf{\{EditNode\}}.
+
+In all editing operations, which involve moving nodes, such as Move or Reshape, depths at new locations of nodes affected by the changes are evaluated automatically by linear interpolation among existing nearby depths. In other cases, the user is offered the choice of setting depth by linear interpolation or by entering a value via the keyboard.
+
+TQGG is currently transitioning to dialogue box based interaction... 
+
+\subsection{Contents of menu: File}
+When this option is picked, the following menu options are displayed:
+
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+File :\\     \hline
+OpenGrid \\ AddGrid \\ OpenNode \\ AddNode \\ Sample \\ XSection \\ IntrimSave \\ SaveAs \\ Print \\ Quit\\
+    \hline
+   \end{tabular}
+   \label{tab:FILE}
+  \end{center}
+\end{table}
+
+These menu items are described next.
+
+\subsubsection[Menu item OpenGrid]{Menu item OpenGrid}
+This option allows for reading a new grid file in NEIGH format (see Section \ref{sec:formats}). Any existing data is replaced.
+
+\subsubsection[Menu item AddGrid]{Menu item AddGrid}
+This option allows for reading a new grid file in NEIGH format (see Section \ref{sec:formats}). This grid is merged with any existing data so that this action is used to join grids together. Along the edge of the grids that are merged, the boundary node codes are changed to 90, which make this a line that is fixed in space. After merging files, use the \textbf{\{Info\}NodeCheck} to examine the codes at the ends of the lines where the grids are joined. In many cases, the codes at these points need to be changed to 1, 5, or 6, depending on the type of boundary (land, open, or junction of land and open).
+
+When joining grids in this way, it is helpful to begin the editing session with the two sub-grids displayed in different colours. This can be done by suitable choice of the SECONDARY COLOUR INDEX, as explained in the description of option \textbf{\{Configure\}ConfigGrid} later in this Chapter.
+
+The two sub-grids may have to be stitched together as required. Some nodes may have to be deleted if the two sub-grids overlap; conversely, extra nodes may have to be added if there is a substantial gap. Connections between nodes of the two sub-grids may be established using \textbf{\{GridEdit\}AddLine} or the node-merging capability available through \textbf{\{GridEdit\}Move}. To use this later, which is very convenient where there are pairs of adjacent nodes from the two sub-grids, it is first necessary to invoke \textbf{\{GridEdit \}GridMerge}.
+
+\subsubsection[Menu item OpenNode]{Menu item OpenNode}
+This option allows for reading a new node file in NODE format (see Section \ref{sec:formats}). Any existing data is replaced. After picking this option, the user is prompted for the file name of a NODE format file.
+
+\subsubsection[Menu item AddNode]{Menu item AddNode}
+This option permits reading a NODE format file and sub-sampling the boundaries and interior nodes by index or by distance. If there are no nodes in existence prior to choosing this option, a NODE format file can be sub-sampled. Otherwise, the nodes are added to the existing nodes. If the prompt option is ON, the user is prompted before any set of nodes is added. This is useful for selectively adding boundaries or interior nodes. [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
+
+\subsubsection{Menu item Sample}
+[This new menu item needs a description]
+
+\subsubsection[Menu item CrossSection]{Menu item XSection}
+The following option is used for creating grids from cross section data. A file containing cross section data is read and a grid is created from this data. Options in the right-hand-panel define the number of nodes to create across the section, and the number of nodes to create between each cross section. All these nodes are interpolated using a cubic spline algorithm. See Section \ref{sec:formats} for a description of files in XSEC format.  [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
+
+%\subsubsection[Menu item SampleDIGIT]{Menu item SampleDIGIT}
+%Picking this option will advance you to the steps of sampling the boundary data in the files specified below at the rates set. Selected boundary nodes (in DIGIT format), contour nodes (in DIGIT format), and soundings (in NODE format) are superposed on the digitized boundaries and contours. 
+
+%After picking option SampleDIGIT from the top menu a set of options are displayed in a right hand window under BOUNDARY CONFIGURATION. Picking with the mouse on NONE in the entry 'Boundary File: NONE' will produce a prompt asking the user to select the name of the file containing digitized boundary data and its file type, such as `bnd.dig'. Subsampling rates then have to be set for the land and sea boundaries. Picking on the default value '1' under 'Select Kth land node' and entering 30, say, means that every 30th digitized point on land sections of the outer boundary and on island boundaries will be selected as a boundary node. Similarly, picking on the default value '1' under 'Select Lth open node' and entering 10 means that every 10th digitized point on stretches of sea boundary will be selected as a boundary node. Also pick on the default value 1.000 of minimum distance to be maintained between first and last points selected from each boundary (entry 'Min. dist. 1st-last') and enter a suitable value in 
+data units. Finally, pick ACCEPT to move to the CONTOURS CONFIGURATION.
+
+%Under CONTOURS CONFIGURATION another set of options appears in a right hand window. Pick NONE in the entry 'Contours file: NONE' and enter the name of the file containing digitized contour data. Picking on the default value '1' under 'Select Mth contour node' and entering 8 means that every 8th point on each contour in the file will be selected as an interior node for the depth grid. The minimum distance needs to be set again to the same value used for boundaries. Picking ACCEPT will move to the selection of soundings data to be used in sampling.
+
+%SOUNDING CONFIGURATION has another set of options that appears in a right hand window. Pick 'NONE' in the entry 'Sounding file: NONE'. Enter the file name (in NODE format) and pick ACCEPT. The following operation will return control to the top menu and display the sampled data. Note that at present, all nodes supplied in the soundings file are used as internal nodes; there is no provision for sub sampling.
+
+\subsubsection[Menu item InterimSave]{Menu item InterimSave}
+Invoking this option leads to output of the current version of the grid in `.NGH' format or node file in a `.NOD' format. The resulting file is less compact than the NEIGH file and NODE file obtained with the usual EXIT procedure (see below). But it is a useful facility and should be used at regular intervals during a long editing session to avoid losing one's work in the event of power failure or other interruption. Alternate interim saves are written to files named interim1.*** and interim2.***; the name of the last interim save file output can be checked via the \textbf{\{Info\}Files} option.
+
+\subsubsection[Menu item SaveAs]{Menu item SaveAs}
+This is the option normally used after the completion of a grid or modification of a grid and node file. It brings up a request for the name of the file in which the final version is to be saved. If the file does not exist then a prompt appears asking the user whether or not to create the file. If no file output is selected or `CANCEL' is selected, then the program exits with open error message.
+
+\subsubsection[Menu item Print]{Menu item Print}
+This option is identical in all the interactive programs. Picking this option brings up the Windows print manager. Note that for all printing it is advisable to change the background to white using Background in \textbf{\{View\}}. [This menu not implemented yet in Motif version of TQGG.]
+
+%\subsubsection[Menu item About]{Menu item About}
+%This option displays the version number and name of the developers.
+
+\subsubsection[Menu item Exit]{Menu item Exit}
+This allows exit from the Editor without output of any files. The user is prompted to answer whether an exit is really desired. This helps prevent accidental termination of the program.
+
+
+\subsection{Contents of menu: View}
+This option provides control over windowing and uses the same module as is used in the other interactive graphics programs.
+
+When the View menu is chosen from \textbf{\{TOP\}}, the options appear as shown in Table \ref{tab:VIEW}.
+
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+View:\\     \hline
+Redraw \\ Outline \\ FullSize \\ Zoom \\ ZoomOut \\ Pan \\ LastView \\ Scale \\ Shift \\ Rotate \\ PolarTransform \\ MercatorTransform \\ TMTransform \\
+    \hline
+   \end{tabular}
+   \label{tab:VIEW}
+  \end{center}
+\end{table}
+
+
+The functions in this menu provide control over windowing (zoom) and refreshing the display. Up to [?] levels of windowing are allowed.
+
+\subsubsection{Menu item Redraw}
+This function forces a refresh of the current display. It may be used for instance when grid lines have become partially erased during removal of markers. It is also used in some instances to get a clean display after turning off options such as display of the original digitized boundaries.
+
+\subsubsection{Menu item Outline}
+This option sets a switch that allows only the boundary to be drawn. This speeds the redraw considerably and is useful in the manipulation of large grids.
+
+\subsubsection{Menu item FullSize}
+After a set of windowing, this option will bring the display back to the full size displaying the whole gird.
+
+\subsubsection{Menu item Zoom}
+Selection of this option with the mouse permits windowing in (zoom in) on any square sub-area of the current window. The user is first prompted to indicate by means of the mouse the position of the lower left-hand corner of the new display area and then the upper right-hand corner. The outline of the new window is shown by rubber banding as the upper right-hand corner follows the mouse around. After the mouse is clicked, the new window is automatically squared off and the display is refreshed to show the required area at higher magnification.
+
+\subsubsection{Menu item ZoomOut}
+This permits windowing (zooming) out to display a larger portion of the grid than is currently displayed, that is, to reverse the effects of one or more ZoomIn operations and so restore one of the less magnified views shown on the way to the present display. When ZoomOut is selected with the mouse it restores the window to the previous view of the present display.
+
+\subsubsection{Menu item Pan}
+This option permits the user to move the current window in discrete steps in any direction over the grid, that is, to display, at the same level of magnification, a portion of the grid adjacent to that currently being displayed. This can be used, for instance, to tour a boundary at a high level of magnification. After choosing Pan, the user is prompted to indicate with the mouse where the centre of the new window is to be placed. 
+
+\subsubsection{Menu item LastView}
+This section returns the viewing window to its previous state (before a zoom, pan, FullSize, etc. operation).
+
+\subsubsection{Menu item Scale}
+This menu selection allows the x, y, or z dimensions to be linearly scaled.
+
+\subsubsection{Menu item Rotate}
+This selection allows the grid to be rotated by a given angle.
+
+\subsubsection{Menu item PolarTransform}
+This selection converts the present x and y coordinate using a spherical polar transform.  Selecting this menu item once performs the forward conversion (from degree to spherical polar coordinates).  Selecting this item a second time performs the inverse operation.
+
+
+\subsubsection{Menu item MercatorTransform}
+This selection converts the present x and y coordinate using a Mercator transform.  Selecting this menu item once performs the forward conversion (from degree to Mercator coordinates).  Selecting this item a second time performs the inverse operation.
+
+\subsubsection{Menu item TMTransform}
+This selection converts the present x and y coordinate using a TM transform.  Selecting this menu item once performs the forward conversion (from degree to TM coordinates).  Selecting this item a second time performs the inverse operation.
+
+\textbf{[ToDo: Transform menu item descriptions should be support with a description of each type of transform]}
+
+
+\subsection{Contents of menu: Info}
+When the Info menu is chosen from \textbf{\{TOP\}}, the options appear as shown in Table \ref{tab:INFO}.
+
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+Info:\\     \hline
+NodeInfo \\ ElementInfo \\ NodeCheck \\ ElementCheck \\ EraseChecks \\ PMarkers \\ EraseLast \\ EraseAll \\ SetRange \\ TooClose \\ Files \\
+    \hline
+   \end{tabular}
+   \label{tab:INFO}
+  \end{center}
+\end{table}
+
+These permit placing of coloured markers on the screen to mark locations or to display properties of vertices and triangles. Solid colouring of triangles is available as an alternative to colour markers.
+
+% This menu permits use of the right-hand panel for display of information about any selected node or triangle and also permits the user to change the coordinates, depth, or computational code of any selected vertex via the keyboard. Names of files being used during the current editing session or a limited portion of any arbitrary file can also be displayed.
+
+\subsubsection{Menu item NodeInfo}
+Selection of this menu item prompt the user to select a node.  In the Motif version of TQGG this is done using the mouse to click on the node.  The following information is displayed in the terminal window.  Note that work is ongoing to translate output to a dialogue box.
+
+\begin{itemize}
+\item Index number
+\item Node Code
+\item Coordinates (X, Y, Z)
+\item List of neighbours 
+\end{itemize}
+
+A marker is placed at each vertex examined. If a number of points are examined, it may be desirable to erase existing markers in order to be able to spot new markers. \textbf{\{View\}Redraw} erases all markers.
+
+%After choosing a node, the user may change its depth, computational code or coordinates by picking the corresponding current values shown in cyan in the right-hand panel. It is advisable not to change the coordinates of a vertex unless it is visible, so as to avoid impermissible moves. It should be noted that using this option to make the coordinates of a vertex identical (or nearly identical) to those of a neighbour does not result in a MERGE operation, and this type of change should be avoided.
+
+\subsubsection{Menu item ElementInfo}
+Selection of this option prompts the user to select an element.  In the Motif version of TQGG this is done using the mouse to click on the element.  The following information is displayed in the terminal window.  Note that work is ongoing to translate output to a dialogue box.
+
+The following information on the selected element appears:
+
+\begin{itemize}
+\item Index number
+\item Element code (type)
+\item List of nodes in the element 
+\end{itemize}
+A marker is placed in each element examined. If a number of them are examined, it may be desirable to erase existing markers in order to be able to spot new markers.
+
+% GOT TO HERE WITH EDITING
+
+\subsubsection{Menu item NodeCheck}
+This enables labelling of grid vertices with coloured markers according to certain built-in criteria or an external list, so providing an efficient visual means of simultaneously checking specific properties at all vertices visible in the window. When this option is selected, appropriate information appears in a dialogue box with available criteria as shown below. [This dialogue box is still under construction and not all options work].
+\\ \\
+
+VERTEX CRITERION \\
+\ \ \ \ \ \ Display Flag: \ \ \ \ OFF
+\\
+C0 (Computational code equals 0)\ \ OFF\\
+C1 (Computational code equals 1)\ \ OFF\\
+C2 (Computational code equals 2)\ \ OFF\\
+C3 (Computational code equals 3)\ \ OFF\\
+C4 (Computational code equals 4)\ \ OFF\\
+C5 (Computational code equals 5)\ \ OFF\\
+C6 (Computational code equals 6)\ \ OFF\\
+NC0 (Computational code not equal to 0)\ \ OFF\\
+C=? (Computational code to be set by user)\ \ OFF\\
+\\
+DLT (Depth less than d1)\ \ \ \ OFF\\
+DGT (Depth greater than d2)\ \ \ \ OFF\\
+DBTW\ \ (Depth greater than or equal to d3 and less than or equal to d4)\ \ OFF\\
+\\
+NBGT (No of neighbours greater than n1)\ \ OFF\\
+NBLT (No of neighbours less than n2)\ \ OFF\\
+NBE (No of neighbours equals n3)\ \ \ \ OFF\\
+EXT (Mark according to external list)\ \ \ \ OFF
+\\ \\
+%External Criterion File:
+
+%NONE
+
+
+The final option EXT instructs the Editor to read in a prepared external file (in EXTVER format), each line of which contains the number of a vertex where a marker is to be placed, followed by an integer specifying the colour of the marker. [This option not yet implimented in Motif version of TQGG].]
+
+The name of the external criterion file is not requested until the EXT option is invoked; consequently, it is possible for the user to colour vertices according to different criteria in succession by preparing as many external files as required. The name of the external file currently assigned is displayed in the information panel. A different external file can be assigned by clicking the name of the existing file in the information panel.
+
+Finally, when all details of the criterion or criteria to be displayed have been decided, the user should press the "Run Check" button in order to view the appropriate coloured markers. %Display flag option is used here to easily turn all markers off at a particular instance.
+
+\subsubsection{Menu item ElementCheck}
+
+To permit convenient monitoring of certain triangle properties, default or user defined colour tables are used to place coloured markers and solid colours in triangles. When the colouring option is invoked, necessary list of all triangles and their calculated triangular properties are updated. This enables the user to check effects on triangle properties of any editing grid immediately.
+
+When the ElementCheck option is selected, a dialogue box appears with options for selecting the colouring mode and the type of test as shown below.
+\\ 
+\\
+Colour Triangles By Criteria\\
+-----------------------------\\
+Select Colouring Mode:\\
+\indent	Full Color\\
+\indent	Color Marker\\
+-----------------------------\\
+Select Criteria\\
+\indent	EQL\\
+\indent	DEP\\
+\indent	A2D\\
+\indent	CCW \\
+\indent	G90\\
+\indent	COD\\
+
+The colouring mode can be selected between "Full Colour" and "Colour Marker" with the appropriate radio buttons.  "Colour Marker" indicates that coloured markers will be placed in the triangles, while "Full Colour" indicates solid colouring of triangles. Markers are preferable if editing operations are to be carried out on the grid.
+
+Picking the radio buttons beside EQL, DEP, A2D, CCW, G90, or COD determines which of the following internally evaluated triangle properties is to be displayed:
+
+\begin{itemize}
+\item EQL - measure of equilateral shape, defined as the ratio of the sum of the squares of the sides of the triangle-to-triangle area, normalized in such a way that an equilateral triangle has this ratio equal to unity. This ratio or shape factor increases as triangle shape departs from equilateral. For instance, a right-angled isosceles triangle has a shape factor of 1.154
+\item DEP - mean depth (average of depths at vertices)
+\item A2D - area/mean depth
+\item CCW - clockwise test (+1 if vertices ordered counter clockwise in triangle list, -1 if clockwise). The default colour scale for counter clockwise is black and red for clockwise.
+\item G90 - flags triangles with angles greater than 90 degrees. The default colour scale is black if less than 90-degree angles, red otherwise.
+\item COD - element code. The default colour scale follows the colour indices.
+\end{itemize}
+In addition, an external file (in EXTCRI format) containing a list of triangles and corresponding values of any quantity defined by the user can be read in, using option EXT.
+
+After one of these option is chosen, the next step is to specify a colour table to use for translating values of the chosen criterion into appropriate colours. The default colour table, a preset colour table prepared by the user, or a colour table can be defined on the spot can be used. The first relevant prompt is:
+
+Set or change colour scale (Y/N)?
+
+Enter N for the default colour table, or Y to supply a user colour table. If Y is chosen, the next prompt is:
+
+Use the auto colour scale (Y/N)?
+
+Y here means that a preset colour table is to be read in and the user is then prompted to enter the name of the file containing the required table. Entering N results in a series of prompts, which lead the user through the process of setting up a colour table. The specification of colour tables is dealt with in a separate section below. Finally, when the required test has been completely set up, the above prompt {\textquotedbl}Enter Test ... {\textquotedbl} appears again, at which point, entering FIN will result in the display being redrawn with triangles coloured according to the chosen criterion.
+
+
+\bigskip
+
+Set up Of Colour Tables
+
+For option ElementCheck the user sets up colour table(s) that assign colours to specific ranges of each numerical criterion. It is preferable to set up suitable colour tables before an editing session, but it is possible to set up a table during a session. In the present version of the Editor, a table defined during an editing session is not saved. A colour table consists of a set of upper limits of ranges of a numerical criterion together with the corresponding colours to be used for the different ranges. For instance, to check the mean depths of triangles in a basin whose depths range from 0 to 100m, the following table might be used:
+
+\begin{center}
+\tablefirsthead{}
+\tablehead{}
+\tabletail{}
+\tablelasttail{}
+\begin{supertabular}{m{2.717cm}m{2.717cm}m{2.717cm}}
+\centering Range &
+\centering Upper limit &
+\centering\arraybslash Colour code\\\hline
+\centering 0 &
+\centering 0 &
+\centering\arraybslash 2\\
+\centering 1 &
+\centering 10 &
+\centering\arraybslash 0\\
+\centering 2 &
+\centering 25 &
+\centering\arraybslash 6\\
+\centering 3 &
+\centering 50 &
+\centering\arraybslash 4\\
+\centering 4 &
+\centering 100 &
+\centering\arraybslash 5\\
+\centering 5 &
+\centering +inf &
+\centering\arraybslash 2\\
+\end{supertabular}
+\end{center}
+In GSS*GKS, the colour codes and corresponding names are:
+
+0 - black\ \ 8 - dkgray (dark gray)\newline
+1 - white\ \ 9 - ltgray (light gray)\newline
+2 - red\ \ \ \ 10 - pink\newline
+3 - green\ \ 11 - medgreen (light green)\newline
+4 - blue\ \ 12 - ltblue (light blue)\newline
+5 - yellow\ \ 13 - orange (mustard)\newline
+6 - cyan\ \ 14 - yelgreen (very lt. blue)\newline
+7 - violet\ \ 15 - vioblue (light violet)
+
+This means that, in this example, the triangles will be coloured according to mean depth as follows:
+
+(range 0)\ \ depth {\textless} 0.\ \ \ \ red\newline
+(range 1)\ \ 0. ${\geq}$ depth {\textless} 10.\ \ black\newline
+(range 2)\ \ 10. ${\geq}$ depth {\textless} 25.\ \ cyan\newline
+(range 3)\ \ 25. ${\geq}$ depth {\textless} 50.\ \ blue\newline
+(range 4)\ \ 50. ${\geq}$ depth {\textless} 100.\ \ yellow\newline
+(range 5)\ \ 100. ${\geq}$ depth {\textless} inf.\ \ red
+
+\subsubsection{Menu item PMarkers}
+Selection of this option allows the user to place a coloured marker anywhere in the current window by means of the mouse. These markers remain displayed until \textbf{EraseAll} is invoked. \textbf{EraseLast} erases the last marker created. Markers survive windowing and consequently, one of the purposes they can be used for is to identify an area of interest on the grid.
+
+\subsubsection{Menu item EraseMarks}
+This option turns off place, vertex and triangle marking.
+
+\subsubsection[Menu item CursorRange]{Menu item CursorRange}
+This option permits manual resetting or simple inspection of the permitted error range. The sensitivity of the cursor for locating a grid node is reset automatically at intervals by the Editor to suit the local grid resolution. This process is usually transparent to the user, but occasionally the required point may not be identified successfully. If the wrong point is moved, deleted, etc., the permitted cursor error limit is too coarse. However, the sensitivity will be reset automatically in accordance with the length of connections to the node actually selected, and since this node will almost always be close to the required node, it is usually possible to select the right node by cancelling the faulty editing operation and simply repeating the original choice. The same remarks apply to deleting a line and to Insert and Exchange operations, in all of which the mid-point of a connection between nodes has to be picked out with the cursor.
+
+On the other hand, cursor sensitivity is occasionally too fine to pick up any point, for instance when interest is transferred from an area of the grid with fine resolution to a part where triangles are much larger. In such cases, the message `ERROR \ \ {}- Invalid point' will appear briefly, after which the user will be prompted again to choose the point. Usually a second attempt will be successful because the cursor error range is automatically increased by a factor of 3 if no node is found.
+
+If a required point still cannot be picked out with the cursor after several tries, choosing the \{Info\}CursorRange option will bring up a message of the form:
+
+RANGE (0.2267) Enter new Range:
+
+The 0.2267 (or whichever number appears) is the current error range in problem length units. The user can then enter a different value or press ENTER to proceed using the current value.
+
+\subsubsection[Menu item AutoRange]{Menu item AutoRange}
+This option toggles on and off the auto ranging of the cursor when a new node is picked. Thus, the cursor range can be set for a certain grid and this value does not change, an advantage when dealing with highly irregular elements.
+
+\subsubsection[Menu item Files]{Menu item Files}
+This option brings up a list of files currently assigned to the Editor. Filenames cannot be changed via the display panel under this option.
+
+\subsubsection[Menu item Text]{Menu item Text}
+This option invokes the Windows Notepad editor from which any file can be opened. This facility is particularly useful for checking header information on data files and for looking up breakpoint values and colours in existing colour table files.
+
+\subsubsection[Menu item Limits]{Menu item Limits}
+This option displays the maximum number of nodes allowed, the number of nodes used at present, maximum neighbours allowed and maximum boundaries allowed.
+
+\subsection{Contents of menu: GridGen}
+On picking the GenGrids option from \{TOP\} with the mouse, following options appears:
+
+GenGrids: GridInBox {\textbar} GenTriangle {\textbar} DeleteInterior GenerateMesh Clusters {\textbar} OverlaySquares {\textbar} TriangulateNodes
+
+These options are used for deletion or creation of nodes within the working polygon (the currently-activated polygon) and the last option generates the triangles.
+
+\subsubsection[Menu item GridInBox]{Menu item GridInBox}
+This option allows the creation of a regular grid within the quadrilateral defined by the first 4 nodes of a NODE format file. Options in the right-hand-panel under the heading `Box Grid Selection' define the number of nodes to place along adjacent sides of the box.
+
+\subsubsection[Menu item GenTriangle]{Menu item GenTriangle}
+
+\bigskip
+
+\subsubsection[Menu item DeleteInterior]{Menu item DeleteInterior}
+The following option removes all interior nodes present in the active polygon. This is normally required before any new set of nodes is created by means of GenerateMesh.
+
+\subsubsection[Menu item GenerateMesh]{Menu item GenerateMesh}
+This option permits input of depth information needed in the course of creating a new set of internal nodes within the working polygon, lays out a regular Cartesian grid over the working polygon and computes depths at the centre of each grid square within the working polygon, by linear interpolation among the depths in the reference depth grid. First, the user is prompted to enter the name of a file in NEIGH format containing a reference depth grid that covers at least the working polygon. Where the centre of a grid square lies within roughly half a mesh interval from the domain boundary, the depth is flagged negative, so that the square in question can be ruled out as a seed square in later node creation calculations. Grid squares outside the working polygon or land boundary are assigned a depth of zero and subsequently ignored. How individual grid squares are treated can be checked visually by enabling the option {\textquotedbl}Depth types{\textquotedbl} in the following right-hand panel, which is 
+displayed when GenerateMesh is invoked:
+
+The user can change the quantities displayed in red in this panel. If required for diagnostic purposes, mesh data can be output in MESH format (see Part III) by picking '{}'NONE'{}' and then supplying a file name for the output. The user has control over the mesh size for the Cartesian grid, which is basic to all three ways of generating new nodes offered under this particular option. The default value of mesh size shown (in problem length units) is found by taking the greater of the lengths of the active polygon in the x- and y-directions and dividing this length by 50 to get a mesh size which gives a Cartesian grid covering the working polygon with 50 rows or columns. To set a different mesh size, pick the displayed value with the cursor and enter a new value via the keyboard. Picking the current status word can toggle any of the three Display Options. Further explanatory information comes up in the right-hand panel if either of the last two display options is toggled on. Turning on '{}'Depth Triangles'{}' 
+displays triangles in the irregular depth grid, which are actually used in evaluating depths in squares of the Cartesian grid. When the required options have been chosen, pick ACCEPT to initiate the calculation of depth in each square of the Cartesian grid and subsequent display of other information specified.
+
+\begin{center}
+
+MESH PARAMETERS\newline
+Output MESH File\ \ \ \ [NONE]
+
+Mesh Size\ \ \ \ \ \ 0.135\newline
+\ \ \ \ \ \ \ \ (100 x 100 grid)
+
+Display Options:
+
+Cartesian Grid:\ \ \ \ [NO]
+
+Depth Types:\ \ \ \ \ \ [NO]
+
+Depth Triangles:\ \ \ \ [NO]
+
+ACCEPT
+
+QUIT
+
+\end{center}
+\subsubsection[Menu item Clusters]{Menu item Clusters}
+The Clusters option provides a method of creating a set of nodes whose spacing is a function of water depth. As explained in Henry (1988), when the model domain is subdivided into cells whose areas are proportional to water depth and the centres of area of these cells are taken as the basis for a triangular network, the areas of the triangles in the network are also approximately proportional to water depth and the spacing of the nodes is such that the Courant criterion is satisfied approximately throughout the grid, that is, node spacing is proportional to the local phase speed of shallow water waves. It should be noted that triangle area could be made proportional to any scalar quantity defined over the domain, by providing a reference grid for that quantity at stage GenerateMesh above, in place of a depth grid.
+
+The model domain is subdivided into cells by forming appropriately-sized compact clusters of squares belonging to the fine resolution Cartesian grid laid out over the domain using option GenerateMesh. Cluster (cell) area is related to water depth by an expression A0 + A1*DEPTH + A2*DEPTH**2, where the coefficients A0, A1, A2 can be set by the user. The linear case described in the preceding paragraph corresponds to A0 = A2 = 0.
+
+Choice of option Clusters brings up an information panel on the right, which allows the user to reset various parameters and display conditions. The information panel contents are:
+
+Minimum cluster size (default =1) is considered in Cartesian grid squares. The maximum number of new nodes shown is the maximum node array size permitted taken away from the number of existing nodes in the whole domain. If a starting location for cluster formation is required other than at the point of maximum water depth, the starting location has to be specified in terms of number of rows and columns in the fine Cartesian grid, counting from the lower left-hand corner. The outlines of the clusters of squares from the Cartesian grid can be displayed as picking the option Draw Clusters forms them. Cluster formation begins on picking option ACCEPT.
+
+\begin{center}
+
+NODE GENERATION PARAMETERS
+
+Cluster size coefficients:
+
+A0 = [0.000]\newline
+\ \ A1 = [0.800]\newline
+\ \ A2 = [0.000]
+
+Minimum Cluster Size:\ \ \ \ \ \ [1]
+
+Maximum number of New Nodes:\ \ \ \ [12345]
+
+Starting Location:\ \ \ \ \ \ \ \ [Deepest location]
+
+Draw Clusters:\ \ \ \ \ \ \ \ [NO]
+
+ACCEPT
+
+QUIT
+
+\end{center}
+\subsubsection[Menu item OverlaySquares]{Menu item OverlaySquares}
+This option places a new interior node at the centre of each square of the Cartesian grid whose centre lies within the active polygon and more than half a mesh interval from the nearest land boundary, that is, at the centre of each square assigned a positive depth as a result of operation GenerateMesh above.
+
+\subsubsection[Menu item TriangulateNodes]{Menu item TriangulateNodes}
+The following option is used for triangulation of a set of nodes; that is, it converts the data from NODE format to NEIGH format with a neighbour list and triangle list. The triangulation algorithm used in GRIDIT was devised originally by Cline and Renka and modified by Bova and Carey to handle boundaries. It yields what is known as a Delaunay triangulation, one in which the triangles formed are as near equilateral as possible for the given positions of the nodes.
+
+After triangulation, the grid should be checked both visually and by using various operations under Tests in the \{TOP\} menu. The reason for checking the output is that although the triangulation algorithm is fairly robust, it can produce various errors, some immediately obvious and some not. For instance, when the coordinate datum is poorly positioned, remote from the domain being modelled, consequent error in single precision subtractions can lead to very obvious misconnections between nodes far removed from one another. To minimize round off errors, coordinate reference should be placed within or immediately adjacent to the grid. 
+
+On the other hand, less obvious but serious error can occur if the first few nodes on a boundary are collinear or approximately collinear. Then some or all of the nodes involved, and even some nodes further along the boundary, may have surplus connections to nodes which are not their immediate neighbours in the input node set. Automatic detection and correction of these errors is part of the triangulation algorithm. Checking for this type of error is advisable with the help of the EditGrid option. It can be prevented by modifying the arrangement of the corresponding block of nodes in the input file. Since each boundary corresponds to a closed curve, collinear nodes at the beginning of a boundary block can be moved to the end of the block (using a text editor), where they normally cause no problem.
+
+The triangulation algorithm can be confused by certain complicated coastal geometry. When an island lies partly in a coastal bay and both features have relatively few boundary nodes, spurious connections may be set up; the island coastline may be erroneously incorporated into the outer boundary. Another common error occurs along some nearly straight boundary segments. There are boundary connections that lie outside the boundary and define long, thin triangles that are difficult to see. Normally these connections are removed automatically. They can also generally be detected by using option \{Tests\}Nodecheck, as will be explained later.
+
+These errors are not peculiar to the Renka algorithm. All methods of triangulation used so far by the authors suffer from some problems similar to those mentioned, so it is advisable to have good error-checking capability, no matter what triangulation method is used.
+
+\subsection{Contents of menu: NodeEdit}
+Picking EditNode with the mouse brings up the following menu, which gives access to operations affecting individual nodes rather than groups of nodes:
+
+EditNode: Boundary {\textbar} Add Delete Move ReSelect Line DeleteIsland {\textbar} \ \ 
+
+\ \ \ \ \ \ Interior {\textbar} Add Delete Move Line 
+
+There are two main groups of operations: operations on boundary nodes follow the label '{}'Boundary'{}' and operations on interior nodes follow the label '{}'Interior'{}'.
+
+\subsubsection[Boundary menu item Add]{Boundary menu item Add}
+Option Add allows addition of a single boundary node. The user is prompted to indicate the required position for the new node by means of the cursor. A coloured marker is placed at the specified position and the user is asked to confirm the addition. On confirmation, the following prompt appears:
+
+Enter DEPTH at this node ({\textless}RTN{\textgreater} for 0.0):
+
+The user can then enter an appropriate depth, if known, or set the depth to zero by pressing RETURN.
+
+\subsubsection[Boundary menu item Delete]{Boundary menu item Delete}
+The Delete option allows deletion of any individual boundary node. A choice of methods of selecting the node to be deleted is offered in the right hand panel. The user has to confirm the proposed deletion before the node file is actually updated. When selecting nodes by their indices, it is best to tackle the nodes in reverse order (highest index first), since node indices higher than that of the node deleted are decremented as soon as the deletion of a node is confirmed.
+
+N.B. This Delete option should not be used for complete deletion of an island, which requires more radical changes to the NODE file. Instead, use DeleteIsland, described later.
+
+\subsubsection[Boundary menu item Move]{Boundary menu item Move}
+The Move option changes the position of a node. The node to be moved and its new position are selected with the cursor.
+
+\subsubsection[Boundary menu item ReSelect]{Boundary menu item ReSelect}
+This option allows the user to replace any designated string of boundary nodes with a fresh selection of nodes from a boundary data file in DIGIT or NODE format. Selection may be made on the basis of distance between points or by choosing every Nth digitized point. The following information panel is displayed:
+
+BOUNDARY NODE\newline
+RESELECTION
+
+
+\bigskip
+
+File Type: \ \ NODE\newline
+File Name:\newline
+NONE \newline
+
+Show Bndry from file: \ \ NO\newline
+Show Bndry Connect: \ \ YES
+
+Sampling Rate:\newline
+Nth Point: \ \ \ \ 10\newline
+Distance: \ \  \ \ \ \ 1.000
+
+PICK ENDPOINTS\newline
+RESELECT 
+
+TOP: DISPLAY
+
+TOP: INFO\newline
+QUIT
+
+
+\bigskip
+
+NODE and File Boundary Blocks in Same Order:
+
+NO
+
+Pick [NONE] under '{}'File Name:'{}' as the first operation in this panel. Enter the file name of the file to reselect from to the following prompt. Pick [NODE] next to '{}'File Type:'{}' if the file is in DIGIT format. The asterisk indicates which selection criterion is in effect. To reselect a stretch of boundary nodes, first pick the first and last nodes on the stretch to be replaced. The program will then search the digitized boundary data file and display the points, which it identifies to be the first and last points of the corresponding stretch of digitized boundary data. On confirming this identification, the user can make a fresh selection of nodes by picking ReSelect. Once reselection of the nodes is complete the new nodes will be displayed and the user may save or cancel the reselection at the following prompt. If the reselection is saved a prompt will appear asking if depth for the reselected nodes should be interpolated or assigned from the input file used. Pick QUIT to leave this procedure. The 
+final option in the panel permits some saving of time in the case of very large digitized boundary files. If it is known that the blocks of data (digitized data or nodes) representing islands are in exactly the same order in both the DIGIT and NODE files, then some search time can be saved by toggling NO to YES. Do not use this facility if islands have been deleted with the corresponding updating of the digitized boundary file.
+
+\subsubsection[Boundary menu item Line]{Boundary menu item Line}
+The Line option permits replacement of a stretch of boundary with a straight line of new boundary nodes, the total number of which is under the user's control. This operation is useful for straightening up lines of boundary nodes representing docks, wharves, etc. Another application is in creating a line of nodes to represent a new open boundary when an outlying part of a model domain is removed for any reason.
+
+The user is prompted to pick two existing boundary nodes, which demarcate the beginning and end of the stretch to be replaced. Existing intervening nodes are deleted and the user is prompted to enter via the keyboard how many new boundary nodes are to be placed (at equal intervals) along the straight line joining the two designated end nodes. The proposed new configuration is then displayed for confirmation or cancellation. Two methods of setting depths at the new nodes are offered, manual entry, node by node, via the keyboard, or by linear interpolation between the depths at the designated end nodes.
+
+This permits setting new depths along a stretch of boundary by linear interpolation between depths at nodes at each end. The user is asked to pick two nodes, one at each end of the length of boundary where depths are to be set. Note that it is incorrect to pick the same node twice when wishing to reset depths on a whole boundary, e.g. an island. Instead, pick two adjacent nodes. The nodes on the stretch of boundary identified by the program as lying between the specified end nodes are then shown in yellow. Note that the wrong part of the boundary may be shown, due to ambiguity as to which is the first and which is the last node. If this happens, enter N (No) and the remaining part of the boundary (presumably the required part) will be shown in yellow. When the choice of boundary stretch is confirmed, a new panel will be displayed, in which the end nodes are identified by red and blue and their current depths are displayed. If either of these depths is incorrect, pick the current value and enter a new one. 
+Then when ACCEPT is subsequently picked, linear interpolation of depth is carried out on the basis of distance (arc length) along the boundary.
+
+\subsubsection[Boundary menu item DeleteIsland]{Boundary menu item DeleteIsland}
+This option deletes all boundary nodes associated with an island, that is, complete removal of an island from the node file. The user selects the island to be deleted by picking any boundary node of the island.
+
+\subsubsection[Interior menu item Add]{Interior menu item Add}
+Option Add allows addition of a single interior node. The user is prompted to indicate the required position for the new node by means of the cursor. A coloured marker is placed at the specified position and the user is asked to confirm the addition. On confirmation, the following prompt appears:
+
+Enter DEPTH at this node ({\textless}RTN{\textgreater} for 0.0):
+
+The user can then enter an appropriate depth, if known, or set the depth to zero by pressing RETURN.
+
+\subsubsection[Interior menu item Delete]{Interior menu item Delete}
+The Delete option allows deletion of any individual interior node. A choice of methods of selecting the node to be deleted is offered in the right hand panel. The user has to confirm the proposed deletion before the node file is actually updated. When selecting nodes by their indices, it is best to tackle the nodes in reverse order (highest index first), since node indices higher than that of the node deleted are decremented as soon as the deletion of a node is confirmed.
+
+\subsubsection[Interior menu item Move]{Interior menu item Move}
+The Move option changes the position of a node. The node to be moved and its new position are selected with the cursor.
+
+\subsubsection[Interior menu item Line]{Interior menu item Line}
+The Line option permits insertion of a straight line of new interior nodes, the total number of which is under the user's control. One application is in creating a line of nodes to represent a new interior line such as at the edge of a channel.
+
+The user is prompted to pick two existing nodes, which demarcate the beginning and end of the line segment. The user is prompted to enter via the keyboard how many new nodes are to be placed (at equal intervals) along the straight line joining the two designated end nodes. The proposed new configuration is then displayed for confirmation or cancellation. Two methods of setting depths at the new nodes are offered, manual entry, node by node, via the keyboard, or by linear interpolation between the depths at the designated end nodes.
+
+\subsection{Contents of menu: GridEdit}
+This menu option leads to menu items that provide for manipulation of triangular grids, including editing, merging, and splitting. When the EditGrid menu is chosen, the following options appear:
+
+EditGrid: AddLine AddNode DeleteLine DeleteNode Move GridMerge {\textbar} CleaveNode Insert Exchange ReShape {\textbar} Scale Shift Rotate
+
+These permit a wide variety of changes to be made to the displayed grid, as described below.
+
+\subsubsection[Menu item AddLine]{Menu item AddLine}
+Option AddLine permits addition of a connection between two vertices. It brings up the following right-hand panel:
+
+ADD LINES
+
+OPERATION
+
+Select means of choosing\newline
+two vertices to join
+
+(1) BY CURSOR\newline
+(2) BY INDEX\newline
+ \newline
+(5) QUIT
+
+Picking options (1) and (2), will designate the nodes to be joined by entering their indices or picking them with the cursor. In this, as in all active editing operations reached through menu \{EditGrid\}, with the sole exception of \{EditGrid\}Reshape, the proposed change to the grid is displayed to the user for confirmation or cancellation before any permanent change is made to the grid file.
+
+Note: When selecting a node by means of the cursor, the message `ERROR - Invalid point' may be displayed. When this happens, a second attempt to select the required node will normally prove successful, since the cursor range is increased automatically. The cursor range can also be changed directly as described in \{Info\}CursorRange or turned off using \{Info\}AutoRange.
+
+\subsubsection[Menu item AddNode]{Menu item AddNode}
+Choice of option AddNode permits the user to add a new vertex to the grid and connect it to selected neighbours. At the prompt {\textquotedbl}pick new vertex{\textquotedbl}, the user should use the cursor to position the new vertex. In this case, the right-hand information panel appears as follows:
+
+ADD VERTEX
+
+OPERATION
+
+
+\bigskip
+
+Select PICK NEIGHBOUR 
+
+to designate each, 
+
+neighbour of new point, 
+
+pick DONE when finished.\newline
+
+PICK NEIGHBOUR \newline
+
+DONE \newline
+
+QUIT
+
+After the new vertex has been chosen, the user uses option PICK NEIGHBOUR from the panel to designate each of the existing nearby vertices to which the new vertex is to be connected. When all the required neighbours of the new vertex have been indicated in this way, select DONE. Prompts remind the user to set water depth and the computational code at the new vertex, and to reset computational codes of the neighbours, where necessary.
+
+\subsubsection[Menu item DeleteLine]{Menu item DeleteLine}
+Option DeleteLine permits deletion of an existing connection between two vertices. The user is prompted to place the cursor at the mid-point of the line to be deleted. Then a dialogue pops up asking the user to `` Is this change OK''. Selecting either `Yes' or `No' brings up another message asking, `` Delete more lines''. If the user responds with `Yes', a prompt appears requesting the user to place the cursor again midway between the vertices. `No' will return control to the top menu.
+
+\subsubsection[Menu item DeleteNode]{Menu item DeleteNode}
+This option allows deletion of a vertex and its connections to other vertices. The operation is similar to the above, which is described in DeleteLine. 
+
+\subsubsection[Menu item Move]{Menu item Move}
+The Move operation consists simply of moving a designated vertex to a new location, which should lie strictly within the polygon formed by the neighbours of the vertex, otherwise some line segments will cross. The vertex and its new location are selected with the mouse and cursor. The display shows the revised positions of the line segments linking the moved vertex to its neighbors, so that the move can be confirmed or cancelled. In the latter case, the vertex and its connections are redisplayed in their original configuration. 
+
+If a vertex is moved so that it coincides or nearly coincides with one of its neighbours, the assumption is made that the user wishes to merge the two vertices into a single vertex connected to all the vertices to which the two merging vertices were singly or jointly connected. The program alerts the user as to whether it recognizes a proposed move as a Move or a GridMerge request by displaying the messages {\textquotedbl}Is this MOVE ok?{\textquotedbl} or {\textquotedbl}Is this MERGE ok?{\textquotedbl} respectively. As it is important to know when the Editor does not recognize an intended MERGE operation, the message {\textquotedbl}This is a move, NOT a merge{\textquotedbl} is displayed when the new location lies near a neighbour but not quite near enough to cause a MERGE. Normally, the program examines only the neighbours of the point being moved when checking whether a move or merge should take place.
+
+Values of depth and computational code are changed automatically when vertices are merged. If the vertex being moved is labelled A, and B designates the stationary vertex with which A is merged, then the depth and code for the merged vertex at B are set as follows:
+
+\begin{itemize}
+\item If B and A are both interior points of the grid, B retains its original code (0) and depth.
+\item If A is an interior point and B is a boundary point, B retains its original code and depth.
+\item If A is a boundary point and B is an interior point, B assumes the code and depth of A.
+\item If B and A are both boundary points, B retains its original code and depth. If the points originally lay on boundaries of different types, the user should check whether the code and depth at B should equal the original code and depth at B or A, and reset them with option \{EditGroup\}Grids.NodeCode if necessary. Depths and codes at individual nodes can be changed if necessary by means of options in \{EditGroup\}.
+\end{itemize}
+
+\bigskip
+
+\subsubsection*{}
+Normally, in the MOVE/MERGE operation, to save time the editor checks only the existing neighbours of a node when deciding whether a MERGE operation is intended. To use MERGE to establish a new connection between nodes, as is necessary when joining hitherto unconnected parts of a grid; it is necessary to extend the search for possible intended merge candidates to all other nodes in the grid. When joining is complete, selecting option GridMerge can toggle off the wide search mode.
+
+\subsubsection*{}
+\subsubsection[Menu item GridMerge]{Menu item GridMerge}
+This option turns the merging operation `ON' or `OFF'.
+
+\subsubsection[Menu item CleaveNode]{Menu item CleaveNode}
+Cleave allows the user to replace an interior vertex with two new vertices, each of which is connected to roughly half of the neighbours of the vertex being replaced. To carry out a cleaving operation, it is necessary only to use the cursor to select the point to be replaced. The purpose of this option is to allow convenient insertion of extra vertices. Cleaving is not allowed on boundary vertices or with interior vertices having only three or four neighbours. The depth at each new vertex position is computed automatically by linear interpolation. The Reshape option below is often used following the cleave operation in order to improve triangle shape.
+
+\subsubsection[Menu item Insert]{Menu item Insert}
+The Insert option is used in two situations, where adding a line connection to the grid implies creation of a new vertex. 
+
+First, a line segment can be added from an existing interior node to a point X on the boundary. This requires creation of a new grid node on the boundary, since every line of the grid must end at a node. This operation can be carried out by placing the cursor at or near the mid-point of a boundary segment. If the boundary points on either side of the new boundary vertex have the same computational code, the editor assigns that code to the new vertex also, otherwise the user is asked to enter an appropriate code. The option of setting the depth at the new vertex manually or automatically is then offered. Automatic depth setting means that the new vertex is assigned a depth equal to the average of the depths at the two neighbouring boundary points. If the new vertex lies outside the former boundary, a yellow marker is placed at the new vertex as a reminder that the reference DEPTH GRID should be updated correspondingly.
+
+The second application of Insert is to add certain extra connections within a quadrilateral consisting of two triangles sharing a common side. This is done by placing the cursor at or near the mid-point of the connection between 2 interior nodes. An extra vertex is added along with new connections. If the user approves the new configuration displayed, a choice of manual or automatic calculation of depth is offered. If automatic evaluation is chosen, the depth at the new vertex is found by linear interpolation if the four surrounding vertices are all interior points of the grid. In the event that one or more of the surrounding vertices is on a boundary, the depth at the new vertex is set equal to the average of the depths at those surrounding points which have non-zero depths.
+
+\ In both of the uses of Insert described above, the new vertex is placed at the position of the cursor, i.e. close to the mid-point of the existing connection. Its position can be adjusted subsequently using the Move option in \{EditGrid\} if required.
+
+\subsubsection[Menu item Exchange]{Menu item Exchange}
+The function of this editing operation is to swap a diagonal connection in a quadrilateral formed by 2 triangles. In order to perform this process, place the cursor near the mid-point of diagonal line.
+
+\subsubsection[Menu item Reshape]{Menu item Reshape}
+Reshape provides a method for forming more equilateral triangles in the grid by making appropriate adjustments in the positions of interior vertices. Use of this option is recommended after any editing operations that involve adding or deleting any vertices or connections between vertices. Reshape makes three passes through the grid, treats the interior vertices in order of their indices, and leaves a vertex in its original position if the computed adjustment is less than about 1\% of the linear dimensions of the polygon formed by its neighbours. The depth at each new vertex position is computed automatically by linear interpolation.
+
+Unlike all the other editing operations, Reshape cannot be reversed; it is recommended that the current grid be saved using \{File\}InterimSave if there is any likelihood of requiring the grid as it is prior to reshaping.
+
+\subsubsection[Menu item Scale]{Menu item Scale}
+At any time during an editing session, the x and y coordinates of all grid nodes can be rescaled by means of this option. It should be noted that the stored minimum and maximum values of x and y are not updated by Scale and consequently the window limits are not updated. However, the minimum and maximum values are updated when the grid is written to file with \{File\}InterimSave or \{File\}SaveAs.
+
+\subsubsection[Menu item Shift]{Menu item Shift}
+This allows shifting of the x and y coordinates of all the grid nodes. The above remarks on minimum and maximum values also apply here.
+
+\subsubsection[Menu item Rotate]{Menu item Rotate}
+This option allows rotation of the horizontal coordinates.
+
+\subsection{Contents of menu: Polygons}
+This option permits creation, saving, retrieving, activation and deletion of polygonal areas of the model domain in which the user wishes to carry out editing functions accessed subsequently through the Top menu. The menu is:
+
+DefineGroup: Create Whole Cycle Activate Delete Write Read PolysOff
+
+These options are described next.
+
+\subsubsection[Menu item Create]{Menu item Create}
+The Create option permits design of a new polygon within which to edit nodes. The user picks successive vertices of the required polygon with the cursor, finishing by picking the first vertex a second time to complete the polygon. Once confirmed, the newly designed polygon becomes the active (yellow) polygon (see Activate below).
+
+\subsubsection[Menu item Whole]{Menu item Whole}
+This option creates a polygon that includes the entire grid.
+
+\subsubsection[Menu item Cycle]{Menu item Cycle}
+Repeated picking of option Cycle permits the user to display in turn all, none or individual members of the list of stored polygons. Non-active polygons are outlined in red, whereas the active polygon is outlined in yellow.
+
+\subsubsection[Menu item Activate]{Menu item Activate}
+The Activate option allows one to designate a single member of the existing polygon list as the only area in which node-editing operations are to be carried out. To activate a polygon, use Cycle until only the required polygon is displayed, then pick the Activate option. The chosen polygon will then reappear in yellow. If some other polygon was active up till this time, it becomes inactivated and is subsequently displayed in red.
+
+\subsubsection[Menu item Delete]{Menu item Delete}
+Delete is used in conjunction with Cycle to delete the currently active polygon from the stored list of polygons.
+
+\subsubsection[Menu item Write]{Menu item Write}
+This saves all currently defined polygons to a file named by the user. It may be used in conjunction with Read below.
+
+\subsubsection[Menu item Read]{Menu item Read}
+This option allows the user to read in a named file containing polygons designed and saved during some earlier node-editing session by means of Write. For instance, when running the demonstration case supplied, use Read to read a file named POLYEAST.DAT, which defines a particular polygon to be used if exact comparison with subsequent test outputs to be possible.
+
+\subsubsection[Menu item PolysOff]{Menu item PolysOff}
+This option makes all polygons inactive.
+
+\subsection{Contents of menu: EditInPoly}
+This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. The menu is:
+
+EditGroup: Nodes {\textbar} DeleteBnd DeleteInt DeleteAll NodeCode TooClose ShiftCopy {\textbar} 
+
+Grids {\textbar} CleaveNodes RefineElement ReShape NodeCode ElementCode ReDepth SplitGrid DeleteGrid
+
+A valid set of operations for NODE format files follow the label '{}'Nodes'{}', and the valid set of operations for NEIGH format grid files follow the label '{}'Grids'{}'.
+
+\subsubsection[Menu item DeleteBnd (Delete Boundary)]{Menu item DeleteBnd (Delete Boundary)}
+This operation deletes all boundary nodes within the working polygon. N.B. This option should not be used for complete deletion of an island, which requires more radical changes to the NODE file. Instead, use DeleteIsland in \{EditNode\}, described earlier.
+
+\subsubsection[Menu item DeleteInt (Delete Interior)]{Menu item DeleteInt (Delete Interior)}
+This operation deletes all interior nodes in the working polygon.
+
+\subsubsection[Menu item DeleteAll]{Menu item DeleteAll}
+This operation deletes all boundary and interior nodes in the working polygon. It is equivalent to splitting a NODE format file into 2 parts, one inside the polygon and one outside.
+
+\subsubsection[Menu item NodeCode]{Menu item NodeCode}
+This option permits changing all computational codes for nodes within a polygon. For instance, all the nodes with code = 1 along a section of land boundary can be changed to code = 5 for an open boundary. Then the endpoints are set manually to code = 6 to describe a node at the junction of a land and open boundary.
+
+\subsubsection[Menu item TooClose]{Menu item TooClose}
+The TooClose option allows automatic inspection of the area within the active polygon for pairs of nodes, which are too close to one another. Invoking this option brings up an information panel on the right that shows the measure of closeness used. 
+
+\ \ \ \ \ \ \ \ \ {\textless}{\textless}-{}- Range Box Size
+
+Too Close Node Range:
+
+0.024
+
+Too Close Node Pairs
+
+Found:
+
+0
+
+OPTIONS:
+
+\begin{enumerate}
+\item TEST CLOSENESS
+\end{enumerate}
+
+\bigskip
+
+\begin{enumerate}
+\item MOVE Interior
+\item DELETE Interior
+\item MOVE Boundary
+\item DELETE Boundary
+\item QUIT
+\end{enumerate}
+Distance between nodes is calculated as (distance in x-direction + distance in y-direction). The default test distance is the current value of the cursor sensitivity range. A box is displayed at the top right corner of the main display panel showing graphically the current value of the range being used in this test. The test is initiated by picking TEST CLOSENESS in the right-hand panel. The number of pairs of nodes found to be too close together is displayed and square markers indicate the nodes involved. 
+
+\subsubsection[Menu item ShiftCopy]{Menu item ShiftCopy}
+ShiftCopy permits translation of interior or boundary nodes in the x and y directions. Picking ShiftCopy brings up the following panel on the right:
+
+SHIFT \& COPY NODES
+
+CURSOR INPUT
+
+
+\bigskip
+
+X Shift = \ \ \ \ 0.000\newline
+Y Shift = \ \ \ 0.000
+
+Z Shift = \ \ \ 0.000
+
+
+\bigskip
+
+SHIFT INTERIOR\newline
+SHIFT BOUNDARY
+
+COPY INTERIOR\newline
+COPY BOUNDARY
+
+QUIT
+
+Positive X moves RIGHT\newline
+Negative X moves LEFT\newline
+Positive Y moves UP\newline
+Negative Y moves DOWN
+
+As an example, pick 0.000 opposite X Shift and enter the value 1.0 in answer to the subsequent prompt. Then pick SHIFT INTERIOR. The interior nodes in the active polygon will be shown shifted one problem length unit to the right. If this new configuration is confirmed, the node coordinates in the node file will be changed accordingly.
+
+\subsubsection[Menu item CleaveNodes]{Menu item CleaveNodes}
+When this option is chosen, all the nodes within the active polygon are refined by a cleave operation (See \{EditGrid\}CleaveNode)
+
+\subsubsection[Menu item RefineElement]{Menu item RefineElement}
+When this option is chosen, all triangles within the active polygon are refined by dividing each element at its mid side nodes. Thus one element becomes four. NOTE: This option is not active at this time.
+
+\subsubsection[Menu item Reshape]{Menu item Reshape}
+This option allows a reshape of the elements in the current polygon. The operation is similar to that in \{EditGrid\}ReShape.
+
+\subsubsection[Menu item NodeCode]{Menu item NodeCode}
+This option allows the computational code to be changed at groups of nodes. The code at individual nodes can be set in \{Info\}Node.
+
+\subsubsection[Menu item ElementCode]{Menu item ElementCode}
+This option allows the element code to be changed for groups of elements in the current polygon, or by reading a polygon file. When a grid is set up, separate polygons should be created using DefineGroup to define separate element types. All these polygons should be saved in a file and then read to set element codes for any modification of this grid. The first polygon (usually the whole polygon) defines element code 1 and the second code 2 etc.
+
+\subsubsection[Menu item ReDepth]{Menu item ReDepth}
+
+\bigskip
+
+
+\bigskip
+
+\subsubsection[Menu item SplitGrid]{Menu item SplitGrid}
+The split option permits division of an existing grid into two separate grids. It is used most frequently to remove surplus parts of a grid outside the open boundaries, after the latter have been positioned. It can also be used to split a large grid into smaller parts, either temporarily, to facilitate editing, or permanently, to provide grids for smaller models. (The opposite process of joining together small grids to make a larger one can be carried out by means of the \{File\}AddGrid option). In order to use this option, an active '{}'splitting'{}' polygon must be created first using DefineGroup. In this case, grid parts inside and outside the polygon are separated into two self-consistently numbered grids. Before splitting can be carried out, the user must select suitable vertices near the polygon and move them to the nearest side of the polygon, otherwise the grids will have a gap between them. As well as facilitating movement of vertices, the program also reminds the user to enter appropriate computing 
+codes for each vertex moved to the new boundaries formed on splitting.
+
+Before choosing the SplitGrid option, the user must design a polygon that demarcates the intended division. That part of the initial grid, which lies inside the splitting polygon, will eventually be output as an independent grid, and the remaining part outside the polygon will be output as another grid. Each of the output grids will be in NEIGH format and will have its nodes numbered consecutively from 1 upwards. Note: A current bug in the Splitter makes it inadvisable to place a polygon vertex directly at a boundary node of the grid: a triangle may consequently be dropped from the sub-grid lying inside the polygon when the split takes place. Avoid this by finding the coordinates of the boundary node using the \{Info\}Node option before choosing SplitGrid and extrapolate the required splitting line to find a suitable vertex position outside the grid.
+
+The following first prompt appears after the option is chosen.
+
+First vertex of side to work on by C - cursor, X -- xy, Q - quit?
+
+Normally, the polygon vertices will be placed by means of the cursor, option C, but the X option is useful occasionally, e.g. when repeating a previous run, for instance when practising with the demonstration data. Coordinates are always given in problem length units. On exit from the Splitter, a file of polygon vertex coordinates with the filename POLY.DAT is output automatically to facilitate such repeat runs. The next prompt asks the user to indicate the desired location for the first vertex of the polygon, after which the following prompt appears:
+
+V - pick next vertex L - pick last vertex Q - quit
+
+Vertices should be entered either in clockwise order or counter clockwise order, since they are connected and displayed in order of entry. Choice of location by cursor or coordinates is offered for each vertex. Currently, up to ten vertices are allowed. After the last vertex has been positioned, the user can either confirm or cancel the displayed polygon. Assuming that a satisfactory polygon has been drawn, the next step is to decide which side of the polygon to work on, i.e. to choose one of the sides of the polygon which actually intersects the grid, and then move nearby nodes to this line, so that both sub-grids produced will have boundary nodes lying on the splitting polygon. The relevant prompts are:
+
+Pick 1st vertex of next side to work on by C - cursor, X - xy
+
+Pick 2nd vertex of next side to work on by C - cursor, X - xy
+
+At this point, in response to the prompt ``A - automatic M - manual movement to polygon boundary Q --quit'', there is a choice of methods for moving nodes to the splitting line. Manual movement of nodes to the splitting polygon requires choosing both the node and its new position by cursor. Under option A~-~automatic, so far as internal nodes are concerned, the user merely has to indicate with the cursor which node to move and the node is then moved to the current working side of the splitting polygon along a perpendicular through its original position. However, boundary nodes are still moved manually, as the automatic move option might result in a node being moved away from the original boundary, particularly when the boundary and the splitting line are not approximately perpendicular to one another. Whether automatic or manual moving of nodes is chosen, each move is displayed for confirmation or cancellation.
+
+Note that in choosing nodes to move to the splitting line, it is important that consecutive nodes moved should be connected to one another, i.e. be neighbours. An example of an improper sequence of nodes is A-B-C-D in a figure not yet available. In this case, the connection EF still crosses the splitting line after nodes A, B, C and D have been moved. On the other hand A-B-F-D or A-E-F-D would be acceptable sequences. Where one of the sub-grids output by the Splitter is going to be discarded, for example when some unwanted extension of a grid is being removed, it is normally better to move unwanted nodes to the splitting line, rather than choosing nodes that will be retained in any case. It is then easier to maintain well-shaped triangles in the remaining sub-grid. Prior to moving a node to the splitting line, the user has a choice of the following:
+
+M - Move Node \ \ W - Windowing \ \ D - Done this side
+
+Option W is not accessible from this menu.
+
+When moving nodes to the splitting polygon, it is advisable to zoom in until nodes to be moved are at least 0.5 cm apart on the screen. This may involve displaying only part of the current polygon side; opportunity to zoom out again is offered at appropriate times. When ready to move a node to the current working side of the splitting polygon, choose option M (move node) from [3]. This will bring up further prompts appropriate to automatic or manual node moving. After the node has been moved, the user will be asked to confirm or cancel the move. One situation in which a move may have to be cancelled is if the wrong node is selected due to insufficient sensitivity of the cursor. The program will correct this automatically, if the move is cancelled and the selection is repeated. There is a bug in the Splitter at present, which results in occasional failure to restore the previous display when a move is cancelled; this can be ignored, since the program in fact handles the grid file correctly. Continue moving 
+nodes to the splitting line until connections between nodes coincide with the line along its whole length. Note that a node should be '{}'moved'{}' even if it originally lies on the line; otherwise the program is not informed that such a node is now a boundary node. If in doubt whether a node has been moved or not, check the colour of lines connecting it to its neighbours: all of these will be in the '{}'modify colour'{}' if the node has been moved. There is no harm in moving a node twice, if in doubt. The completion of a side is signalled by using option D in [3], but before doing so, it is necessary to window out, using option W, to the extent that the whole length of the current working side is visible in the display. Then when D is subsequently entered, it will always be possible to see which node prompt [5], below, refers to. When moving nodes to the current working side of the splitting polygon is complete and this has been signalled to the Splitter program by entering D in answer to prompt [3], a 
+marker is placed at each moved node in turn and the following prompt appears:
+
+Enter a non-zero computational code for this boundary point:
+
+The code entered by the user will be assigned to the node in question in both sub-grid files output by the splitter. Water depth at the new location of a moved node is evaluated by linear interpolation, if it is originally an internal node. For a moved boundary node, the user has the option of leaving the depth equal to its value before the node was moved or entering a new value of depth. When codes have been entered for all nodes moved to the current working side, the following prompt appears:
+
+F - finished \ \ M - if more sides to do
+
+If more than one side of the splitting polygon intersects the grid, and not all such sides have had nodes moved to them, option M should be chosen. The first subsequent step is to window up, if necessary, to make sure that the whole of the next side to be worked on is visible. The user will then be lead through the same procedure for the next working side as for the previous one. Eventually, when nodes have been moved to all sides of the splitting polygon which intersect the grid, choose option F, which initiates the actual splitting process.
+
+The user is then led through a series of steps concerning display and output of the two sub-grids produced. When these have been carried out, splitting is complete.
+
+\subsubsection[Menu item DeleteGrid]{Menu item DeleteGrid}
+This option deletes the grid section selected by the current polygon.
+
+If a polygon is not active a message is displayed asking the user to define a polygon first
+
+
+
+\subsection{Contents of menu: Configure}
+When the item Config is chosen, the following options appear across the top of the screen:
+
+Config: DrawNode ConfigNode {\textbar} DrawGrid ConfigGrid {\textbar} DrawContour ConfigContour {\textbar} DrawData ConfidData
+
+This menu allows choice of the colours used for display of the grid. It also provides control of the display of digitized boundary and depth contour data and the colours in which these appear. In addition, it provides a certain control of the GridMerge operation needed when grids are being joined, and a facility for checking and, if necessary, adjusting the cursor sensitivity.
+
+\subsubsection[Menu item DrawNode]{Menu item DrawNode}
+Clicking this option toggles between ON and OFF of the Configured nodes display described below.
+
+\subsubsection[Menu item ConfigNode]{Menu item ConfigNode}
+Picking this option brings up the following information panel:
+
+NODE CONFIGURATION
+
+Node File Name:\ \ \ \ 
+
+NONE \newline
+
+
+Next Interim Save File:\ \ \ \ 
+
+interim1.nod (or interim2.nod)
+
+
+\bigskip
+
+Node Colours\newline
+Interior:\ \ \ \ \ \ {}--- colour ---\newline
+Boundary:\ \ \ \ \ \ {}--- colour ---\newline
+Second:\ \ \ \ \ \ {}--- colour ---\newline
+Modify:\ \ \ \ \ \ \ \ {}--- colour ---
+
+Markers:\ \ \ \ \ \ {}--- colour ---
+
+
+\bigskip
+
+Secondary Colour 
+
+Index:\ \ 99999
+
+
+\bigskip
+
+Node Type:\ \ \ \ \ \ +\newline
+Marker Type:\ \ \ \ \ \ +
+
+REDRAW
+
+ACCEPT
+
+
+\bigskip
+
+Under {\textquotedbl} Node File Name{\textquotedbl} is shown the name of the input NODE format file. In order to change the colour in use for displaying interior nodes, for instance, pick the colour bar opposite Interior: (represented here by --- colour ---) and keep clicking the mouse button until the desired colour appears. The secondary colour index sets a value for the node indices beyond which nodes are displayed in the secondary colour. Any nodes affected by editing are shown in the {\textquotedbl}modify{\textquotedbl} colour until the next screen refresh. To change symbols, pick the current symbol and click the mouse until the required symbol is displayed. When the required configuration has been set up, pick ACCEPT. The markers referred to here are those created with edit operations.
+
+\subsubsection[Menu item DrawGrid]{Menu item DrawGrid}
+Clicking this option toggles between ON and OFF of the Configured grid display described below.
+
+\subsubsection[Menu item ConfigGrid]{Menu item ConfigGrid}
+Selection of this option brings up a heading GRID CONFIGURATION in the right-hand panel followed by the name of the file being edited and the name of the next interim save file (see \{File\}InterimSave). Below these are three grid colour panels labelled FIRST, SECOND and MODIFY. Initially, these show the respective default colours cyan, red and yellow. Clicking the respective colour panel until the desired colour comes up will change default colour of any these three in use.
+
+Normal practice is to display the whole grid in the FIRST colour. Making the SECONDARY COLOUR INDEX greater than the number of nodes in the editing grid ensures this action. To reset the value of the SECONDARY COLOUR INDEX, place the cursor on the current value displayed and click the mouse, then enter the new value via the keyboard.
+
+Use of two grid colours (FIRST and SECOND) is convenient when joining two grids initially independent of one another. If the value of the SECONDARY COLOUR INDEX is set to be 1 greater than the number of nodes in the first component grid, the two parts of the new grid will be displayed in the FIRST and SECOND colours. This is most helpful in any manual MERGE operations needed to join the two grids (see further remarks under \{EditGrid\}GridMerge below).
+
+When any part of the grid is edited, the revisions will be displayed in the MODIFY colour until the next screen refresh (by \{View\}Redraw or by windowing).
+
+When any required changes have been made in the grid configuration panel, refresh the display to view the primary and secondary grid colours.
+
+\subsubsection[Menu item DrawContours]{Menu item DrawContours}
+Clicking this option toggles between ON and OFF of the Configured contour display described below.
+
+\subsubsection[Menu item ConfigContours]{Menu item ConfigContours}
+The purpose of the contour configuration is to permit convenient monitoring of water depth, phase and amplitude of velocity components U, V and height by placing at each node a marker whose colour depends on range indicated in the right-hand panel, as follows.
+
+CONTOURS CONFIGURATION
+
+\ \ Data:\ \ Depth
+
+\ \ Type:\ \ Full
+
+\ \ Labels:\ \ Off \newline
+
+
+\ \ 10.00\ \ {}--- colour 1 ---\newline
+\ \ 20.00\ \ {}--- colour 2 ---\newline
+\ \ 40.00\ \ {}--- colour 3 ---
+
+\ \ 80.00\ \ {}--- colour 4 ---\newline
+\ \ 100.00\ \ {}--- colour 5 ---
+
+\ \ 150.00\ \ {}--- colour 6 ---\newline
+\ \ 200.00\ \ {}--- colour 7 ---\newline
+\ \ 300.00\ \ {}--- colour 8 ---
+
+500.00\ \ {}--- colour 9 ---
+
+\ \ {\textgreater} 500.00\ \ {}--- colour 10 ---
+
+
+\bigskip
+
+
+\bigskip
+
+Colours \ \ \ \ \ \ \ \ \ \ Remove \ \ \ \ \ \ \ \ \ Add
+
+
+\bigskip
+
+\ \ CANCEL\ \ ACCEPT
+
+
+\bigskip
+
+Clicking the word Depth in cyan will toggle between data of depth, height and U, V components, to be displayed. If depth data is considered, the depth versus colour table indicates how a node will be coloured according to water depth. For example, if the water depth at a particular node is 40m, then a marker in colour 3 will be placed at the node when REDRAW is picked, since 40m lies in the third depth range, between the limits 25m and 50m. To change upper lower or any individual limit, pick the current value with the cursor and enter the new value. As soon as this is done and after a screen refresh, all the limits will be multiplied by this factor and the new limits will be displayed. Picking the current value repeatedly until the required colour shows up can change any of the colours used in the table. Picking ACCEPT causes the display to be updated if any display options have been changed.
+
+\subsubsection[Menu item DrawData]{Menu item DrawData}
+Clicking this option toggles between ON and OFF of the Configured data display described below.
+
+\subsubsection[Menu item ConfigData]{Menu item ConfigData}
+This permits optional display of digitized boundary data from a file in DIGIT format and provides control over the colour used to display this data. The default colour is green. In this case, the heading BOUNDARY CONFIGURATION comes up in the right-hand panel, followed by sub-headings DISPLAY FLAG and BOUNDARY FILE; the initial settings for the latter are OFF and NONE respectively. To display the boundaries, place the cursor on NONE beside BOUNDARY FILE, click the mouse and then enter the name of the file containing the digitized boundary data. The filename entered will appear in the panel and the DISPLAY FLAG will automatically turn to ON. Note that any alternative boundary data file in DIGIT format can be displayed later in the session simply by changing the name of the file to be read in. Of course, any suitably formatted data, even digitized lettering, could be read in and displayed under this option.
+
+The digitized data is read in {\textquotedbl}on-the-fly{\textquotedbl} from disk every time it is displayed. This permits virtually unlimited amounts of digitized lines, characters, etc. to be displayed, though the process is slow compared to display of the grid data, which is stored in memory. For this reason, and because display of the boundaries is often needed for only part of an editing session, display of boundaries can be turned off by placing the cursor on `ON' beside DISPLAY FLAG and clicking the mouse.
+
+When any required changes have been made in the boundary configuration panel, move the cursor on to OK at the bottom of the panel and click the mouse.
+
+Contours configuration is similar to boundary configuration described above except the default contours colour is purple.
+
+
+
+\section{Input and output formats} \label{sec:formats}
+All input routines accept free format input files, i.e. data fields in each record must be separated by at least 1 blank. However, to save storage space, the user is given control over output format. Formats for the 5 principal types of data file are set in DIGIT.FMT, MESH.FMT, NEIGH.FMT, NODE.FMT and TRIANG.FMT in directory trigrid/includes
+
+Examples of formats suitable for the demonstration data files are given in internal documentation in the above-mentioned *.FMT files.
+
+\subsection[NEIGH format]{NEIGH format}
+\subsubsection[Description]{Description}
+
+\textbf{Data layout}: \\ 
+
+\noindent
+FTYPE \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string, free format) \newline
+x0off, y0off, scaleX, scaleY, igridtype\ \ \ \ \ (5 reals, free format)\newline
+NREC \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
+NUMNB \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
+ID,TRX(ID),TRY(ID),CODE(ID),DEP(ID),(NB(ID,J),J=1,NUMNB)\newline
+(integer, 2 reals, integer, real, integers; free format) \newline
+
+\noindent\textbf{Definitions}:\\ 
+
+\noindent
+FTYPE - an indicator of the file type.  For ngh files it is <\#NGH> \newline
+x0off, y0off - the grid offset in the x and y dimensions \newline
+scaleX, scaleY - scaling of the grid in the x and y dimensions \newline
+igridtype - not currently used.  In the future this code will indicate the type of coordinates used by the grid. \newline
+NREC - number of nodes in the grid.\newline
+NUMNB - maximum number of neighbours a node can have.\newline
+ID - index (number) of node , ID = 1, NREC\newline
+J  - neighbour counter, I=1,NUMNB\newline
+TRX(ID),TRY(ID) - contain x,y coordinates of IDth node.\newline
+CODE(ID) - identifies the type of node (boundary,interior,etc).\newline
+DEP(ID) - contains the value of water depth at IDth node.\newline
+NB - two dimensional array of neighbours.\newline
+NB(ID,J) contains the index of the Jth neighbour of the IDth node.
+
+\subsubsection[Example of data file in NEIGH format]{Example of data file in NEIGH format}
+\begin{small}
+
+\begin{lstlisting}
+#NGH
+0.0000E+00   0.0000E+00   1.0000E+00   1.0000E+00   0
+505
+6
+1    1.525  12.469  1   0.000    0    2  485    0    0    0
+2    1.480  12.280  1   0.000    1    3  400  485  492    0
+3    1.310  12.070  1   0.000    2    4  311  477  492    0
+4    1.160  11.860  1   0.000    3    5  477    0    0    0
+5    1.030  11.640  1   0.000    4    6  381  391  477    0
+6    0.910  11.400  1   0.000    5    7  391  482  494    0
+7    0.740  11.200  1   0.000    6    8  494  504    0    0
+8    0.590  10.980  1   0.000    7    9  468  497  504    0
+9    0.480  10.750  1   0.000    8   10  450  469  497    0
+10   0.450  10.510  1   0.000    9   11  438  450    0    0
+11   0.480  10.270  1   0.000   10   12  436  438  453    0
+12   0.560  10.030  1   0.000   11   13  440  453    0    0
+13   0.680   9.810  1   0.000   12   14  322  440    0    0
+14   0.790   9.570  1   0.000   13   15  322    0    0    0
+15   0.930   9.340  1   0.000   14   16  322  350    0    0
+16   1.050   9.100  1   0.000   15   17  241  350    0    0
+17   1.180   8.890  1   0.000   16   18  241    0    0    0
+18   1.280   8.650  1   0.000   17   19  218  241    0    0
+..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+88   5.600  10.410  1   0.000   87   89  157    0    0    0
+89   5.490  10.630  1   0.000   88   90  157  256    0    0
+90   5.400  10.870  1   0.000   89   91  256    0    0    0
+91   5.330  11.110  1   0.000   90   92  163  165  256    0
+92   5.266  11.336  1   0.000   91    0  165    0    0    0
+93   4.090   8.080  2   0.000   94  133  245  334  456    0
+94   3.920   8.270  2   0.000   93   95  456    0    0    0
+95   3.700   8.440  2   0.000   94   96  312  456    0    0
+..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+446   3.756   3.518  0   2.510   48   49  337  367  470    0
+447   5.534   6.025  0   2.510  431  434  443  452  462    0
+448   8.995   5.801  3   2.490   66  277  335    0  410    0
+449   3.846   2.050  0   2.480   54   55  351  382  439    0
+450   0.607  10.600  0   2.470    9   10  343  438  469    0
+ ..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+ ..   .....   .....  .   .....   ..   ..  ...  ...    .    .
+500   3.788   1.811  0   1.180   55   56  427  429  439  491
+501   4.956   6.044  0   1.160  123  124  384  424  480    0
+502   5.249   6.259  0   1.100  122  123  471  486  493    0
+503   5.635   6.518  0   1.060  120  121  475  484  496    0
+504   0.779  11.055  0   1.030    7    8  401  468  494    0
+505   8.486   6.300  0   1.010   68   69  369  457    0    0
+\end{lstlisting}
+\end{small}
+
+
+
+\subsection[NODE format]{NODE format}
+\subsubsection[Description]{Description}
+\textbf{Data Layout:}\newline
+FTYPE \ \ \ \ \ \  {}- (string, free format) \newline
+x0off, y0off, scaleX, scaleY, igridtype\ \ \ \ \ (5 reals, free format)\newline
+NC \ \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+NB,NIB \ \ \ \ \ \ \ \ \ \ \ \ {}- (2 integer, free format)\newline
+NP(1) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+:\newline
+NP(I) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+:\newline
+NPO \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+:\newline
+ \ \ \ \newline
+\textbf{Definitions} :\newline
+ \ \newline
+FTYPE - an indicator of the file type.  For node files it is <\#NOD> \newline
+x0off, y0off - the grid offset in the x and y dimensions \newline
+scaleX, scaleY - scaling of the grid in the x and y dimensions \newline
+igridtype - not currently used.  In the future this code will indicate the type of coordinates used by the grid. \newline
+NC \ \ \ \ \ \ \ \ \ \ \ \ {}- total number of nodes\newline
+NB,NIB \ \ \ \ \ \ \ \ \ \ \ \ {}- number of boundaries, number of internal boundaries\newline
+NP(I) \ \ \ \ \ \ \ \ \ {}- number of nodes on Ith boundary\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- x,y co-ordinates and depth at node\newline
+NPO \ \ \ \ \ \ \ \ \ \ \ {}- number of internal nodes\newline
+ \ \ \ \ \newline
+ NOTES: - outer boundary nodes must be all in one block and\newline
+ \ \ \ \ \ \ \ \ \ must be the first boundary.\newline
+ \ \ \ \ \ \ \ {}- outer boundary must be in counter clockwise order\newline
+ \ \ \ \ \ \ \ {}- all inner boundaries (islands) must be in clockwise order
+
+\subsubsection{Example of data file in NODE format}
+
+\begin{small}
+\begin{lstlisting}
+    #NOD 
+    0.000000 0.000000 1.000000 1.000000 0 
+    479
+      2 0
+    146
+        1.57       13.47        0.00
+        1.46       13.24        0.00
+        1.44       13.00        0.00
+         :           :           :
+        2.70       13.24        0.00
+        2.30       13.30        0.00
+        1.90       13.40        0.00
+     41
+        4.09        8.08        0.00
+        3.92        8.27        0.00
+        3.70        8.44        0.00
+         :           :           :
+        4.32        7.74        0.00
+        4.19        7.97        0.00
+    292
+        4.29        0.61        5.00
+        4.17        1.01        5.00
+        4.06        1.41        5.00
+         :           :           :
+        2.61       11.90       30.00
+        2.61       12.30       30.00
+        2.66       12.70       30.00
+\end{lstlisting}
+\end{small}
+
+\subsection{ELEMENT format}
+\subsubsection[Description]{Description}
+
+\bigskip
+
+Data Layout :
+
+VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (3 integers, free format)\newline
+\ \ Data Layout with element codes:
+
+VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
+
+\subsubsection{Example of data file in ELEMENT format}
+\begin{small}
+\begin{lstlisting}
+     1     2    48
+     1    48    41
+     2     3    26
+     2    26    29
+     2    29    48
+     3     4    38
+     .     .     .
+     .     .     .
+    32    43    37
+    32    37    36
+    34    45    35
+    34    35    46
+\end{lstlisting}
+\end{small}
+
+
+\subsubsection{Example of data file with element codes}
+\begin{small}
+\begin{lstlisting}
+     1     2    48   0    1
+     1    48    41   0    1
+     2     3    26   0    1
+     2    26    29   0    1
+     2    29    48   0    1
+     3     4    38   0    1
+     .     .     .   .    .
+     .     .     .   .    .
+    32    43    37   0    1
+    32    37    36   0    2
+    34    45    35   0    2
+    34    35    46   0    1
+\end{lstlisting}
+\end{small}
+
+\subsection[XSEC format]{XSEC format}
+\subsubsection[Description]{Description}
+[THIS SECTION NOT YET UPDATED]
+\bigskip
+
+All data are read with free format
+
+First line:
+
+nxp
+
+Next nxp pairs of lines:
+
+ns,xl,yl,xr,yr,xref
+
+( (distr(j), depth(j)) j=1,ns)
+
+
+\bigskip
+
+
+\bigskip
+
+Where:
+
+nxp\ \ = number of cross-sections to be input
+
+ns\ \ = number of points in the input cross-sections
+
+xl,yl\ \ = (x,y) coordinates of left bank, looking downstream
+
+xr,yr\ \ = (x,y) coordinates of right bank, looking downstream
+
+zref\ \ = elevation reference for cross-section
+
+distr\ \ = distance from right bank
+
+depth\ \ = depth below zref at point distr
+
+
+\bigskip
+
+\subsubsection[Example of data file in XSEC format]{Example of data file in XSEC format}
+
+\bigskip
+
+\ \ \ 21 \ \ \ \ 9 \ {}-6.06 \ \ \ \ \ 3.50 \ \ \ \ \ 6.06 \ \ \ \ {}-3.50 \ \ \ \ \ 9.15 0. 0. 2.00 1.2 2.50 1.5 3.00 1.8 3.33 2. 4.06 2. 4.80 2. 5.53 2. 6.27 2. \ \ \ \ 9 \ \ 3.20 \ \ \ \ 17.48 \ \ \ \ 13.69 \ \ \ \ \ 8.22 \ \ \ \ \ 9.145 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.8 3.88 2.25 4.67 2.25 5.44 2.15 6.22 2.0 \ \ \ \ 9 \ 18.51 \ \ \ \ 28.48 \ \ \ \ 21.72 \ \ \ \ 19.00 \ \ \ \ \ 9.14 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.8 3.88 2.25 4.67 2.5 5.44 2.5 6.22 2.05 \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ 9 206.79 \ \ \ {}-18.15 \ \ \ 209.47 \ \ \ {}-27.64 \ \ \ \ \ 9.06 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.39 3.88 1.43 4.67 1.47 5.44 1.51 6.2 1.5 \ \ \ \ 9 214.74 \ \ \ \ {}-8.04 \ \ \ 225.23 \ \ \ {}-17.31 \ \ \ \ \ 9.055 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.45 3.88 1.55 
+4.67 1.65 5.44 1.75 6.2 1.8
+\end{document}

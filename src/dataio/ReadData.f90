@@ -106,6 +106,7 @@
       QUIT = .FALSE.
       
 !     - initialize 
+      TotTr = 0
       if(NewFile) then
         do j=1,MAXTRI
           TCode(j) = 1
@@ -289,6 +290,7 @@
       INTEGER   istat
 !        - the number of records that is to be in the data file
       INTEGER numrec, numele
+      character(80) Firstline
 
 !------------------BEGIN-------------------------------
 
@@ -324,24 +326,60 @@
       code = 0   
       itot = numrec
 
-      do i=1,numele
-        read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,3)
-        if(istat.lt.0) then
-          call PigMessageOK('ERROR premature end of file','ReadGrid' )
-          Quit = .TRUE.
-          return
-        elseif(istat.gt.0) then
-          call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+!  parse first line to find format      
+      READ(8,'(a)',IOSTAT=istat ) Firstline
+      if(istat.lt.0) then
+        call PigMessageOK('ERROR premature end of file','ReadGrid' )
+        Quit = .TRUE.
+        return
+      elseif(istat.gt.0) then
+        call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+        Quit = .TRUE.
+        return
+      endif
+
+      read(Firstline,*,IOSTAT=istat)  (ListTr(j,1),j=1,4),TCode(1)
+      if(istat.eq.0) then
+        do i=2,numele
+          read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,4),TCode(i)
+          if(istat.lt.0) then
+            call PigMessageOK('ERROR premature end of file','ReadGrid' )
+            Quit = .TRUE.
+            return
+          elseif(istat.gt.0) then
+            call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+            Quit = .TRUE.
+            return
+          endif
+        enddo
+      else
+        read(Firstline,*,IOSTAT=istat)  (ListTr(j,1),j=1,3)
+        if(istat.ne.0) then
+          call PigMessageOK('ERROR reading XYE file: error in element list','ReadGrid' )
           Quit = .TRUE.
           return
         endif
-      enddo
+        ListTr(4,1) = 0
+        TCode(1) = 1
+        do i=1,numele
+          read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,3)
+          if(istat.lt.0) then
+            call PigMessageOK('ERROR premature end of file','ReadGrid' )
+            Quit = .TRUE.
+            return
+          elseif(istat.gt.0) then
+            call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+            Quit = .TRUE.
+            return
+          endif
+        enddo
+      endif
 
       TotTr = numele
 
 ! *** generate neighbor list
       nindx = mrec
-      CALL ALTER (nindx,itot,code,nbtot,nbtotr,NL,TotTr,ListTr,TCode,&
+      CALL ALTER (nindx,itot,code,nbtot,nbtotr,NL,TotTr,ListTr,& !TCode,&
                      TotBndys,TotIntBndys,PtsThisBnd)
 
       nbtotr = nbtot !expand to max !max(nbtotr,nbtot_max)

@@ -319,7 +319,11 @@
               outlineonly = .FALSE.
             endif
             call InitVertexMarkers
-            CHANGE  = .TRUE.
+            if(TotTr.eq.0) then
+              CHANGE  = .TRUE.
+            else
+              CHANGE  = .FALSE.
+            endif
             FlagG = .true.
             FlagN = .false.
             FlagLin=.false.

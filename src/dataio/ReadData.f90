@@ -45,7 +45,7 @@
 
       CHARACTER*256 fle
       LOGICAL notok
-      integer Fnlen, nunit
+      integer  nunit, Fnlen
       logical PigOpenFileCD
 !------------------BEGIN------------------
 
@@ -56,8 +56,8 @@
       if(.not.PigOpenFileCD(nunit,'Open Grid File', fle,&
      &     'Neighbour Files (*.ngh),*.ngh;All Files (*.*),*.*;')) then
         Quit = .TRUE.
-        fnlen = len_trim( Fle )
-        call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
+!        fnlen = len_trim( Fle )
+!        call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'
         return
       endif
@@ -1299,7 +1299,7 @@
         Quit = .TRUE.
         return
       elseif(istat.gt.0) then
-        call PigMessageOK('ERROR reading XYE file at line 2','ReadXYZ' )
+        call PigMessageOK('ERROR reading XYZ file at line 2','ReadXYZ' )
         Quit = .TRUE.
         return
       endif
@@ -1311,7 +1311,7 @@
           Quit = .TRUE.
           return
         elseif(istat.gt.0) then
-          call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadXYZ' )
+          call PigMessageOK('ERROR reading XYZ file: Most likely a format error','ReadXYZ' )
           Quit = .TRUE.
           return
         endif

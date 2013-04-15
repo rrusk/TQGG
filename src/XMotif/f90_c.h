@@ -134,6 +134,6 @@
 #define  MNU_PolyMenuDisable mnu_polymenudisable_
 #define  ElementCheck elementcheck_
 #define  WPigNodeCheck wpignodecheck_
-#define  DrwFig drwfig_
+#define  ReDrawOnly redrawonly_
 
 #endif /* F90_C_H_ */

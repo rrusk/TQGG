@@ -87,7 +87,7 @@ void  WPigElementCheck(void)
 	Widget dialog, rc, label, label2, label3, radio_box, radio_box2, separator, separator2;
 	Arg args0[6], args[6], args2[6], args3[6];
 	XmString t, title_string, check, close, title, title2, title3, fullcolor, colormarker,
-			eql, dep, a2d, ccw, g90, c0d;
+			eql, dep, a2d, ccw, g90, c0d, ext;
 
 	int n = 0;
 	t = XmStringCreateLocalized("the title");
@@ -127,7 +127,8 @@ void  WPigElementCheck(void)
 	a2d  = XmStringCreateLocalized ("A2D");
 	ccw  = XmStringCreateLocalized ("CCW");
 	g90  = XmStringCreateLocalized ("G90");
-	c0d  = XmStringCreateLocalized ("COD");
+	c0d  = XmStringCreateLocalized ("Code");
+    ext  = XmStringCreateLocalized ("Ext");
 
 	// RowColumn manages labels, seperators and both radio boxes
 	rc = XmCreateRowColumn(dialog, "rowcol", NULL, 0);
@@ -172,6 +173,7 @@ void  WPigElementCheck(void)
 		XmVaRADIOBUTTON, ccw, NULL, NULL, NULL,
 		XmVaRADIOBUTTON, g90, NULL, NULL, NULL,
 		XmVaRADIOBUTTON, c0d, NULL, NULL, NULL,
+        XmVaRADIOBUTTON, ext, NULL, NULL, NULL,
 		NULL);
 
 	XmStringFree (fullcolor);
@@ -182,6 +184,7 @@ void  WPigElementCheck(void)
 	XmStringFree (ccw);
 	XmStringFree (g90);
 	XmStringFree (c0d);
+    XmStringFree (ext);
 
 	XtManageChild (label);
 	XtManageChild (separator);
@@ -233,11 +236,12 @@ void setupOutput() {
 /* callback for "Run Check" (aka OK) button used by WPigNodeCheck */
 void check_bits (Widget widget, XtPointer client_data, XtPointer call_data)
 {
-	int parm1 = 0;
-	int change = 1;
+/*	int parm1 = 0;
+	int change = 1;*/
 
     setupOutput();
-	DrwFig(&parm1, &change);
+    ReDrawOnly();
+/*	DrwFig(&parm1, &change);*/
 }
 
 void WPigNodeCheck(int *ans, int *user_ncount, int *user_ncount1, int *user_ncount2,

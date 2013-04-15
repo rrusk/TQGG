@@ -53,7 +53,7 @@
 ! Local Variables
       LOGICAL :: Start=.TRUE.
       CHARACTER*256 fle
-      integer j,Fnlen, nunit,istat
+      integer j, nunit,istat !,Fnlen
       logical PigOpenFileCD
       
 !--------------BEGIN-------------
@@ -70,8 +70,8 @@
       if(test.eq.7) then
         if(.not.PigOpenFileCD(nunit,'Open Ext File', fle,&
      &     'External criteria (*.dat),*.dat;All Files (*.*),*.*;')) then
-          fnlen = len_trim( Fle )
-          call PigMessageOK('Error opening file '//fle(:fnlen),'OpenExt')
+!          fnlen = len_trim( Fle )
+!          call PigMessageOK('Error opening file '//fle(:fnlen),'OpenExt')
           return
         endif
         
@@ -135,8 +135,8 @@
       data (Default_Interval(3,I),I=1,15)/.003,.005,.007,.008,0.,10*0./
       data (Default_Interval(4,I),I=1,15)/0.0,0.0,0.0,0.0,0.0,10*0./
       data (Default_Interval(5,I),I=1,15)/0.0,0.0,0.0,0.0,0.0,10*0./
-      data (Default_Interval(6,I),I=1,15)/0.1,1.1,2.1,3.1,4.1,5.1,9*0./
-      data (Default_Interval(7,I),I=1,15)/0.0,0.0,0.0,0.0,0.0,10*0./
+      data (Default_Interval(6,I),I=1,15)/0.1,1.1,2.1,3.1,4.1,5.1,9*0./ !not used
+      data (Default_Interval(7,I),I=1,15)/0.0,0.0,0.0,0.0,0.0,10*0./ !not used
 
 !-----------BEGIN-------------
 

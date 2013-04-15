@@ -193,6 +193,6 @@ void  HelpCB(void);
 void  drawing_area_callback(Widget, XtPointer, XtPointer);
 
 extern void elementcheck_(int *num, int *mode);
-extern void drwfig_(int *par, int *change);
+extern void redrawonly_(void);
 
 #endif /* XMMAIN_H_ */

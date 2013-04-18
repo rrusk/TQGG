@@ -235,7 +235,8 @@
       integer nchar
 
       nchar = LEN_TRIM(Text)
-      call WPigMessageOK(Text(1:nchar)//char(0),title)
+      nchar2 = LEN_TRIM(title)
+      call WPigMessageOK(Text(1:nchar)//char(0),title(1:nchar2)//char(0))
 
       end
 

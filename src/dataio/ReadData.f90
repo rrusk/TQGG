@@ -44,60 +44,88 @@
       INCLUDE '../includes/defaults.inc'
 
       CHARACTER*256 fle
-      LOGICAL notok
-      integer  nunit, Fnlen
+      LOGICAL addfile, newformat
+      integer  nunit, Fnlen, istat,linenum
       logical PigOpenFileCD
+      character(80) Firstline
 !------------------BEGIN------------------
 
-      notok = Quit
+      addfile = Quit
       Quit = .FALSE.
       nunit = 8
 
       if(.not.PigOpenFileCD(nunit,'Open Grid File', fle,&
-     &     'Neighbour Files (*.ngh),*.ngh;All Files (*.*),*.*;')) then
+     &     'Grid Files (*.[xn][yg][eh]),*.ngh;All Files (*.*),*.*;')) then
         Quit = .TRUE.
 !        fnlen = len_trim( Fle )
 !        call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'
         return
-      endif
-      GridRName =  fle
-      fnlen = len_trim( Fle )
+      else
+        GridRName =  fle
+        fnlen = len_trim( Fle )
+        call PigPutMessage('Reading file '//fle(:fnlen))
 
-      call PigPutMessage('Reading file '//fle(:fnlen))
-      call REDATA (notok)
-      quit = notok
+        READ(nunit,'(a)',IOSTAT=istat) Firstline
+        linenum = 1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          close( nunit )
+          return
+        endif
+        
+        if(firstline(1:4).eq."#NOD") then  !node file, new format
+          call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
+          Quit = .true.
+        elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
+          call ReadXYEData (nunit,Quit)
+        elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
+          newformat = .true.
+          call ReadNGHData (nunit,addfile,newformat)
+          Quit = addfile
+          if(.not.quit) call DoCheckEdges()
+        else ! guess format
+          newformat = .false.
+          call ReadNGHData (nunit,addfile,newformat)
+          Quit = addfile
+          if(.not.quit) then
+            call DoCheckEdges()
+          endif
+        endif
+     
+      endif
+
       close( nunit )
-      if(.not.quit) call DoCheckEdges()
 
       END
 
 ! --------------------------------------------------------------------------*
 
-      SUBROUTINE ReData (quit)
+      SUBROUTINE ReadNGHData (nunit,quit,newformat)
    
 ! Purpose : To read grid data into memory
 
       use MainArrays
 
+      implicit none
+
       INCLUDE '../includes/defaults.inc'
       INCLUDE '../includes/cntcfg.inc'
 
 !     - PASSED VARIABLES
-      INTEGER NREC
+      INTEGER   nunit
       LOGICAL Quit
 
       REAL    XMAX, YMAX, XMIN, YMIN
 
 !     - LOCAL VARIABLES
-      INTEGER i , ii , j , n_offset, nbtot_max ! ,nn
-!        - counters
-      INTEGER   irec
-!        - the number of records that is to be in the data file
-      INTEGER numrec, numrecmax
-        character*80 message
-       LOGICAL NewFile
-       character(80) Firstline
+      INTEGER i , j , n_offset, nbtot_max
+      INTEGER   irec, nrec, istat
+      INTEGER numrec, numrecmax, linenum
+      character*80 message
+      LOGICAL NewFile,newformat
+      character(80) Firstline
 
 !------------------BEGIN-------------------------------
 
@@ -107,7 +135,7 @@
       
 !     - initialize 
       TotTr = 0
-      if(NewFile) then
+      if(NewFile) then !start from scratch
         do j=1,MAXTRI
           TCode(j) = 1
         enddo
@@ -116,55 +144,93 @@
             NL(j,i) = 0
           enddo
         enddo
-
         nrec = 1
         nbtot_max = 0
         GridSIndex = 9999999
-      else
+      else  ! add to existing grid
         nrec = itot + 1
         nbtot_max = nbtotr
         GridSIndex = nrec
       endif
 
-      call PigPutMessage( 'Reading Grid file.. [NEIGH] format' )
+      call PigPutMessage( 'Reading Grid file.. [NGH] format' )
 
-      READ(8,'(a)', err=9999, end=99999) Firstline
+      if(newformat) then
 
-      if(firstline(1:4).eq."#NOD") then  !node file, new format
-        call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
-        Quit = .true.
-        Return
-      elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
-        call ReadXYEData (Quit)
-        return
-      elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
-        do
-          READ(8,'(a)', err=9999, end=99999) Firstline
-          if(firstline(1:1).ne."#") then    !comment lines
-!           following line is internal read of firstline          
-! - read offsets, scale factors, coordinate type
-            READ( firstline, *, err = 9999, end=99999 ) x0off, y0off, scaleX, scaleY, igridtype
+        linenum=1
+        do              !remove comment lines
+          READ(nunit,'(a)', IOSTAT=istat) Firstline
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadGrid' )
+            Quit = .TRUE.
+            return
+          endif
+          if(firstline(1:1).ne."#") then
+            READ( firstline, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY, igridtype
+            if(istat.ne.0) then
+              write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+              call PigMessageOK(message,'ReadGrid' )
+              Quit = .TRUE.
+              return
+            endif
             exit
           endif
         enddo
 
 ! - read max number of nodes in this grid
-        read(8,*,err=9999, end=99999) numrec
+        read(nunit,*, IOSTAT=istat  ) numrec
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
+        endif
+                  
+! - read max num  ber of neighbours required for this grid
+        READ(nunit,*, IOSTAT=istat ) NBTOTR
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
+        endif
+      
+      else
 
-! - read max number of neighbours required for this grid
-        READ( 8, *, err = 9999, end=99999 ) NBTOTR
-
-      else  ! old format
+        linenum = 0
+        rewind(nunit)
 ! - read max number of nodes in this grid
-        read(firstline,*,err=9999, end=99999) numrec
-! - read max number of neighbours required for this grid
-        READ( 8, *, err = 9999, end=99999 ) NBTOTR
-! - read offsets, scale factors, coordinate type
-        READ( 8, *, err = 9999, end=99999 ) x0off, y0off, scaleX, scaleY
-        igridtype = 0
-      endif  ! if new or old NGH format
+        read(nunit,*,IOSTAT=istat) numrec
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
+        endif
 
-      numrecmax = NUMREC+nrec-1
+! - read max number of neighbours required for this grid
+        READ( nunit, *, IOSTAT=istat ) NBTOTR
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
+        endif
+
+! - read offsets, scale factors, coordinate type
+        READ( nunit, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
+        endif
+        igridtype = 0
+     
+      endif
+                  
+      numrecmax   = NUMREC+nrec-1
       if ( NUMRECmax .gt. MREC ) then
         call PigMessageOK('WARNING: Grid file has too many points-setting to maximum','ReadGrid')
         NUMRECmax = MREC
@@ -175,61 +241,42 @@
         call PigMessageOK('WARNING: Grid file has too many neighbors-setting to maximum','ReadGrid')
         NBTOTR = NBTOT
       endif
-      write(message,'(a,i6,a,i3,a)') 'Reading Grid File with ',NUMREC,' nodes, ',NBTOTR,' neighbours'
+      write(message,'(a,i6,a,i8,a)') 'Reading Grid File with ',NUMREC,' nodes, ',NBTOTR,' neighbours'
       call PigPutMessage(message)
 
-      i = nrec
-      ii = 0
+!  Adjust for offsets
       n_offset = nrec - 1
-!      if(nrec.gt.1) then
-!        GridSIndex = nrec
-!      endif
    
-10    continue  
-      READ(8,*,end=999,err=9999) IREC,DXRAY(i),DYRAY(i),CODE(i),DEPTH(i),( NL(j,i),j = 1, NBTOTR )
-
-      do j=1,NBTOTR
-        if(NL(j,i).gt.0) then
-          NL(j,i) = NL(j,i) + n_offset
+      do i=nrec,nrec+numrec-1 
+        READ(nunit,*,IOSTAT=istat) IREC,DXRAY(i),DYRAY(i),CODE(i),DEPTH(i),( NL(j,i),j = 1, NBTOTR )
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadGrid' )
+          Quit = .TRUE.
+          return
         endif
+
+        do j=1,NBTOTR
+          if(NL(j,i).gt.0) then
+            NL(j,i) = NL(j,i) + n_offset
+          endif
+        enddo
+
+        do j=1,NBTOTR
+          if( (NL(j,i) .lt. 0).OR.(NL(j,i) .gt. NUMRECmax)) then
+!              set illegal number to zero - that should 
+!              delete any lines to points out of grid
+!            write(message,'(a,i8,a,i8)')'Eliminated connection from node ',i,' to node ',NL(j,i)
+!            call PigPutMessage(message)
+            NL(j,i) = 0
+          endif
+        end do
+        ITOT = i
+       
       enddo
 
-      NREC = i
-      !EXIST(i) = .TRUE.   
-
-      do j=1,NBTOTR
-        if( (NL(j,i) .lt. 0).OR.(NL(j,i) .gt. NUMRECmax)) then
-!            set illegal number to zero - that should 
-!            delete any lines to points out of grid
-          write(message,'(a,i8,a,i8)')'Eliminated connection from node ',i,' to node ',NL(j,i)
-          call PigPutMessage(message)
-!            call PigUWait(2.0)
-          NL(j,i) = 0
-        endif
-      end do
-
-      i = i + 1   
-      ii= ii+ 1   
-!     
-      if(ii.ge.NUMREC) goto 999
-      goto 10   
-   
-999   continue
-      if(ii.ne.NUMREC) then
-          write(message,'(a,i6,a,i6,a)')'WARNING: Premature end of file. Only ',ii,' of expected ',NUMREC,' nodes read in'
-          call PigMessageOK(message,'ReadGrid')
-!          call PigUWait(3.0)
-          if(NREC.eq.0) then
-                quit = .true.
-           endif
-      endif
-
-      ITOT = i - 1
-      NREC = i
       nbtotr = nbtot !expand to max !max(nbtotr,nbtot_max)
       DispNodes = .false.
-
-!      nn = itot
 
       if(int(ScaleY).eq.-999) then
         xlongmin = minval(dxray(1:itot))
@@ -256,25 +303,17 @@
       enddo
 
       RETURN
-   
-9999  continue  
-      call PigMessageOK('ERROR reading grid file: Most likely a format error','ReadGrid' )
-      Quit = .TRUE.
-      return
-      
-99999 continue  
-      call PigMessageOK('ERROR reading grid file: Premature end of file in header.','ReadGrid' )
-      Quit = .TRUE.
-      return
       END
 
 ! --------------------------------------------------------------------------*
 
-      SUBROUTINE ReadXYEData (quit)
+      SUBROUTINE ReadXYEData (nunit,quit)
    
 ! Purpose : To read grid data into memory
 
       use MainArrays
+
+      implicit none
 
       INCLUDE '../includes/defaults.inc'
       INCLUDE '../includes/cntcfg.inc'
@@ -287,53 +326,41 @@
 !     - LOCAL VARIABLES
       INTEGER i , j 
 !        - counters
-      INTEGER   istat
+      INTEGER  nunit, istat
 !        - the number of records that is to be in the data file
-      INTEGER numrec, numele
+      INTEGER numrec, numele, linenum
       character(80) Firstline
 
 !------------------BEGIN-------------------------------
 
       QUIT = .FALSE.
-!      exist = .FALSE.
       
 ! - read max number of nodes and elements in this grid
-      read(8,*,IOSTAT=istat) numrec, numele
-      if(istat.lt.0) then
-        call PigMessageOK('ERROR end of file at line 2','ReadGrid' )
-        Quit = .TRUE.
-        return
-      elseif(istat.gt.0) then
-        call PigMessageOK('ERROR reading XYE file at line 2','ReadGrid' )
+      read(nunit,*,IOSTAT=istat) numrec, numele
+      linenum = 2
+      if(istat.ne.0) then
+        call StatusError(istat,linenum,'Read_XYE' )
         Quit = .TRUE.
         return
       endif
 
       do i=1,numrec
-        read(8,*,IOSTAT=istat) dxray(i),dyray(i),depth(i)
-        if(istat.lt.0) then
-          call PigMessageOK('ERROR premature end of file','ReadGrid' )
-          Quit = .TRUE.
-          return
-        elseif(istat.gt.0) then
-          call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+        read(nunit,*,IOSTAT=istat) dxray(i),dyray(i),depth(i),code(i)
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'Read_XYE' )
           Quit = .TRUE.
           return
         endif
-        !EXIST(i) = .TRUE.   
       enddo
-
-      code = 0   
+ 
       itot = numrec
 
 !  parse first line to find format      
-      READ(8,'(a)',IOSTAT=istat ) Firstline
-      if(istat.lt.0) then
-        call PigMessageOK('ERROR premature end of file','ReadGrid' )
-        Quit = .TRUE.
-        return
-      elseif(istat.gt.0) then
-        call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+      READ(nunit,'(a)',IOSTAT=istat ) Firstline
+      linenum=linenum+1
+      if(istat.ne.0) then
+        call StatusError(istat,linenum,'Read_XYE' )
         Quit = .TRUE.
         return
       endif
@@ -342,12 +369,9 @@
       if(istat.eq.0) then
         do i=2,numele
           read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,4),TCode(i)
-          if(istat.lt.0) then
-            call PigMessageOK('ERROR premature end of file','ReadGrid' )
-            Quit = .TRUE.
-            return
-          elseif(istat.gt.0) then
-            call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'Read_XYE' )
             Quit = .TRUE.
             return
           endif
@@ -355,7 +379,7 @@
       else
         read(Firstline,*,IOSTAT=istat)  (ListTr(j,1),j=1,3)
         if(istat.ne.0) then
-          call PigMessageOK('ERROR reading XYE file: error in element list','ReadGrid' )
+          call StatusError(istat,linenum,'Read_XYE' )
           Quit = .TRUE.
           return
         endif
@@ -363,12 +387,9 @@
         TCode(1) = 1
         do i=1,numele
           read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,3)
-          if(istat.lt.0) then
-            call PigMessageOK('ERROR premature end of file','ReadGrid' )
-            Quit = .TRUE.
-            return
-          elseif(istat.gt.0) then
-            call PigMessageOK('ERROR reading XYE file: Most likely a format error','ReadGrid' )
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'Read_XYE' )
             Quit = .TRUE.
             return
           endif
@@ -378,9 +399,8 @@
       TotTr = numele
 
 ! *** generate neighbor list
-      nindx = mrec
-      CALL ALTER (nindx,itot,code,nbtot,nbtotr,NL,TotTr,ListTr,& !TCode,&
-                     TotBndys,TotIntBndys,PtsThisBnd)
+
+      CALL GenerateNL(itot,nbtot,nbtotr,NL,TotTr,ListTr)
 
       nbtotr = nbtot !expand to max !max(nbtotr,nbtot_max)
       DispNodes = .false.
@@ -530,6 +550,88 @@
 
 ! -------------------------------------------------------------------
 
+      SUBROUTINE GenerateNL(np,maxngh,numngh,nbrs,ne,nen)
+
+! ***********************************************************************
+! This routine converts from triangle list (TRIANG 
+! format) and node file (NODE format) to NEIGH format
+! ******************************************************
+
+      IMPLICIT NONE
+
+! *** passed VARIABLES ***
+!      integer nindx
+      integer np,maxngh,numngh,nbrs(maxngh,np)
+      integer ne,nen(4,ne)
+
+! *** LOCAL VARIABLES ***
+      integer ncn2, nonbrs(np)
+!   CUVX - current vertex being considered
+      INTEGER CUVX
+!   CUNBR - current neighbour being considered
+      INTEGER CUNBR
+      INTEGER II,JJ,KK,LL,MM
+      LOGICAL pass1, NEWNBR
+      character cstr*80
+
+!   Starting neighbor list
+
+!   Set count of nbrs to zero for all nodes
+
+      DO KK = 1, np
+        NONBRS(KK) = 0
+        DO JJ = 1, maxngh
+          nbrs(JJ,KK) = 0
+        enddo
+      enddo
+
+! *** Check each triangle and check that each vertex is in each of 
+! *** the other two vertices' neighbour lists
+
+      pass1 = .true.
+      DO JJ = 1, ne
+        ncn2 = 3 + min0(1,nen(4,JJ))
+! *** Check each vertex in current triangle
+        DO II = 1, ncn2
+! *** Choose current vertex
+          CUVX = nen(II,JJ)
+! *** Take other two vertices in turn
+          DO LL = 1,ncn2
+            IF(LL.eq.II) cycle
+!            Choose current neighbour of chosen vertex 
+            CUNBR = nen(LL,JJ)
+!            Check if CUNBR is already in neighbour list of CUVX
+            NEWNBR = .TRUE.
+            IF(NONBRS(CUVX).ne.0) then
+              DO MM = 1, NONBRS(CUVX)
+                IF(CUNBR.eq.nbrs(MM,CUVX)) NEWNBR = .FALSE.
+              enddo
+            endif
+!            If CUNBR is new neighbour of CUVX, add to list
+            IF(NEWNBR) THEN     
+              if(nonbrs(cuvx).ge.maxngh) then
+                if(pass1) then
+                  cstr =' Too many neighbor points - truncating:'
+                    call PigMessageOK(cstr, 'Error')
+                  pass1 = .false.
+                endif
+              else
+                NONBRS(CUVX) = NONBRS(CUVX) + 1
+                nbrs(NONBRS(CUVX),CUVX) = CUNBR
+              endif
+            ENDIF
+          enddo
+        enddo
+      enddo
+
+!       Find max number of neighbours
+      numngh = maxval(nonbrs)
+
+      RETURN
+      END
+
+! -------------------------------------------------------------------
+
       SUBROUTINE MERGE_GRID()
 
       use MainArrays
@@ -551,7 +653,6 @@
       endif
 
       DO JJ = GridSIndex, itot !nrec   !1, NREC
-!        IF(EXIST(JJ).and.(CODE(JJ).ge.0)) then
         IF(CODE(JJ).ge.0) then
 ! *** Find suitable minimum radius around node JJ; for present,
 ! *** use one fifth of distance to nearest existing neighbour.
@@ -564,7 +665,6 @@
 203       CONTINUE
           DISTMIN = DISTMIN/5
           DO KK = 1, GridSIndex-1 !NREC
-!            IF(EXIST(KK).and.(KK.NE.JJ).and.(CODE(KK).ge.0)) then
             IF((KK.NE.JJ).and.(CODE(KK).ge.0)) then
 ! *** Check if KK close enough to JJ to merge
               DIST = ABS(DXRAY(JJ)-DXRAY(KK)) + ABS(DYRAY(JJ)-DYRAY(KK))
@@ -588,9 +688,9 @@
       END
 
 !*----------------------------------------------------------------------*
-!       Routines for reading and writing node data to file.                        *
-!       ROUTINES: SaveNFinal, SaveNInterim, SaveNPoly, ShiftNodes,      *
-!                 GetShift, OpenNodeFile, ReadNodeFile.                 *
+!       Routines for reading node data from file.                       *
+!       ROUTINES: OpenNodeFile, ReadNodeFile                            *
+!                 AddNodeFile, ReadAddNodeFile.                         *
 !*----------------------------------------------------------------------*
 
       SUBROUTINE OpenNodeFile ( Quit )
@@ -614,27 +714,54 @@
 !  - LOCAL VARIABLES
       CHARACTER*256 FName
 !      , ans
-      CHARACTER*80 cstr
-      integer Fnlen, nunit
+      CHARACTER*80 firstline
+      integer Fnlen, nunit, istat,linenum
       logical PigOpenFileCD
 
 ! ----------------START ROUTINE------------------------------------------
 
-      quit = .true.
       nunit = 3
 
-      if(PigOpenFileCD(nunit,'Open Node File', FName,&
-             'Node Files (*.nod),*.nod;All Files (*.*),*.*;')) then
-        quit = .false.
-        fnlen = len_trim(Fname)
-        call PigEraseMessage
-        cstr = 'Reading File...[NODE] format.'
-        call PigPutMessage ( cstr )
-        call ReadNodeFile ( Quit )
-        close(nunit)
+      if(.not.PigOpenFileCD(nunit,'Open Node File', FName,&
+             'Node Files (*.[nx][oy][dz]),*.nod;All Files (*.*),*.*;')) then
+        quit = .true.
+        NodeRName = 'NONE'
+      else
         NodeRName = FName
-        call PigEraseMessage
+        fnlen = len_trim( FName )
+        call PigPutMessage('Reading file '//fName(:fnlen))
+
+        READ(nunit,'(a)',IOSTAT=istat) Firstline
+        linenum = 1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          close( nunit )
+          return
+        endif
+        
+        if(firstline(1:4).eq."#NOD") then  !node file, new format
+          quit = .true.  !new format
+          call ReadNodeFile ( Quit )
+        elseif(firstline(1:4).eq."#XYE".or.firstline(1:4).eq."#NGH") then
+          call PigMessageOK('ERROR: Grid file-wrong format','ReadNode' )
+          quit = .true.
+        else ! guess format
+          Quit = .false.  !old format
+          call ReadNodeFile ( Quit )
+          if(quit) then
+            rewind(nunit)
+            call ReadXYZData(quit)
+            if(quit) then
+              close(nunit)
+              return
+            endif
+          endif
+        endif
+        
+        close(nunit)
         DispNodes = .true.
+
       ENDIF
 
       END
@@ -668,7 +795,8 @@
       COMMON /OUTLINE/ OUTLINEONLY
 
 ! - LOCAL VARIABLES
-      INTEGER start, end, ii, jj, idiff, jjmax, bcode ! , nrec
+      INTEGER start, end, ii, jj, idiff, jjmax, bcode
+      integer linenum
       CHARACTER*80 cstr, firstline
       LOGICAL Quit
       REAL    XMAX, YMAX, XMIN, YMIN
@@ -692,40 +820,71 @@
       TotBndys = 0
       TotIntBndys = 0
       TotIntPts = 0
-      Quit = .TRUE.
+!      Quit = .TRUE.
 
-      READ(3,'(a)', err=990) Firstline
+!      READ(3,'(a)', err=990) Firstline
 
-      if(firstline(1:4).eq."#NGH") then  !node file, new format
-        call PigMessageOK( 'NGH file.. Wrong format for node file.','ReadNode' )
-        Quit = .true.
-        Return
-      elseif(firstline(1:4).eq."#XYZ".or.firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
-        call ReadXYZData (Quit)
-        return
-      elseif(firstline(1:4).eq."#NOD") then  !new node format
+      if(Quit) then  !new node format
+        linenum = 1
         do
-          READ(3,'(a)', err=990) Firstline
+          READ(3,'(a)',IOSTAT=istat) Firstline
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadNode' )
+            Quit = .TRUE.
+            return
+          endif
           if(firstline(1:1).ne."#") then    !comment lines
-            read(firstline,*,err=990)x0off,y0off,scaleX,scaleY,igridtype
+            read(firstline,*,IOSTAT=istat)x0off,y0off,scaleX,scaleY,igridtype
+            if(istat.ne.0) then
+              write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+              call PigMessageOK(message,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
             exit
           endif
         enddo
 !       - read # of nodes total ( TotCoords )
-        READ(3,*,err=9901) TotCoords
+        READ(3,*,IOSTAT=istat) TotCoords
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !       - read # of boundaries total ( TotBndys ) and number of internal lines
-        READ(3,*,err=9902) TotBndys, TotIntBndys
+        READ(3,*,IOSTAT=istat) TotBndys, TotIntBndys
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
       else
+        linenum = 1
         rewind(3)
 !       - read # of nodes total ( TotCoords )
-        READ(3,*,err=9901) TotCoords
+        READ(3,*,IOSTAT=istat) TotCoords
+        if(istat.ne.0) then
+!          write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+!          call PigMessageOK(message,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !       - read # of boundaries total ( TotBndys )
-        READ(3,*,err=9902) TotBndys
+        READ(3,*,IOSTAT=istat) TotBndys
+        linenum = linenum + 1
+        if(istat.ne.0) then
+!          write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+!          call PigMessageOK(message,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
       endif
 
       IF ( TotBndys .gt. Maxnnb ) THEN
-        cstr = 'INPUT HAS TOO MANY BOUNDARIES'
-        call PigMessageOK ( cstr,'ReadNode' )
+        call PigMessageOK ( 'INPUT HAS TOO MANY BOUNDARIES','ReadNode' )
         TotBndys = Maxnnb
       ENDIF
       write(cstr,'(a,i7,a,i4,a)') 'Reading ',TotCoords,' from ',TotBndys,' boundaries'
@@ -734,7 +893,13 @@
 !       - loop thru boundaries
       DO ii = 1, TotBndys
 !         - read # nodes in each boundary ( ii )
-        READ(3,*,END=70) PtsThisBnd(ii)
+        READ(3,*,IOSTAT=istat) PtsThisBnd(ii)
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !         - end = end of nodes on boundary ( ii )
         end = ( start - 1 ) + PtsThisBnd(ii)
 !         - loop thru node coordinates for boundary ( ii )
@@ -747,13 +912,18 @@
         endif
 
         DO jj = start, end
-          read(3,*,end=701) xd,yd,dep
+          read(3,*,IOSTAT=istat) xd,yd,dep
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadNode' )
+            Quit = .TRUE.
+            return
+          endif
           jjmax = jj
           if(jj.le.MaxPts) then
             dxray(jj) = xd
             dyray(jj) = yd
             Depth(jj) = dep
-            !Exist(jj) = .true.
             code(jj) = bcode    
           endif
         END DO
@@ -775,7 +945,13 @@
       IF ( TotCoords .gt. end ) THEN
 !            - read # of non-boundary points ( TotIntPts )
 
-        READ(3,*,END=70) TotIntPts
+        READ(3,*,IOSTAT=istat) TotIntPts
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !            - end = end of interior points
         end = start - 1 + TotIntPts
         IF ( end .gt. MaxPts ) THEN
@@ -790,7 +966,13 @@
         DO jj = start,end
 
 !               - read interior nodes into arrays
-          read(3,*,end=70) xd,yd,dep
+          read(3,*,IOSTAT=istat) xd,yd,dep
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadNode' )
+            Quit = .TRUE.
+            return
+          endif
           jjmax = jj
           if(jj.le.MaxPts) then
             dxray(jj) = xd
@@ -802,30 +984,7 @@
         END DO
       ENDIF
 !          - ( TotCoords .gt. end )
-         goto 70
 
-701      CONTINUE
-        if (jjmax.ne.TotCoords) then
-!             incorrect number of nodes read in/specified in file...
-          cstr = 'NODE FILE HAS TOO FEW NODES - Read to end of file'
-            call PigMessageOK ( cstr,'ReadNode' )
-
-          PtsThisBnd(ii) = jjmax - start + 1
-          write(cstr,'(a,i7,a,i4)') 'PtsThisBnd reduced to ',PtsThisBnd(ii),' for boundary', ii
-            call PigMessageOK ( cstr,'ReadNode' )
-
-          TotBndys = ii
-          write(cstr,'(a,i7)') 'TotBndys reduced to ',TotBndys
-            call PigMessageOK ( cstr,'ReadNode' )
-
-          TotCoords = jjmax
-          write(cstr,'(a,i7)') 'TotCoords reduced to ',TotCoords
-            call PigMessageOK ( cstr,'ReadNode' )
-
-        endif
-
-! - 70 = end stmt for read stmts lines 191 & 206 (another internal loop exit)
- 70      CONTINUE
       TotCoords = jjmax
       do ii=1,TotBndys
         write(cstr,'(a,i7,a,i4)') 'PtsThisBnd is ',PtsThisBnd(ii),' for boundary', ii
@@ -876,30 +1035,8 @@
 
       return
 
-990   continue
-!     error reading file
-      cstr =  'Error reading beginning of node file'
-      call PigMessageOK ( cstr,'ReadNode' )
-      Quit = .true.
-      return
-
-9901  continue
-!     error reading TotCoords
-      cstr =  'Error reading integer on line 1 of node file'
-      call PigMessageOK ( cstr,'ReadNode' )
-      Quit = .true.
-      return
-
-9902  continue
-!     error reading TotBndys
-      cstr = 'Error reading integer on line 2 of node file'
-      call PigMessageOK ( cstr,'ReadNode' )
-      Quit = .true.
-      return
-
       END
 
-!*----------------------------------------------------------------------*
 !-----------------------------------------------------------------------*                                    *
 !       This module contains routines for adding nodes from boundaries  *
 !       and internal points.                                            *
@@ -1006,17 +1143,18 @@
       COMMON /OUTLINE/ OUTLINEONLY
 
 ! - LOCAL VARIABLES
-      INTEGER start, end, start1,start2
-      integer i, readtype, ii, jj, bcode ! , nrec
+      INTEGER start, end, start1,start2, linenum
+      integer i, readtype, ii, jj, bcode, istat,nunit ! , nrec
       INTEGER TotCoords2, TotBndys2,  TotIntBndys2, PtsThisBnd2, TotIntpts2
       integer TotCoordsNew
       integer StartIntPts
-      CHARACTER*256 FName, cstr*80, Firstline*80
+      CHARACTER*256 FName, cstr*80, message*80,Firstline*80
       character*1 ans, PigCursYesNo
       LOGICAL Quit
       real x2, y2, dep
 ! -------------------START ROUTINE-----------------------------------
 
+      nunit = 3
       start = 1
       end = 1
       outlineonly = .false.
@@ -1031,38 +1169,88 @@
 
       Quit = .TRUE.
 
-      OPEN ( UNIT = 3, STATUS = 'OLD', FILE = FName )
+      OPEN ( nunit,  FILE = FName, STATUS = 'OLD' )
 
-      READ(3,'(a)', err=990) Firstline
+      READ(nunit,'(a)', IOSTAT=istat) Firstline
+        linenum = 1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          close( nunit )
+          return
+        endif
 
       if(firstline(1:4).eq."#NOD") then  !new node format
         do
-          READ(3,'(a)', err=990) Firstline
+          READ(nunit,'(a)', IOSTAT=istat) Firstline
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadNode' )
+            Quit = .TRUE.
+            return
+          endif
           if(firstline(1:1).ne."#") then    !comment lines
-            read(firstline,*,err=990)x0off,y0off,scaleX,scaleY,igridtype
+            read(firstline,*,IOSTAT=istat)x0off,y0off,scaleX,scaleY,igridtype
+            if(istat.ne.0) then
+              write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+              call PigMessageOK(message,'ReadGrid' )
+              Quit = .TRUE.
+              return
+            endif
             exit
           endif
         enddo
 !       - read # of nodes total ( TotCoords )
-        READ(3,*,err=9901) TotCoords2
+        READ(nunit,*,IOSTAT=istat) TotCoords2
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !       - read # of boundaries total ( TotBndys ) and number of internal lines
-        READ(3,*,err=9902) TotBndys2, TotIntBndys2
+        READ(nunit,*,IOSTAT=istat) TotBndys2, TotIntBndys2
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
+
       elseif(firstline(1:1).eq."#") then  !wrong format
         call PigMessageOK( 'Wrong format for node file.','ReadNode' )
         Quit = .true.
         Return
+
       else
-        rewind(3)
 !       - read # of nodes total ( TotCoords )
-        READ(3,*,err=9901) TotCoords2
+        READ(firstline,*,IOSTAT=istat) TotCoords2
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !       - read # of boundaries total ( TotBndys )
-        READ(3,*,err=9902) TotBndys2
+        READ(nunit,*,IOSTAT=istat) TotBndys2
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
       endif
 
 !       - loop thru boundaries
       DO ii = 1, TotBndys2
 !       - read # nodes in each boundary ( ii )
-        READ(3,*,END=701) PtsThisBnd2
+        READ(nunit,*,IOSTAT=istat) PtsThisBnd2
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'ReadNode' )
+          Quit = .TRUE.
+          return
+        endif
 !       - end = end of nodes on boundary ( ii )
         end = ( start - 1 ) + PtsThisBnd2
 !       - loop thru node coordinates for boundary ( ii )
@@ -1081,7 +1269,13 @@
         if(readtype.eq.1.or.readtype.eq.2) then  !(bndtest).or.(islon)) then
           TotCoordsNew = TotCoords
           DO jj = start, end
-            read(3,*,end=701) x2,y2,dep
+            read(nunit,*,IOSTAT=istat) x2,y2,dep
+            linenum=linenum+1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
             call PigDrawModifySymbol(x2, y2)
             TotCoordsNew = TotCoordsNew + 1    
             if(jj.le.MaxPts) then
@@ -1152,7 +1346,13 @@
           endif
         else
           DO jj = start, end
-            read(3,*,end=701)
+            read(nunit,*,IOSTAT=istat)
+            linenum=linenum+1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
           enddo
         endif
 !         - start = beginning of next set of boundary nodes
@@ -1165,18 +1365,30 @@
 !       - read interior points, if there are any
         IF ( TotCoords2 .gt. end ) THEN
           StartIntPts = TotCoords+1
-          READ(3,*,END=701) TotIntPts2
+          READ(nunit,*,IOSTAT=istat) TotIntPts2
+            linenum=linenum+1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
           end = start - 1 + TotIntPts2
           IF ( end .gt. MaxPts ) THEN
             cstr = 'TOO MANY INTERNAL NODES TO ADD - aborting'
             call PigMessageOK ( cstr,'addnode' )
-            close(3)
+            close(nunit)
             return
           ENDIF
 
           do jj = start,end
 !               - read interior nodes into arrays
-            read(3,*,end=701) x2,y2,dep
+            read(nunit,*,IOSTAT=istat) x2,y2,dep
+            linenum=linenum+1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
 
             TotCoords = TotCoords + 1
             TotIntPts = TotIntPts + 1
@@ -1227,38 +1439,11 @@
         outlineonly = .true.
       endif
 
-      close(3)
+      close(nunit)
       Quit = .false.
       itot = TotCoords
 !      nrec = itot + 1
       nbtotr = 0
-      return
-
-701   CONTINUE
-!             incorrect number of nodes read in/specified in file...
-      cstr = 'Premature end of file'
-      call PigMessageOK ( cstr, 'addnode' )
-      return
-
-990   continue
-!     error reading file
-      cstr =  'Error reading beginning of node file'
-      call PigMessageOK ( cstr,'ReadNode' )
-      Quit = .true.
-      return
-      
-9901  continue
-!     error reading TotCoords
-      call PigMessageOK('Error reading integer on line 1 of node file','addnode')
-      close(3)
-      Quit = .true.
-      return
-
-9902  continue
-!     error reading TotBndys
-      call PigMessageOK('Error reading integer on line 1 of node file','addnode')
-      close(3)
-      Quit = .true.
       return
 
       END subroutine
@@ -1281,7 +1466,7 @@
       REAL    XMAX, YMAX, XMIN, YMIN
 
 !     - LOCAL VARIABLES
-      INTEGER i 
+      INTEGER i, linenum 
 !        - counters
       INTEGER   istat
 !        - the number of records that is to be in the data file
@@ -1290,35 +1475,36 @@
 !------------------BEGIN-------------------------------
 
       QUIT = .FALSE.
-!      exist = .FALSE.
       
-! - read max number of nodes and elements in this grid
-      read(3,*,IOSTAT=istat) numrec
-      if(istat.lt.0) then
-        call PigMessageOK('ERROR end of file at line 2','ReadXYZ' )
+      numrec = 0
+      i = 1
+      linenum = 1
+      read(3,*,IOSTAT=istat) dxray(i),dyray(i),depth(i)
+      if(istat.ne.0) then
+        call StatusError(istat,linenum,'Read_XYZ' )
         Quit = .TRUE.
-        return
-      elseif(istat.gt.0) then
-        call PigMessageOK('ERROR reading XYZ file at line 2','ReadXYZ' )
-        Quit = .TRUE.
+        close( 3 )
         return
       endif
+      
+      i = 2
 
-      do i=1,numrec
+      do 
         read(3,*,IOSTAT=istat) dxray(i),dyray(i),depth(i)
         if(istat.lt.0) then
-          call PigMessageOK('ERROR premature end of file','ReadXYZ' )
-          Quit = .TRUE.
-          return
+!          call PigMessageOK('ERROR premature end of file','ReadXYZ' )
+          Quit = .false.
+          exit
         elseif(istat.gt.0) then
           call PigMessageOK('ERROR reading XYZ file: Most likely a format error','ReadXYZ' )
           Quit = .TRUE.
           return
         endif
-        !EXIST(i) = .TRUE.   
+        i = i + 1
+        numrec = numrec + 1
       enddo
 
-      code = 0   
+      code(1:numrec) = 1   
       itot = numrec
       TotTr = 0
 
@@ -1356,4 +1542,28 @@
       return
       END
 
+!-----------------------------------------------------------------------*
+
+      SUBROUTINE StatusError( istat,linenum,cfile )
+
+! Purpose: Display errors from reading files.
+
+      implicit none
+      
+!  Passed variables
+      integer istat,linenum,ilen
+      character*8 cfile
+      character*80 message
+      
+      ilen = len_trim(cfile)
+      
+      if(istat.lt.0) then
+        write(message,'(a,i8,a)') 'ERROR: end of file at line ',linenum
+        call PigMessageOK(message,cfile(:ilen) )
+      elseif(istat.gt.0) then
+        write(message,'(a,i8,a)') 'ERROR: reading line ',linenum
+        call PigMessageOK(message,cfile(:ilen) )
+      endif
+
+      end subroutine
 !-----------------------------------------------------------------------*

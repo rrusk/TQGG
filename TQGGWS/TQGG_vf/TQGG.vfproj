@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="QuickWin" Version="9.10" ProjectIdGuid="{A63BC396-47E9-49F3-AC74-024C5ECF4195}">
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="QuickWin" Version="11.0" ProjectIdGuid="{A63BC396-47E9-49F3-AC74-024C5ECF4195}">
 	<Platforms>
-		<Platform Name="Win32"/></Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug" Interfaces="true"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -17,6 +18,24 @@
 				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="40000000"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug" Interfaces="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" FPS4Filenames="true" RuntimeLibrary="rtQuickWin"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="40000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
@@ -36,7 +55,6 @@
 		<File RelativePath="..\..\src\gridgen\GenElementList.f90"/>
 		<File RelativePath="..\..\src\gridgen\GeneratePoints10-7-28b.f90"/>
 		<File RelativePath="..\..\src\gridgen\GroupEditSubs.f90"/>
-		<File RelativePath="..\..\src\vf_qwin\leftovers.f"/>
 		<File RelativePath="..\..\src\dataio\MainArrays.f90"/>
 		<File RelativePath="..\..\src\gridgen\Maintri10-7-30.f90"/>
 		<File RelativePath="..\..\src\gridedit\NEWEDITS.f90"/>

@@ -437,6 +437,10 @@
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry AddNodeFileCB()
+          if(.not.FLAGN) then
+            call PigMessageOK('Read a node file first','AddNode')
+            return
+          endif
           call MNU_MainMenuDisable
           IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
             IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN

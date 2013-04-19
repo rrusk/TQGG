@@ -836,12 +836,11 @@
           endif
           if(firstline(1:1).ne."#") then    !comment lines
             read(firstline,*,IOSTAT=istat)x0off,y0off,scaleX,scaleY,igridtype
-            if(istat.ne.0) then
-              write(message,'(a,i8,a)') 'ERROR reading line ',linenum
-              call PigMessageOK(message,'ReadNode' )
-              Quit = .TRUE.
-              return
-            endif
+             if(istat.ne.0) then
+               call StatusError(istat,linenum,'ReadNode' )
+               Quit = .TRUE.
+               return
+             endif
             exit
           endif
         enddo
@@ -1071,18 +1070,17 @@
 !       - assign defaults
       nodfile = ' '
 
-      IF (PigCursYesNo ('Replace OUTER boundary?').EQ.'Y') THEN
-        if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
-     &          'Node Files (*.nod),*.nod;All Files (*.*),*.*;')) then
-          close(unit=3, status='keep')
-        ELSE
+!      IF (PigCursYesNo ('Replace OUTER boundary?').EQ.'Y') THEN
+!        if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
+!     &          'Node Files (*.nod),*.nod;All Files (*.*),*.*;')) then
+!          close(unit=3, status='keep')
+!        ELSE
 !             -  file specified
-          Quit = .false.
-          readtype = 1
-          call ReadAddNodeFile ( readtype, nodfile, Quit )
-        ENDIF
-      endif
-
+!          Quit = .false.
+!          readtype = 1
+!          call ReadAddNodeFile ( readtype, nodfile, Quit )
+!        ENDIF
+!      endif
 
       IF (PigCursYesNo ('Add ISLAND boundary?').EQ.'Y') THEN
         if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
@@ -1096,6 +1094,17 @@
         ENDIF
       endif
 
+      IF (PigCursYesNo ('Add LINE CONSTRAINT?').EQ.'Y') THEN
+        if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
+     &          'Node Files (*.[nx][oy][dz]),*.nod;All Files (*.*),*.*;')) then
+          close(unit=3, status='keep')
+        ELSE
+!             -  file specified
+          Quit = .false.
+          readtype = 3
+          call ReadAddNodeFile ( readtype, nodfile, Quit )
+        ENDIF
+      endif
 
       IF (PigCursYesNo ('Add INTERIOR nodes?').EQ.'Y') THEN
         if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
@@ -1104,7 +1113,7 @@
         ELSE
 !             -  file specified
           Quit = .false.
-          readtype = 3
+          readtype = 4
           call ReadAddNodeFile ( readtype, nodfile, Quit )
         ENDIF
       endif
@@ -1146,7 +1155,7 @@
       INTEGER start, end, start1,start2, linenum
       integer i, readtype, ii, jj, bcode, istat,nunit ! , nrec
       INTEGER TotCoords2, TotBndys2,  TotIntBndys2, PtsThisBnd2, TotIntpts2
-      integer TotCoordsNew
+      integer TotCoordsNew,bndindex
       integer StartIntPts
       CHARACTER*256 FName, cstr*80, message*80,Firstline*80
       character*1 ans, PigCursYesNo
@@ -1239,6 +1248,12 @@
           Quit = .TRUE.
           return
         endif
+        TotIntBndys2 = 0
+      endif
+      
+!       - calculate index to start adding
+      if(readtype.eq.2) then
+        bndindex = sum(PtsThisBnd((TotBndys-TotIntBndys+1):TotBndys))
       endif
 
 !       - loop thru boundaries
@@ -1254,11 +1269,7 @@
 !       - end = end of nodes on boundary ( ii )
         end = ( start - 1 ) + PtsThisBnd2
 !       - loop thru node coordinates for boundary ( ii )
-        if(readtype.eq.1) then !ii.eq.1.or.bndtest) then
-          bcode = 1
-        else
-          bcode = 2
-        endif
+        bcode = 2
 
         IF ( TotCoords+PtsThisBnd2 .ge. MaxPts ) THEN
           cstr = 'TOO MANY NODES TO ADD - aborting'
@@ -1266,7 +1277,7 @@
           return
         ENDIF
 
-        if(readtype.eq.1.or.readtype.eq.2) then  !(bndtest).or.(islon)) then
+        if(readtype.eq.2.or.(readtype.eq.3.and.ii.gt.(TotBndys2-TotIntBndys2))) then  !(bndtest).or.(islon)) then
           TotCoordsNew = TotCoords
           DO jj = start, end
             read(nunit,*,IOSTAT=istat) x2,y2,dep
@@ -1287,17 +1298,14 @@
             endif
           END DO
 
-! - prompt
 !         - Ask if they are to be kept
-          if(readtype.eq.1.or.readtype.eq.2) then  !(bndtest).or.(islon)) then
-            if(readtype.eq.1) then  !p1.and.bndtest) then
-               cstr = 'Are new boundary nodes OK?:'
+!          if(readtype.eq.2.or.(readtype.eq.3.and.ii.gt.(TotBndys2-TotIntBndys2))) then  !(bndtest).or.(islon)) then
+            if(readtype.eq.2) then
+              cstr = 'Are new island nodes OK?:'
               ans = PigCursYesNo (cstr)
-            elseif(readtype.eq.2) then  !p2.and.islon) then
-               cstr = 'Are new island nodes OK?:'
+            elseif(readtype.eq.3) then
+              cstr = 'Are line constraint nodes OK?:'
               ans = PigCursYesNo (cstr)
-            else
-              ans(1:1) = 'Y'
             endif
 
             IF ( ans(1:1) .eq. 'Y' ) THEN
@@ -1309,27 +1317,29 @@
                 y2 = dyray(jj)
                 call PigDrawBndSymbol(x2, y2)
               END DO
-              if(readtype.eq.1) then  !bndtest) then
-                TotCoords = PtsThisBnd2
-                dxray(1:TotCoords) = dxray(start2:TotCoordsNew)
-                dyray(1:TotCoords) = dyray(start2:TotCoordsNew)
-                Depth(1:TotCoords) = Depth(start2:TotCoordsNew)
-                !Exist(1:TotCoords) = .true.
-                code(1:TotCoords)  = code(start2:TotCoordsNew)
-                TotBndys = 1
+
+              if(readtype.eq.2) then
+                start1 = TotCoords - bndindex - TotIntPts + 1
+                TotCoords = start1 + PtsThisBnd2 -1
+                dxray(start1:TotCoords) = dxray(start2:TotCoordsNew)
+                dyray(start1:TotCoords) = dyray(start2:TotCoordsNew)
+                Depth(start1:TotCoords) = Depth(start2:TotCoordsNew)
+                code(start1:TotCoords)  = code(start2:TotCoordsNew)
+                TotBndys = TotBndys - TotIntBndys + 1
                 PtsThisBnd(TotBndys) =  PtsThisBnd2
+                bndindex = 0
+                TotIntBndys = 0
                 TotIntPts = 0
-                exit
-              elseif(readtype.eq.2) then  !bndtest) then
+              elseif(readtype.eq.3) then
                 start1 = TotCoords - TotIntPts + 1
                 TotCoords = TotCoords - TotIntPts + PtsThisBnd2
                 dxray(start1:TotCoords) = dxray(start2:TotCoordsNew)
                 dyray(start1:TotCoords) = dyray(start2:TotCoordsNew)
                 Depth(start1:TotCoords) = Depth(start2:TotCoordsNew)
-                !Exist(start1:TotCoords) = .true.
                 code(start1:TotCoords)  = code(start2:TotCoordsNew)
                 TotBndys = TotBndys + 1
                 PtsThisBnd(TotBndys) =  PtsThisBnd2
+                TotIntBndys = TotIntBndys + 1
                 TotIntPts = 0
               endif
             ELSE
@@ -1343,8 +1353,8 @@
               END DO
             ENDIF
 !           - ( ans = Y )
-          endif
-        else
+          !endif
+        else  !skip nodes
           DO jj = start, end
             read(nunit,*,IOSTAT=istat)
             linenum=linenum+1
@@ -1361,7 +1371,7 @@
 
 ! - load existing internal nodes
       IF ( TotBndys2 .eq. 0 )  start = 1
-      if(readtype.eq.3) then
+      if(readtype.eq.4) then
 !       - read interior points, if there are any
         IF ( TotCoords2 .gt. end ) THEN
           StartIntPts = TotCoords+1

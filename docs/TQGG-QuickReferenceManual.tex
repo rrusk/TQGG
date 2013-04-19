@@ -82,7 +82,12 @@ When this option is picked, the following menu options are displayed:
    \begin{tabular}{|c|}
     \hline
 File :\\     \hline
-OpenGrid \\ AddGrid \\ OpenNode \\ AddNode \\ Sample \\ XSection \\ IntrimSave \\ SaveAs \\ Print \\ Quit\\
+OpenGrid \\ AddGrid \\     \hline
+OpenNode \\ AddNode \\    \hline
+Sample \\    \hline
+XSection \\    \hline
+IntrimSave \\ SaveAs \\    \hline
+Print \\ Quit\\
     \hline
    \end{tabular}
    \label{tab:FILE}
@@ -113,16 +118,6 @@ This option permits reading a NODE format file and sub-sampling the boundaries a
 \subsubsection[Menu item CrossSection]{Menu item XSection}
 The following option is used for creating grids from cross section data. A file containing cross section data is read and a grid is created from this data. Options in the right-hand-panel define the number of nodes to create across the section, and the number of nodes to create between each cross section. All these nodes are interpolated using a cubic spline algorithm. See Section \ref{sec:formats} for a description of files in XSEC format.  [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
 
-%\subsubsection[Menu item SampleDIGIT]{Menu item SampleDIGIT}
-%Picking this option will advance you to the steps of sampling the boundary data in the files specified below at the rates set. Selected boundary nodes (in DIGIT format), contour nodes (in DIGIT format), and soundings (in NODE format) are superposed on the digitized boundaries and contours. 
-
-%After picking option SampleDIGIT from the top menu a set of options are displayed in a right hand window under BOUNDARY CONFIGURATION. Picking with the mouse on NONE in the entry 'Boundary File: NONE' will produce a prompt asking the user to select the name of the file containing digitized boundary data and its file type, such as `bnd.dig'. Subsampling rates then have to be set for the land and sea boundaries. Picking on the default value '1' under 'Select Kth land node' and entering 30, say, means that every 30th digitized point on land sections of the outer boundary and on island boundaries will be selected as a boundary node. Similarly, picking on the default value '1' under 'Select Lth open node' and entering 10 means that every 10th digitized point on stretches of sea boundary will be selected as a boundary node. Also pick on the default value 1.000 of minimum distance to be maintained between first and last points selected from each boundary (entry 'Min. dist. 1st-last') and enter a suitable value in 
-data units. Finally, pick ACCEPT to move to the CONTOURS CONFIGURATION.
-
-%Under CONTOURS CONFIGURATION another set of options appears in a right hand window. Pick NONE in the entry 'Contours file: NONE' and enter the name of the file containing digitized contour data. Picking on the default value '1' under 'Select Mth contour node' and entering 8 means that every 8th point on each contour in the file will be selected as an interior node for the depth grid. The minimum distance needs to be set again to the same value used for boundaries. Picking ACCEPT will move to the selection of soundings data to be used in sampling.
-
-%SOUNDING CONFIGURATION has another set of options that appears in a right hand window. Pick 'NONE' in the entry 'Sounding file: NONE'. Enter the file name (in NODE format) and pick ACCEPT. The following operation will return control to the top menu and display the sampled data. Note that at present, all nodes supplied in the soundings file are used as internal nodes; there is no provision for sub sampling.
-
 \subsubsection[Menu item InterimSave]{Menu item InterimSave}
 Invoking this option leads to output of the current version of the grid in `.NGH' format or node file in a `.NOD' format. The resulting file is less compact than the NEIGH file and NODE file obtained with the usual EXIT procedure (see below). But it is a useful facility and should be used at regular intervals during a long editing session to avoid losing one's work in the event of power failure or other interruption. Alternate interim saves are written to files named interim1.*** and interim2.***; the name of the last interim save file output can be checked via the \textbf{\{Info\}Files} option.
 
@@ -150,7 +145,10 @@ When the View menu is chosen from \textbf{\{TOP\}}, the options appear as shown 
    \begin{tabular}{|c|}
     \hline
 View:\\     \hline
-Redraw \\ Outline \\ FullSize \\ Zoom \\ ZoomOut \\ Pan \\ LastView \\ Scale \\ Shift \\ Rotate \\ PolarTransform \\ MercatorTransform \\ TMTransform \\
+Redraw \\ Outline \\    \hline
+FullSize \\ Zoom \\ ZoomOut \\ Pan \\ LastView \\    \hline
+Scale \\ Shift \\ Rotate \\    \hline
+PolarTransform \\ MercatorTransform \\ TMTransform \\
     \hline
    \end{tabular}
    \label{tab:VIEW}
@@ -184,6 +182,9 @@ This section returns the viewing window to its previous state (before a zoom, pa
 \subsubsection{Menu item Scale}
 This menu selection allows the x, y, or z dimensions to be linearly scaled.
 
+\subsubsection[Menu item Shift]{Menu item Shift}
+This allows shifting of the x and y coordinates of all the grid nodes.
+
 \subsubsection{Menu item Rotate}
 This selection allows the grid to be rotated by a given angle.
 
@@ -209,7 +210,11 @@ When the Info menu is chosen from \textbf{\{TOP\}}, the options appear as shown 
    \begin{tabular}{|c|}
     \hline
 Info:\\     \hline
-NodeInfo \\ ElementInfo \\ NodeCheck \\ ElementCheck \\ EraseChecks \\ PMarkers \\ EraseLast \\ EraseAll \\ SetRange \\ TooClose \\ Files \\
+NodeInfo \\ ElementInfo \\     \hline
+NodeCheck \\ ElementCheck \\ EraseChecks \\     \hline
+PMarkers \\ EraseLast \\ EraseAll \\     \hline
+SetRange \\ TooClose \\     \hline
+Files \\ Limits \\
     \hline
    \end{tabular}
    \label{tab:INFO}
@@ -392,7 +397,7 @@ Selection of this option allows the user to place a coloured marker anywhere in 
 \subsubsection{Menu item EraseMarks}
 This option turns off place, vertex and triangle marking.
 
-\subsubsection[Menu item CursorRange]{Menu item CursorRange}
+\subsubsection[Menu item CursorRange]{Menu item SetRange}
 This option permits manual resetting or simple inspection of the permitted error range. The sensitivity of the cursor for locating a grid node is reset automatically at intervals by the Editor to suit the local grid resolution. This process is usually transparent to the user, but occasionally the required point may not be identified successfully. If the wrong point is moved, deleted, etc., the permitted cursor error limit is too coarse. However, the sensitivity will be reset automatically in accordance with the length of connections to the node actually selected, and since this node will almost always be close to the required node, it is usually possible to select the right node by cancelling the faulty editing operation and simply repeating the original choice. The same remarks apply to deleting a line and to Insert and Exchange operations, in all of which the mid-point of a connection between nodes has to be picked out with the cursor.
 
 On the other hand, cursor sensitivity is occasionally too fine to pick up any point, for instance when interest is transferred from an area of the grid with fine resolution to a part where triangles are much larger. In such cases, the message `ERROR \ \ {}- Invalid point' will appear briefly, after which the user will be prompted again to choose the point. Usually a second attempt will be successful because the cursor error range is automatically increased by a factor of 3 if no node is found.
@@ -403,24 +408,40 @@ RANGE (0.2267) Enter new Range:
 
 The 0.2267 (or whichever number appears) is the current error range in problem length units. The user can then enter a different value or press ENTER to proceed using the current value.
 
-\subsubsection[Menu item AutoRange]{Menu item AutoRange}
-This option toggles on and off the auto ranging of the cursor when a new node is picked. Thus, the cursor range can be set for a certain grid and this value does not change, an advantage when dealing with highly irregular elements.
+\subsubsection[Menu item AutoRange]{Menu item TooClose}
+
+Need description here.
 
 \subsubsection[Menu item Files]{Menu item Files}
 This option brings up a list of files currently assigned to the Editor. Filenames cannot be changed via the display panel under this option.
-
-\subsubsection[Menu item Text]{Menu item Text}
-This option invokes the Windows Notepad editor from which any file can be opened. This facility is particularly useful for checking header information on data files and for looking up breakpoint values and colours in existing colour table files.
 
 \subsubsection[Menu item Limits]{Menu item Limits}
 This option displays the maximum number of nodes allowed, the number of nodes used at present, maximum neighbours allowed and maximum boundaries allowed.
 
 \subsection{Contents of menu: GridGen}
-On picking the GenGrids option from \{TOP\} with the mouse, following options appears:
+On picking the GridGen option from \{TOP\} with the mouse, following options appears:
 
-GenGrids: GridInBox {\textbar} GenTriangle {\textbar} DeleteInterior GenerateMesh Clusters {\textbar} OverlaySquares {\textbar} TriangulateNodes
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+GridGen:\\     \hline
+OneFront \\     \hline
+Clusters \\ Options \\     \hline
+AllFronts \\ Options \\     \hline
+OverlayHex \\ OverlaySquares \\ OverlayMixed \\     \hline
+Triangulate \\
+    \hline
+   \end{tabular}
+   \label{tab:GRIDGEN}
+  \end{center}
+\end{table}
 
-These options are used for deletion or creation of nodes within the working polygon (the currently-activated polygon) and the last option generates the triangles.
+
+These options are used for the creation of nodes and grids within the working polygon (the currently-activated polygon) and the last option generates triangles from nodes.
+
+NOTE: The subheadings below are no longer accurate.
 
 \subsubsection[Menu item GridInBox]{Menu item GridInBox}
 This option allows the creation of a regular grid within the quadrilateral defined by the first 4 nodes of a NODE format file. Options in the right-hand-panel under the heading `Box Grid Selection' define the number of nodes to place along adjacent sides of the box.
@@ -509,11 +530,24 @@ These errors are not peculiar to the Renka algorithm. All methods of triangulati
 \subsection{Contents of menu: NodeEdit}
 Picking EditNode with the mouse brings up the following menu, which gives access to operations affecting individual nodes rather than groups of nodes:
 
-EditNode: Boundary {\textbar} Add Delete Move ReSelect Line DeleteIsland {\textbar} \ \ 
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+NodeEdit:\\     \hline
+DeleteNode \\ MoveNode \\     \hline
+AddBndNode \\ Reverse \\ Join \\ Reselect \\ AddBndLine \\ DeleteIsland \\     \hline
+AddIntNode \\ AddIntLine \\     \hline
+PolyDeleteBnd \\ PolyDeleteInt \\ PolyDeleteAll \\
+    \hline
+   \end{tabular}
+   \label{tab:NODEEDIT}
+  \end{center}
+\end{table}
 
-\ \ \ \ \ \ Interior {\textbar} Add Delete Move Line 
 
-There are two main groups of operations: operations on boundary nodes follow the label '{}'Boundary'{}' and operations on interior nodes follow the label '{}'Interior'{}'.
+NOTE: The subsections below are no longer accurate.
 
 \subsubsection[Boundary menu item Add]{Boundary menu item Add}
 Option Add allows addition of a single boundary node. The user is prompted to indicate the required position for the new node by means of the cursor. A coloured marker is placed at the specified position and the user is asked to confirm the addition. On confirmation, the following prompt appears:
@@ -598,11 +632,26 @@ The Line option permits insertion of a straight line of new interior nodes, the 
 The user is prompted to pick two existing nodes, which demarcate the beginning and end of the line segment. The user is prompted to enter via the keyboard how many new nodes are to be placed (at equal intervals) along the straight line joining the two designated end nodes. The proposed new configuration is then displayed for confirmation or cancellation. Two methods of setting depths at the new nodes are offered, manual entry, node by node, via the keyboard, or by linear interpolation between the depths at the designated end nodes.
 
 \subsection{Contents of menu: GridEdit}
-This menu option leads to menu items that provide for manipulation of triangular grids, including editing, merging, and splitting. When the EditGrid menu is chosen, the following options appear:
+This menu option leads to menu items that provide for manipulation of triangular grids, including editing, merging, and splitting. When the GridEdit menu is chosen, the following options appear:
 
-EditGrid: AddLine AddNode DeleteLine DeleteNode Move GridMerge {\textbar} CleaveNode Insert Exchange ReShape {\textbar} Scale Shift Rotate
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+GridEdit:\\     \hline
+AddLine \\ DeleteLine \\ AddNode \\ DeleteNode \\ Move \\ Merge \\    \hline
+CleaveNode \\ Insert \\ Exchange \\ DeKite \\ ReShape \\     \hline
+Grid2Node \\
+    \hline
+   \end{tabular}
+   \label{tab:GRIDEDIT}
+  \end{center}
+\end{table}
 
 These permit a wide variety of changes to be made to the displayed grid, as described below.
+
+NOTE: menu items below are out of date.
 
 \subsubsection[Menu item AddLine]{Menu item AddLine}
 Option AddLine permits addition of a connection between two vertices. It brings up the following right-hand panel:
@@ -656,7 +705,7 @@ Option DeleteLine permits deletion of an existing connection between two vertice
 This option allows deletion of a vertex and its connections to other vertices. The operation is similar to the above, which is described in DeleteLine. 
 
 \subsubsection[Menu item Move]{Menu item Move}
-The Move operation consists simply of moving a designated vertex to a new location, which should lie strictly within the polygon formed by the neighbours of the vertex, otherwise some line segments will cross. The vertex and its new location are selected with the mouse and cursor. The display shows the revised positions of the line segments linking the moved vertex to its neighbors, so that the move can be confirmed or cancelled. In the latter case, the vertex and its connections are redisplayed in their original configuration. 
+The Move operation consists simply of moving a designated vertex to a new location, which should lie strictly within the polygon formed by the neighbours of the vertex, otherwise some line segments will cross. The vertex and its new location are selected with the mouse and cursor. The display shows the revised positions of the line segments linking the moved vertex to its neighbours, so that the move can be confirmed or cancelled. In the latter case, the vertex and its connections are redisplayed in their original configuration. 
 
 If a vertex is moved so that it coincides or nearly coincides with one of its neighbours, the assumption is made that the user wishes to merge the two vertices into a single vertex connected to all the vertices to which the two merging vertices were singly or jointly connected. The program alerts the user as to whether it recognizes a proposed move as a Move or a GridMerge request by displaying the messages {\textquotedbl}Is this MOVE ok?{\textquotedbl} or {\textquotedbl}Is this MERGE ok?{\textquotedbl} respectively. As it is important to know when the Editor does not recognize an intended MERGE operation, the message {\textquotedbl}This is a move, NOT a merge{\textquotedbl} is displayed when the new location lies near a neighbour but not quite near enough to cause a MERGE. Normally, the program examines only the neighbours of the point being moved when checking whether a move or merge should take place.
 
@@ -698,19 +747,22 @@ Reshape provides a method for forming more equilateral triangles in the grid by 
 
 Unlike all the other editing operations, Reshape cannot be reversed; it is recommended that the current grid be saved using \{File\}InterimSave if there is any likelihood of requiring the grid as it is prior to reshaping.
 
-\subsubsection[Menu item Scale]{Menu item Scale}
-At any time during an editing session, the x and y coordinates of all grid nodes can be rescaled by means of this option. It should be noted that the stored minimum and maximum values of x and y are not updated by Scale and consequently the window limits are not updated. However, the minimum and maximum values are updated when the grid is written to file with \{File\}InterimSave or \{File\}SaveAs.
-
-\subsubsection[Menu item Shift]{Menu item Shift}
-This allows shifting of the x and y coordinates of all the grid nodes. The above remarks on minimum and maximum values also apply here.
-
-\subsubsection[Menu item Rotate]{Menu item Rotate}
-This option allows rotation of the horizontal coordinates.
-
 \subsection{Contents of menu: Polygons}
 This option permits creation, saving, retrieving, activation and deletion of polygonal areas of the model domain in which the user wishes to carry out editing functions accessed subsequently through the Top menu. The menu is:
 
-DefineGroup: Create Whole Cycle Activate Delete Write Read PolysOff
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+Polygons:\\     \hline
+Create \\ Whole \\ Cycle \\ Delete \\ Read \\ Write \\
+    \hline
+   \end{tabular}
+   \label{tab:POLYGONS}
+  \end{center}
+\end{table}
+
 
 These options are described next.
 
@@ -723,29 +775,32 @@ This option creates a polygon that includes the entire grid.
 \subsubsection[Menu item Cycle]{Menu item Cycle}
 Repeated picking of option Cycle permits the user to display in turn all, none or individual members of the list of stored polygons. Non-active polygons are outlined in red, whereas the active polygon is outlined in yellow.
 
-\subsubsection[Menu item Activate]{Menu item Activate}
-The Activate option allows one to designate a single member of the existing polygon list as the only area in which node-editing operations are to be carried out. To activate a polygon, use Cycle until only the required polygon is displayed, then pick the Activate option. The chosen polygon will then reappear in yellow. If some other polygon was active up till this time, it becomes inactivated and is subsequently displayed in red.
-
 \subsubsection[Menu item Delete]{Menu item Delete}
 Delete is used in conjunction with Cycle to delete the currently active polygon from the stored list of polygons.
-
-\subsubsection[Menu item Write]{Menu item Write}
-This saves all currently defined polygons to a file named by the user. It may be used in conjunction with Read below.
 
 \subsubsection[Menu item Read]{Menu item Read}
 This option allows the user to read in a named file containing polygons designed and saved during some earlier node-editing session by means of Write. For instance, when running the demonstration case supplied, use Read to read a file named POLYEAST.DAT, which defines a particular polygon to be used if exact comparison with subsequent test outputs to be possible.
 
-\subsubsection[Menu item PolysOff]{Menu item PolysOff}
-This option makes all polygons inactive.
+\subsubsection[Menu item Write]{Menu item Write}
+This saves all currently defined polygons to a file named by the user. It may be used in conjunction with Read below.
 
 \subsection{Contents of menu: EditInPoly}
 This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. The menu is:
 
-EditGroup: Nodes {\textbar} DeleteBnd DeleteInt DeleteAll NodeCode TooClose ShiftCopy {\textbar} 
-
-Grids {\textbar} CleaveNodes RefineElement ReShape NodeCode ElementCode ReDepth SplitGrid DeleteGrid
-
-A valid set of operations for NODE format files follow the label '{}'Nodes'{}', and the valid set of operations for NEIGH format grid files follow the label '{}'Grids'{}'.
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+EditInPoly:\\     \hline
+NodeCode \\ ElementCode \\ DeKite \\ ReShape \\
+DeleteGrid \\ SplitGrid \\ RefineGrid \\
+CutOffGrid \\ SetDepth \\ ReDepth \\
+    \hline
+   \end{tabular}
+   \label{tab:EDITINPOLY}
+  \end{center}
+\end{table}
 
 \subsubsection[Menu item DeleteBnd (Delete Boundary)]{Menu item DeleteBnd (Delete Boundary)}
 This operation deletes all boundary nodes within the working polygon. N.B. This option should not be used for complete deletion of an island, which requires more radical changes to the NODE file. Instead, use DeleteIsland in \{EditNode\}, described earlier.
@@ -898,7 +953,22 @@ If a polygon is not active a message is displayed asking the user to define a po
 \subsection{Contents of menu: Configure}
 When the item Config is chosen, the following options appear across the top of the screen:
 
-Config: DrawNode ConfigNode {\textbar} DrawGrid ConfigGrid {\textbar} DrawContour ConfigContour {\textbar} DrawData ConfidData
+\begin{table}[htb!]
+ \caption{File menu items.}
+  \begin{center}
+   \begin{tabular}{|c|}
+    \hline
+Configure:\\     \hline
+ConfigNode \\
+ConfigGrid \\
+ConfigContours \\
+ConfigData \\
+    \hline
+   \end{tabular}
+   \label{tab:CONFIGURE}
+  \end{center}
+\end{table}
+
 
 This menu allows choice of the colours used for display of the grid. It also provides control of the display of digitized boundary and depth contour data and the colours in which these appear. In addition, it provides a certain control of the GridMerge operation needed when grids are being joined, and a facility for checking and, if necessary, adjusting the cursor sensitivity.
 
@@ -1029,11 +1099,18 @@ Contours configuration is similar to boundary configuration described above exce
 
 
 \section{Input and output formats} \label{sec:formats}
-All input routines accept free format input files, i.e. data fields in each record must be separated by at least 1 blank. However, to save storage space, the user is given control over output format. Formats for the 5 principal types of data file are set in DIGIT.FMT, MESH.FMT, NEIGH.FMT, NODE.FMT and TRIANG.FMT in directory trigrid/includes
 
-Examples of formats suitable for the demonstration data files are given in internal documentation in the above-mentioned *.FMT files.
+All input routines accept free format input files, i.e. data fields in each record must be separated by at least 1 blank.
+In general, the first line of the main files is a description of the file contents and the first 4 characters
+on the line define the file type (see below). The program will attempt to select the correct file format
+by reading the file type at the beginning of the file, or by parsing the file to find the correct variables.
 
-\subsection[NEIGH format]{NEIGH format}
+There are 2 broad categories of files: Grid files that contain nodal and connection information (*.NGH and *.XYE)
+, and Node files that contain only nodal information (*.NOD and *.XYZ). 
+
+\newpage
+\subsection[Neighbour (NGH) format]{Neighbour (NGH) format}
+
 \subsubsection[Description]{Description}
 
 \textbf{Data layout}: \\ 
@@ -1041,31 +1118,31 @@ Examples of formats suitable for the demonstration data files are given in inter
 \noindent
 FTYPE \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string, free format) \newline
 x0off, y0off, scaleX, scaleY, igridtype\ \ \ \ \ (5 reals, free format)\newline
-NREC \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
-NUMNB \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
-ID,TRX(ID),TRY(ID),CODE(ID),DEP(ID),(NB(ID,J),J=1,NUMNB)\newline
+NP \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
+NNB \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (integer, free format)\newline
+ID,X(ID),Y(ID),CODE(ID),Z(ID),(NBR(ID,J),J=1,NUMNB)\newline
 (integer, 2 reals, integer, real, integers; free format) \newline
 
 \noindent\textbf{Definitions}:\\ 
 
 \noindent
-FTYPE - an indicator of the file type.  For ngh files it is <\#NGH> \newline
+FTYPE - an indicator of the file type.  For ngh files it is \#NGH \newline
 x0off, y0off - the grid offset in the x and y dimensions \newline
 scaleX, scaleY - scaling of the grid in the x and y dimensions \newline
 igridtype - not currently used.  In the future this code will indicate the type of coordinates used by the grid. \newline
-NREC - number of nodes in the grid.\newline
-NUMNB - maximum number of neighbours a node can have.\newline
-ID - index (number) of node , ID = 1, NREC\newline
-J  - neighbour counter, I=1,NUMNB\newline
-TRX(ID),TRY(ID) - contain x,y coordinates of IDth node.\newline
+NP - number of points (nodes) in the grid.\newline
+NNB - maximum number of neighbours a node can have.\newline
+ID - index (number) of node , ID = 1, NP\newline
+J  - neighbour counter, I=1,NNB\newline
+X(ID),Y(ID) - contain x,y coordinates of IDth node.\newline
 CODE(ID) - identifies the type of node (boundary,interior,etc).\newline
-DEP(ID) - contains the value of water depth at IDth node.\newline
+Z(ID) - contains the value of bottom elevation at IDth node.\newline
 NB - two dimensional array of neighbours.\newline
-NB(ID,J) contains the index of the Jth neighbour of the IDth node.
+NBR(J,ID) contains the index of the Jth neighbour of the IDth node.
 
-\subsubsection[Example of data file in NEIGH format]{Example of data file in NEIGH format}
+\newpage
+\subsubsection[Example of data file in NGH format]{Example of data file in NGH format}
 \begin{small}
-
 \begin{lstlisting}
 #NGH
 0.0000E+00   0.0000E+00   1.0000E+00   1.0000E+00   0
@@ -1119,20 +1196,22 @@ NB(ID,J) contains the index of the Jth neighbour of the IDth node.
 
 
 
-\subsection[NODE format]{NODE format}
+\newpage
+\subsection[Node (NOD) format]{Node (NOD) format}
+
 \subsubsection[Description]{Description}
 \textbf{Data Layout:}\newline
 FTYPE \ \ \ \ \ \  {}- (string, free format) \newline
 x0off, y0off, scaleX, scaleY, igridtype\ \ \ \ \ (5 reals, free format)\newline
-NC \ \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+NP \ \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
 NB,NIB \ \ \ \ \ \ \ \ \ \ \ \ {}- (2 integer, free format)\newline
-NP(1) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+NBP(1) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
 X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
 :\newline
-NP(I) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+NBP(I) \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
 X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
 :\newline
-NPO \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
+NPI \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
 X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
 :\newline
  \ \ \ \newline
@@ -1142,9 +1221,9 @@ FTYPE - an indicator of the file type.  For node files it is <\#NOD> \newline
 x0off, y0off - the grid offset in the x and y dimensions \newline
 scaleX, scaleY - scaling of the grid in the x and y dimensions \newline
 igridtype - not currently used.  In the future this code will indicate the type of coordinates used by the grid. \newline
-NC \ \ \ \ \ \ \ \ \ \ \ \ {}- total number of nodes\newline
+NP \ \ \ \ \ \ \ \ \ \ \ \ {}- total number of nodes\newline
 NB,NIB \ \ \ \ \ \ \ \ \ \ \ \ {}- number of boundaries, number of internal boundaries\newline
-NP(I) \ \ \ \ \ \ \ \ \ {}- number of nodes on Ith boundary\newline
+NBP(I) \ \ \ \ \ \ \ \ \ {}- number of nodes on Ith boundary\newline
 X,Y,Z \ \ \ \ \ \ \ \ \ {}- x,y co-ordinates and depth at node\newline
 NPO \ \ \ \ \ \ \ \ \ \ \ {}- number of internal nodes\newline
  \ \ \ \ \newline
@@ -1153,6 +1232,8 @@ NPO \ \ \ \ \ \ \ \ \ \ \ {}- number of internal nodes\newline
  \ \ \ \ \ \ \ {}- outer boundary must be in counter clockwise order\newline
  \ \ \ \ \ \ \ {}- all inner boundaries (islands) must be in clockwise order
 
+
+\newpage
 \subsubsection{Example of data file in NODE format}
 
 \begin{small}
@@ -1187,16 +1268,22 @@ NPO \ \ \ \ \ \ \ \ \ \ \ {}- number of internal nodes\newline
 \end{lstlisting}
 \end{small}
 
-\subsection{ELEMENT format}
+\newpage
+\subsection[Element (ELE) format]{Element (ELE) format}
+
+The element files are in 2 formats: one with 3 integers per line that is suitable for
+triangle elements only, and one with 5 integers per line that is suitable for 
+quadrilateral or triangular elements. If using the latter, the 4th vertex number
+is 0 for a triangle. The program will parse the first line
+to determine the correct format to read.
+
 \subsubsection[Description]{Description}
 
 \bigskip
 
-Data Layout :
-
+Data Layout :\newline
 VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (3 integers, free format)\newline
-\ \ Data Layout with element codes:
-
+\ \ Data Layout with element codes:\newline
 VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
 
 \subsubsection{Example of data file in ELEMENT format}
@@ -1236,7 +1323,78 @@ VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
 \end{lstlisting}
 \end{small}
 
-\subsection[XSEC format]{XSEC format}
+\newpage
+\subsection[Grid (XYE) format]{Grid (XYE) format}
+\subsubsection[Description]{Description}
+
+\textbf{Data layout}:\newline 
+NP,NE \ \ \ \ \ \ \ \ \ \ \ \ {}- (2 integer, free format)\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (3 integers, free format)\newline
+\ \ or data Layout with element codes:\newline
+VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
+
+\subsubsection{Example of data file in XYE format}
+
+\begin{small}
+\begin{lstlisting}
+#XYE
+         477   795
+    1.5700001E+00  1.3470000E+01     0.0000000E+00   1  
+    1.4299999E+00  1.3180000E+01     0.0000000E+00   1  
+    1.4800000E+00  1.2880000E+01     0.0000000E+00   1  
+    1.5300000E+00  1.2580000E+01     0.0000000E+00   1  
+    1.4800000E+00  1.2280000E+01     0.0000000E+00   1  
+    1.2700000E+00  1.2020000E+01     0.0000000E+00   1  
+    1.0900000E+00  1.1750000E+01     0.0000000E+00   1  
+          .              .                 .         .
+          .              .                 .         .
+    2.6099999E+00  1.1900000E+01     3.0000000E+01   0  
+    2.6099999E+00  1.2300000E+01     3.0000000E+01   0  
+    2.6600001E+00  1.2700000E+01     3.0000000E+01   0  
+    5.3130002E+00  1.1940000E+00     1.5000000E+01   0  
+    5.5460000E+00  7.5000000E-01     1.5000000E+01   0  
+       1       2     204       0   1
+       1     204     126       0   1
+       2       3     204       0   1
+       3       4     203       0   1
+       3     203     204       0   1
+       .      .       .        .   .
+       .      .       .        .   .
+     466     467     468       0   1
+     466     468     472       0   1
+     468     469     471       0   1
+     468     471     472       0   1
+     469     470     471       0   1
+\end{lstlisting}
+\end{small}
+
+\newpage
+\subsection[Node (XYZ) format]{Node (XYZ) format}
+\subsubsection[Description]{Description}
+
+\textbf{Data layout}:\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+
+\subsubsection{Example of data file in XYE format}
+
+\begin{small}
+\begin{lstlisting}
+    1.5700001E+00  1.3470000E+01     0.0000000E+00   
+    1.4299999E+00  1.3180000E+01     0.0000000E+00   
+    1.4800000E+00  1.2880000E+01     0.0000000E+00   
+    1.5300000E+00  1.2580000E+01     0.0000000E+00   
+    1.4800000E+00  1.2280000E+01     0.0000000E+00   
+    1.2700000E+00  1.2020000E+01     0.0000000E+00   
+    1.0900000E+00  1.1750000E+01     0.0000000E+00   
+    9.4999999E-01  1.1460000E+01     0.0000000E+00   
+          .              .                 .     
+          .              .                 .    
+\end{lstlisting}
+\end{small}
+
+\newpage
+\subsection[Section (XSC) format]{Section (XSC) format}
 \subsubsection[Description]{Description}
 [THIS SECTION NOT YET UPDATED]
 \bigskip

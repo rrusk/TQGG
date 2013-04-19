@@ -1096,7 +1096,7 @@
 
       IF (PigCursYesNo ('Add LINE CONSTRAINT?').EQ.'Y') THEN
         if(.not.PigOpenFileCD(3,'Open NODE File', nodfile, &
-     &          'Node Files (*.[nx][oy][dz]),*.nod;All Files (*.*),*.*;')) then
+     &          'Node Files (*.nod),*.nod;All Files (*.*),*.*;')) then
           close(unit=3, status='keep')
         ELSE
 !             -  file specified

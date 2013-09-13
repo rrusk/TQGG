@@ -135,5 +135,6 @@
 #define  ElementCheck elementcheck_
 #define  WPigNodeCheck wpignodecheck_
 #define  ReDrawOnly redrawonly_
+#define  SetUserValue setuservalue_
 
 #endif /* F90_C_H_ */

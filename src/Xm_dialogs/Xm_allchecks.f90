@@ -64,18 +64,6 @@
       call PigEraseMessage
 
       call WPigElementCheck
-!      call PigMessageYesNo ('Full colour (or symbols)? ',ans)
-!      if(ans(1:1).eq.'Y') then
-!        cmode = .true.
-!      else
-!        cmode = .false.
-!      endif
-
-!     tests: 1=eql, 2=dep, 3=a2d, 4=ccw, 5=g90, 6=code
-!      call PigPrompt('Enter test number (1-5): ', ans )
-!      read(ans,'(i1)') hitnum
-
-!      call ElementCheck(hitnum,cmode)
 
       END
 
@@ -134,15 +122,7 @@
       PARAMETER ( lblank = '           ' )
 
 ! - LOCAL VARIABLES
-!      integer i, j  !, row
-!      integer hitnum !, anslen
-!      LOGICAL  Success, IEXIS
-!      logical, save :: Accepted, Erase
-!      CHARACTER*80 ans
       logical ans
-!      CHARACTER*6 inum
-!      CHARACTER*11 rnum
-!      logical PigGetOpenFileName
 
 !----------BEGIN----------------------
 
@@ -151,28 +131,116 @@
 
       call WPigNodeCheck(ans, USER_NCOUNT, USER_NCOUNT1, USER_NCOUNT2, TheCriteria, MaxCrit)
 
-!      call PigMessageYesNo ('Code (yes) or neighbor (no) checks? ',ans)
-!      if(ans(1:1).eq.'Y') then
-!      if(ans) then
-!        TheCriteria = .false.
-!        TheCriteria(2) = .true.
-!        TheCriteria(3) = .true.
-!        TheCriteria(6) = .true.
-!        TheCriteria(7) = .true.
-!        TheCriteria(8) = .true.
-!      else
-!        TheCriteria = .false.
-!        TheCriteria(12) = .true.
-!        USER_NCOUNT = 8
-!        TheCriteria(13) = .true.
-!        USER_NCOUNT1 = 4
-!        TheCriteria(14) = .true.
-!        USER_NCOUNT2 = 4
-!      endif
-
       return
 
-!      entry criteria_ehandler(hitnum)
+      END
+
+!---------------------------------------------------------------------------*
+
+      SUBROUTINE SetUserValue(ntest)
+
+! Purpose : To place markers at vertices if certain
+!           criteria are satisfied
+! Given   : None
+! Returns : Ok - TRUE if a redraw is needed
+
+      implicit none
+
+      INCLUDE '../includes/defaults.inc'
+      INCLUDE '../plotsubs/critcom.inc'
+      INCLUDE '../includes/graf.def'
+
+! critcom.inc:  array TheCriteria(1->MaxCrit) contents
+! [1] CO [2] C1 [3] C2 [4] C3 [5] C4 [6] C5 [7] C6 [8] NC0
+! [9] DLT [10] DGT [11] DBTW [12] NBGT [13] NBLT [14] NBE [15] EXT
+
+! - PASSED VARIABLES
+      integer ntest
+
+! - PARAMETERS
+
+! - LOCAL VARIABLES
+      real rval
+      logical Success
+      character*80 ans
+
+!----------BEGIN----------------------
+
+      if(ntest.eq.9) then      !DLT
+        call PigPrompt('Enter depth for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid number','ncheck')
+        else
+          USER_COUNT=rval
+        endif
+        
+      elseif(ntest.eq.10) then !DGT
+        call PigPrompt('Enter depth for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid number','ncheck')
+        else
+          USER_COUNT1=rval
+        endif
+      
+      elseif(ntest.eq.11) then !DBTW
+        call PigPrompt('Enter lower depth for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid number','ncheck')
+        else
+          lowerd=rval
+          call PigPrompt('Enter upper depth for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid number','ncheck')
+          else
+            upperd=rval
+          endif
+        endif
+      
+      elseif(ntest.eq.12) then !NGT
+        call PigPrompt('Enter integer count for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid integer','ncheck')
+        else
+          USER_NCOUNT = nint(rval)
+        endif
+      
+      elseif(ntest.eq.13) then !NLT
+        call PigPrompt('Enter integer count for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid integer','ncheck')
+        else
+          USER_NCOUNT1 = nint(rval)
+        endif
+      
+      elseif(ntest.eq.14) then !NBE
+        call PigPrompt('Enter integer count for comparison:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid integer','ncheck')
+        else
+          USER_NCOUNT2 = nint(rval)
+        endif
+      
+!      elseif(ntest.eq.15) then !EXT
+      
+      elseif(ntest.eq.16) then !C=?
+        call PigPrompt('Enter integer code:',ans )
+        call PigReadReal( ans, rval, Success )
+        IF ( .NOT. Success ) THEN
+          call PigMessageOK('Invalid integer','ncheck')
+        else
+          USER_CODE = nint(rval)
+        endif
+      
+      endif
+
+      return
 
       END
 

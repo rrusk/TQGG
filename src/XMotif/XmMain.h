@@ -194,5 +194,6 @@ void  drawing_area_callback(Widget, XtPointer, XtPointer);
 
 extern void elementcheck_(int *num, int *mode);
 extern void redrawonly_(void);
+extern void setuservalue_(int *num);
 
 #endif /* XMMAIN_H_ */

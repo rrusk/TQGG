@@ -16,3 +16,4 @@ gfortran -c -fdefault-real-8 -Wall ../../src/XMotif/*.f90
 /usr/local/gfortran/bin/gcc -c -Wall -I /usr/OpenMotif/include/ ../../src/XMotif/XmDrawdbl.c
 /usr/local/gfortran/bin/gcc -c -Wall -I /usr/OpenMotif/include/ ../../src/XMotif/XmDialogs.c
 gfortran *.o  -o TQGGdbl -L/usr/OpenMotif/lib -L/usr/X11/lib -lXm -lXt -lX11
+rm *.o

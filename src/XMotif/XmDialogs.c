@@ -215,9 +215,13 @@ void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_da
 	int bit = (int) client_data;
 	XmToggleButtonCallbackStruct *toggle_data = (XmToggleButtonCallbackStruct *) call_data;
 
-	if (toggle_data->set == XmSET) /* if the toggle button is set, flip its bit */
+    long which = (long) client_data;
+
+	if (toggle_data->set == XmSET){ /* if the toggle button is set, flip its bit */
 		toggles_set |= (1 << bit);
-	else /* if the toggle is "off", turn off the bit. */
+        ntest = which + 1;
+        SetUserValue(&ntest);
+    }else /* if the toggle is "off", turn off the bit. */
 		toggles_set &= ~(1 << bit);
 }
 

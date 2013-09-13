@@ -4,7 +4,7 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
+  !        TQGridGen@gmail.com
   !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
@@ -202,7 +202,8 @@ void  WPigElementCheck(void)
 
 // The following code implements the info/node check menu item
 
-int *theCriteria, *userNcount, *userNcount1, *userNcount2, *maxCrit;
+//int *theCriteria, *userNcount, *userNcount1, *userNcount2, *maxCrit;
+int *theCriteria, *maxCrit;
 
 unsigned long toggles_set = (unsigned long) 0 ; /* has the bits of which toggles are set */
 
@@ -248,24 +249,24 @@ void check_bits (Widget widget, XtPointer client_data, XtPointer call_data)
 /*	DrwFig(&parm1, &change);*/
 }
 
-void WPigNodeCheck(int *ans, int *user_ncount, int *user_ncount1, int *user_ncount2,
-			int TheCriteria[], int *maxcrit)
+//void WPigNodeCheck(int *ans, int *user_ncount, int *user_ncount1, int *user_ncount2,
+void WPigNodeCheck(int *ans, int TheCriteria[], int *maxcrit)
 {
 	Widget       rowcol, toggle_box, w, t, check, close;
 	int          i;
 	Arg          args[4];
 
 	theCriteria = TheCriteria;
-	userNcount = user_ncount;
-	userNcount1 = user_ncount1;
-	userNcount2 = user_ncount2;
+//	userNcount = user_ncount;
+//	userNcount1 = user_ncount1;
+//	userNcount2 = user_ncount2;
 	maxCrit = maxcrit;
 
 	// hard-coded here so that this skeleton code replicates
 	// functionality of older version
-    *userNcount = 8;
-    *userNcount1 = 4;
-    *userNcount2 = 4;
+//    *userNcount = 8;
+//    *userNcount1 = 4;
+//    *userNcount2 = 4;
 
 	XtSetLanguageProc (NULL, NULL, NULL);
 

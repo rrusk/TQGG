@@ -2,7 +2,7 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
+  !        TQGridGen@gmail.com
   !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
@@ -45,9 +45,6 @@
       LOGICAL change
 
 !     - LOCAL VARIABLES
-!      integer hitnum
-!      character*3 ans
-!      LOGICAL cmode
       LOGICAL :: retro=.false.
 
 !---------- BEGIN --------------
@@ -117,10 +114,6 @@
 ! - PASSED VARIABLES
       LOGICAL OkDummy
 
-! - PARAMETERS
-      CHARACTER*11 lblank
-      PARAMETER ( lblank = '           ' )
-
 ! - LOCAL VARIABLES
       logical ans
 
@@ -129,7 +122,8 @@
       OkDummy = .true.
       DrawVCrit = .true.
 
-      call WPigNodeCheck(ans, USER_NCOUNT, USER_NCOUNT1, USER_NCOUNT2, TheCriteria, MaxCrit)
+!      call WPigNodeCheck(ans, USER_NCOUNT, USER_NCOUNT1, USER_NCOUNT2, TheCriteria, MaxCrit)
+      call WPigNodeCheck(ans, TheCriteria, MaxCrit)
 
       return
 
@@ -156,8 +150,6 @@
 
 ! - PASSED VARIABLES
       integer ntest
-
-! - PARAMETERS
 
 ! - LOCAL VARIABLES
       real rval
@@ -241,7 +233,6 @@
       endif
 
       return
-
       END
 
 !---------------------------------------------------------------------------*

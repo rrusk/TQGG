@@ -42,6 +42,8 @@
 
       implicit none
 
+      call PigMessageOK('Unavailable','configgrid')
+
       END
 
 !---------------------------------------------------------------------------*
@@ -54,6 +56,8 @@
 ! Effects: None
 
       implicit none
+
+      call PigMessageOK('Unavailable','configbnd')
 
 
       END

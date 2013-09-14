@@ -39,6 +39,7 @@
 ! EFFECTS: Defaults are set.
 !--------------------------------------------------------------------------*
 
+      call PigMessageOK('Unavailable','confignodes')
 
       return
 

@@ -2,7 +2,7 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
+  !        TQGridGen@gmail.com
   !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
@@ -23,18 +23,14 @@
   !    USA, or see <http://www.gnu.org/licenses/>.
   !***********************************************************************
 
-C-----------------------------------------------------------------------*
-C                                                                       *
-C                       PLOTSUBS.FOR                                    *
-C       Routines:       DrwCon                                          *
-C                       DrwConFill                                     *
-C                                                                       *
-C-----------------------------------------------------------------------*
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
       SUBROUTINE DrwContours ()
 
-C PURPOSE: Display contours with attributes as set in Common in cntcfg.inc
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+! PURPOSE: Display contours with attributes as set in Common in cntcfg.inc
+!-----------------------------------------------------------------------*
+
       INCLUDE '../includes/cntcfg.inc'
 
       If(ScalePhase(1).eq.'L') then
@@ -45,285 +41,203 @@ C-----------------------------------------------------------------------*
 
       end
 
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
       SUBROUTINE DrwConLine ()
 
-C PURPOSE: Display contours with attributes as set in Common in cntcfg.inc
-C   GIVEN: prtit = TRUE if output to printer
-C          pltit = TRUE if output to screen
-C
-C                         idf   iphase  LL      ncon          Scale or Phase
-C                         ---   ------  --      ----          --------------
-C     DateType: 1) Depth   0      0      1      NumCntValues    Scale only
-
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+! PURPOSE: Display contour lines with attributes as set in cntcfg.inc
+!-----------------------------------------------------------------------*
 
       use MainArrays
 
-
-C     - PASSED PARAMETERS
-      LOGICAL TransOn
-
-C     - INCLUDES
+!     - INCLUDES
       INCLUDE '../includes/cntcfg.inc'
 
-      integer nptstart,nptend,TotTr2
-      common /trans2/ nptstart,nptend,TotTr2
+!     - vcon will hold contour range values from CntValues
+      REAL vcon(20), var(9), xx(9,3)
 
-C     - vcon will hold contour range values from CntValues
-      REAL vcon
-      DIMENSION var(9), xx(9,3), vcon(20,2)
-
-C     - LOCAL VARIABLES
-C       idf = id # to indicate data type being plotted, 0..7
-C       in_box = function that returns TRUE if point is inside current window
-C       ncon = # of contour colors set
+!     - LOCAL VARIABLES
+!       idf = id # to indicate data type being plotted, 0..7
+!       in_box = function that returns TRUE if point is inside current window
+!       ncon = # of contour colors set
 
       LOGICAL inside, in_box
-      INTEGER idf, iphase, ncon, k, k2, L, nsw, node, cntr, j, LL, ncn 
+      INTEGER ncon, k, k2, L, nsw, node, cntr, j, ncn2 
       INTEGER*4 icolor, icnt
       integer first, last
-      REAL v3, vlmt, var, xx, v1, xcon, ycon, xp(5), yp(5)
-!      REAL plmt, p0lmt
+      REAL v3, vlmt, v1, xcon, ycon, xp(5), yp(5)
+      
+!--------------BEGIN---------------
 
-!      DATA plmt  /150.0/
-!      DATA p0lmt /260.0/
-      DATA ncn   /3/
-      DATA vcon /21*0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0,
-     +                210.0, 240.0, 270.0, 300.0, 330.0, 8*0.0/
-
-
-C--------------BEGIN---------------
       DataType = 1
-      netype = 0
-      TransOn = .false.
 
-C     - from table above:
-C     - Depth, Hamp, Uamp, Vamp, or Speed
-      LL = 1
-      iphase = 0
       ncon = NumCntValues(DataType)
 
-      idf = Datatype - 1
       DO j = 1, ncon
-        vcon(j,LL) = CntValues(DataType,j)
+        vcon(j) = CntValues(DataType,j)
       ENDDO
 
-      if(TransOn) then
-        first = TotTr +1
-        last = TotTr2
-      else
-        first = 1
-        last = TotTr
-      endif
+      first = 1
+      last = TotTr
 
-C     - for each contour...
+!     - for each contour...
       DO cntr = 1, Ncon
-        call PigSetWindowNum( 1 )
-C        - set polyline width scale factor
+!        call PigSetWindowNum( 1 )
+!        - set polyline width scale factor
 !        call PigSetLineWidth( Plwscale1 )
-C        - set contour color as set in cntcfg.inc
+!        - set contour color as set in cntcfg.inc
         icolor = CntColors(DataType,cntr)
         call PigSetLineColour( icolor )
-c       DO L = 1, TotTr
+!       DO L = 1, TotTr
         DO L = first,last
           if(TCode(L).le.0) go to 999
           nsw = 0
           inside = .FALSE.
           if(ListTr(4,L).gt.0) then
-            ncn = 4
+            ncn2 = 4
           else
-            ncn = 3
+            ncn2 = 3
           endif
-          DO j = 1, ncn
+          DO j = 1, ncn2
             node = ListTr(j,L)
             xx(j,1) = dxray( node )
             xx(j,2) = dyray( node )
             xx(j,3) = Depth( node )
             inside = In_Box( xx(j,1), xx(j,2) )
             vlmt = 0.0
-            IF ( idf .eq. 0 ) THEN
-C                 - depth data type, var(j) = depth at point
-                var(j) = xx(j,3)
-            ELSE
-C                 - non-depth data type
-c                var(j) = vel(node,idf)
-            ENDIF
+            var(j) = xx(j,3)
           END DO
           IF ( .NOT. inside ) GO TO 999
-          IF ( vcon(cntr,LL) .eq. var(1) ) THEN
-C              - if equal to depth, then plot it
+          IF ( vcon(cntr) .eq. var(1) ) THEN
+!              - if equal to depth, then plot it
             nsw = 1
             icnt = 1
             xp(1) = xx(1,1)
             yp(1) = xx(1,2)
           ENDIF
-          DO k = 1, ncn
+          DO k = 1, ncn2
             k2 = k + 1
-            IF ( k2 .gt. ncn ) THEN
+            IF ( k2 .gt. ncn2 ) THEN
                 k2 = 1
             ENDIF
             IF ( var(k) .gt. var(k2) ) THEN
                 GO TO 610
             ENDIF
-            IF ( vcon(cntr,LL) .lt. var(k) .OR.
-     +              vcon(cntr,LL) .gt. var(k2) ) THEN
+            IF ( vcon(cntr) .lt. var(k) .OR.vcon(cntr) .gt. var(k2) ) THEN
                 GO TO 649
             ENDIF
             GO TO 611
-610         IF ( vcon(cntr,LL) .lt. var(k2) .OR.
-     +           vcon(cntr,LL) .gt. var(k) ) THEN
+610         IF ( vcon(cntr) .lt. var(k2) .OR.vcon(cntr) .gt. var(k) ) THEN
                 GO TO 649
             ENDIF
 611         v3 = var(k2) - var(k)
             v1 = 1.0
-            IF ( ABS(v3) .gt. 1.0 E-7) THEN
-C                 - v1 is a multiple
-c data: v1 computed from vcon, cntr, var, k, v3
-                v1 = ( vcon(cntr,LL) - var(k) ) / v3
+            IF ( ABS(v3) .gt. 1.0E-7) THEN
+!                 - v1 is a multiple data: v1 computed from vcon, cntr, var, k, v3
+                v1 = ( vcon(cntr) - var(k) ) / v3
             ENDIF
 
-C              - xcon & ycon will be plotted
-C              --  computed from v1, xx, k2, k
+!              - xcon & ycon will be plotted
+!              --  computed from v1, xx, k2, k
             xcon = v1 * ( xx(k2,1) - xx(k,1) ) + xx(k,1)
             ycon = v1 * ( xx(k2,2) - xx(k,2) ) + xx(k,2)
             IF ( nsw .eq. 1 ) THEN
-C                 - icnt # point to plot
+!                 - icnt # point to plot
                 Icnt = Icnt + 1
                 xp(Icnt) = xcon
                 yp(Icnt) = ycon
             ELSE
-C                 - first point to plot
+!                 - first point to plot
                 nsw = 1
                 Icnt = 1
                 xp(1) = xcon
                 yp(1) = ycon
             ENDIF
-C - goto's exist for following line
+! - goto's exist for following line
 649         CONTINUE
           END DO
           IF ( (nsw .eq. 1) .AND. (icnt .gt. 1) ) THEN
-c data: xp, yp, icnt
+! data: xp, yp, icnt
             call PigDrawPolyLine( icnt, xp, yp )
           ENDIF
 999       CONTINUE
         END DO
-        IF ( LabelsOn(DataType) ) THEN
+!        IF ( LabelsOn(DataType) ) THEN
 !          call ConLab()
-        ENDIF
-c999     continue
+!        ENDIF
+
       END DO
-c      if(.not.TransOn) call LBound
-      call PigSetWindowNum( 1 )
+
+!      call PigSetWindowNum( 1 )
 
       RETURN
       END
 
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+
       SUBROUTINE DrwConFill()
 
-C PURPOSE: Display contours with attributes as set in Common in cntcfg.inc
-C   GIVEN: prtit = TRUE if output to printer
-C          pltit = TRUE if output to screen
-C WRITTEN: ?
-C MODIFIED: June92 - JDM - Configuration set in cntcfg.inc by ConfigCntrs
-C                    is used. Values set are:
-C
-C                         idf   LL      ncon          Scale or Phase
-C                         ---   --      ----          --------------
-C     DateType: 1) Depth   0     1      NumCntValues    Scale only
-C-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+! PURPOSE: Display contours with attributes as set in Common in cntcfg.inc
+!-----------------------------------------------------------------------*
 
       use MainArrays
 
-
-C     - PASSED VARIABLES
-      LOGICAL TransOn
-
-C     - INCLUDES
+!     - INCLUDES
       INCLUDE '../includes/graf.def'
       INCLUDE '../includes/cntcfg.inc'
 
-      integer nptstart,nptend,TotTr2
-      common /trans2/ nptstart,nptend,TotTr2
-
-C - LOCAL VARIABLES
+! - LOCAL VARIABLES
       LOGICAL inside, in_box
-      REAL vcon
-      INTEGER idf, ncon, irnbw(16)
-      INTEGER npt, indxp0
+      REAL vcon(20)
+      INTEGER ncon, irnbw(16)
+      INTEGER npt
       integer first, last
-      REAL v1, t1, t2, v3, xp, yp, t, x, y
+      REAL v1, t1, t2, v3, xp(10),yp(10), T(9),X(4),y(4)
       REAL tmin, tmax
-      INTEGER node, ncn, j, LL, L, cntr, j2, k
+      INTEGER node, ncn2, j, L, cntr, j2, k
 
-      DIMENSION T(9),X(4),y(4),VCON(20,2)
-      DIMENSION xp(10),yp(10)
-      DATA vcon /21*0.,30.,60.,90.,120.,150.,180.,
-     *           210.,240.,270.,300.,330.,8*0./
-      DATA ncn/3/
-
-C --------------- BEGIN ----------------
+! --------------- BEGIN ----------------
 
       DataType = 1
-      netype = 0
-      TransOn = .false.
 
       DO j = 1, 16
         irnbw(j) = CntColors(DataType,j)
       ENDDO
 
-C     - from table above:
-C     - Depth, Hamp, Uamp, Vamp, or Speed
-      LL = 1
       ncon = NumCntValues(DataType)
 
-      idf = Datatype - 1
       DO j = 1, ncon
-        vcon(j,LL) = CntValues(DataType,j)
+        vcon(j) = CntValues(DataType,j)
       ENDDO
 
-      call PigSetWindowNum(MAINWIN)
+!      call PigSetWindowNum(MAINWIN)
 
-      if(TransOn) then
-        first = TotTr +1
-        last = TotTr2
-        indxp0 = 1
-      else
-        first = 1
-        last = TotTr
-        indxp0 = netype
-      endif
+      first = 1
+      last = TotTr
 
       DO 653 cntr = 1, ncon-1
         IF ( irnbw(cntr) .eq. 0 ) GO TO 653
-        call PigSetWindowNum(MAINWIN)
-C       - set polyline width scale factor
+!        call PigSetWindowNum(MAINWIN)
+!       - set polyline width scale factor
 !        call PigSetLineWidth( Plwscale1 )
-        tmin = vcon(cntr,LL)
-        tmax = vcon(cntr+1,LL)
-c        DO 651 L = 1, TotTr
+        tmin = vcon(cntr)
+        tmax = vcon(cntr+1)
+!        DO 651 L = 1, TotTr
         DO 651 L = first,last
           if(TCode(L).le.0) go to 651
           inside = .FALSE.
           if(ListTr(4,L).gt.0) then
-            ncn = 4
+            ncn2 = 4
           else
-            ncn = 3
+            ncn2 = 3
           endif
-          DO J=1,NCN
+          DO J=1,ncn2
             NODE= ListTr(j,L)
             x(j) = dxray(node)
             y(j) = dyray(node)
             IF ( in_box( x(j), y(j) ) ) inside = .TRUE.
-            IF ( idf .eq. 0 ) THEN
-              t(j)= Depth(node)
-            elseif(idf.eq.1.and.indxp0.eq.0) then
-              node = L
-c             t(j) = vel(node,1)
-            ELSE
-c              t(j)=vel(node, idf)
-            ENDIF
+            t(j)= Depth(node)
           enddo
           IF ( .NOT. inside ) GO TO 651
           DO K = 1, 10
@@ -331,9 +245,9 @@ c              t(j)=vel(node, idf)
             yp(k)=0.0
           ENDDO
           npt = 0
-          DO 155 j=1,ncn
+          DO 155 j=1,ncn2
             j2 = j+1
-            IF ( j2 .gt. ncn ) j2 = 1
+            IF ( j2 .gt. ncn2 ) j2 = 1
             IF ( t(j) .gt. tmax .AND. t(j2) .gt. tmax ) GO TO 155
             IF ( t(j) .lt. tmin .AND. t(j2) .lt. tmin ) GO TO 155
             IF ( t(j) .ge. tmin .AND. t(j)  .le. tmax ) THEN
@@ -383,18 +297,17 @@ c              t(j)=vel(node, idf)
             ENDIF
 155       CONTINUE
           IF ( npt .gt. 0 ) THEN
-C           - set fill area color index
+!           - set fill area color index
             call PigSetFillColour(irnbw(cntr))
-C           - call fill area to create polygons
+!           - call fill area to create polygons
             call PigDrawFilledPolygon( npt, xp, yp )
           ENDIF
 651     CONTINUE
 653   CONTINUE
 
-c      if(.not.TransOn) call LBound
-      call PigSetWindowNum(MAINWIN)
+!      call PigSetWindowNum(MAINWIN)
 
       RETURN
       END
 
-C------------------------END PLOTSUBS.FOR ------------------------------*
+!------------------------END PLOTSUBS.FOR ------------------------------*

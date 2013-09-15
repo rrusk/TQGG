@@ -20,7 +20,7 @@ all:
 	$(FC) $(F_FLAGS) -c \
 		src/dataio/MainArrays.f90 \
 		src/gridgen/*.f src/gridgen/*.f90 \
-		src/plotsubs/*.f src/plotsubs/*.f90 \
+		src/plotsubs/*.f90 \
 		src/PigInterface/*.f90 \
 		src/gridedit/*.f src/gridedit/*.f90 \
 		src/dataio/*.f src/dataio/*.f90 \

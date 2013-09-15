@@ -23,34 +23,6 @@
   !    USA, or see <http://www.gnu.org/licenses/>.
   !***********************************************************************
 
-!  ========================================================================= *
-!                      IMPLEMENTATION MODULE PIG_MENU.FOR
-!  ========================================================================= *
-! 
-!  Purpose: The PIG_MENU.FOR module contains all necessary subroutines to
-!           manipulate a menu system.  Only two subroutines need to be
-!           called to utilize the menu system:  PigInitMenu and
-!           PigGetMenuOption.  The first initializes the menu system and the
-!           second will RETURN an Action (menu option) to the calling program.
-! 
-!           The term "Action" is used to identify a menu option that
-!           requires some further evaluation by the application program.
-!           Menu items, or options, that lead to a submenu are not actions.
-!           After the menu system is initialized (PigInitMenu) and a call to
-!           PigGetMenuOption is made, the menu system maintains control
-!           until an action has been selected.
-! 
-!  NOTE:    There are PUBLIC and PRIVATE subroutines within this
-!           module - each routine is marked with the appropriate keyword
-!           below the declaration of the routine.  The public routines are
-!           callable by the user.  The private routines are used to
-!           manipulate data structures and should not be called by the
-!           aplication program.  To further assist in identifying public
-!           and private routines, each subroutine name begins with the
-!           word PIG (PUBLIC) and IPIG (PRIVATE - the I is for internal).
-! 
-!  ------------------------------------------------------------------------- *
-
 !  ------------------------------------------------------------------------- *
 
       SUBROUTINE MenuCBsubs
@@ -67,15 +39,8 @@
       INCLUDE '../includes/defaults.inc'
       INCLUDE '../includes/edpolys.inc'
 
-!   - PolyDisplay indicates polygons to display on redraw.
-!       PolyDisplay = 0 = display active polygon only.
-!                   = 1 = display all polygons.
-!                   = 2 = display NO polygons.
       LOGICAL TrHiOff
       COMMON /TH/ TrHiOff
-
-!      INTEGER PolyDisplay
-!      COMMON /POLYSTATUS/ PolyDisplay
 
       real, save :: RANGE = -999.
 
@@ -102,47 +67,16 @@
       logical polylist(mrec)
       common /TG2Interface/ polylist
 
-!       - DPTHCOLORS stores parameters for color coding nodes by depth
-      integer rngc(16)
-      REAL rngv(16)
-      LOGICAL inton, bndon
-      COMMON /DPTHCOLORS/ rngc, rngv, inton, bndon
-
-      integer, save :: Active_CW, Active_MW
+      integer, save :: Active_MW
 
 ! - PARAMETERS (constants)
 
-      INTEGER INACTIVE_CW, INACTIVE_MW, CONFIG_CW,&
-     &    CRITERIA_CW, PANELMOD_CW,&
-     &    NODEINFO_CW, NODEINFO_MW,&
-     &    TRIINFO_CW, TRIINFO_MW,&
-     &    PLACEMARKERS_CW, PLACEMARKERS_MW,&
-     &    FLAGSTRIANGLES_CW, ADDLINE_CW, ABOUT_CW
+      INTEGER  INACTIVE_MW, NODEINFO_MW, TRIINFO_MW, PLACEMARKERS_MW
       PARAMETER (&
-     &        INACTIVE_CW=-1,&
-     &        INACTIVE_MW=INACTIVE_CW,&
-     &        CONFIG_CW=1,&
-     &        CRITERIA_CW=2,&
-     &        PANELMOD_CW=3,&
-     &        NODEINFO_CW=4,&
-     &        NODEINFO_MW=NODEINFO_CW,&
-     &        TRIINFO_CW=9,&
-     &        TRIINFO_MW=TRIINFO_CW,&
-     &        PLACEMARKERS_CW=5,&
-     &        PLACEMARKERS_MW=PLACEMARKERS_CW,&
-     &        FLAGSTRIANGLES_CW=6,&
-     &        ADDLINE_CW=7,&
-     &        ABOUT_CW=8)
-      INTEGER CONFIGBND_CW, CONFIGCONT_CW,CONFIGSOUND_CW
-      INTEGER CONFIGNODES_CW, CONFIGDEPCONT_CW
-      PARAMETER (&
-     &        CONFIGBND_CW=10,&
-     &        CONFIGCONT_CW=11,&
-     &        CONFIGSOUND_CW=12,&
-     &        CONFIGNODES_CW=13,&
-     &        CONFIGDEPCONT_CW=14)
-      INTEGER  NADDLINE_CW, SHOWDEPTHS_CW
-      PARAMETER ( NADDLINE_CW=14, SHOWDEPTHS_CW=15)
+     &        INACTIVE_MW=-1,&
+     &        NODEINFO_MW=4, &
+     &        TRIINFO_MW=9,& 
+     &        PLACEMARKERS_MW=5)
 
       integer, parameter :: Sample_MW=20
       integer GridInsert_MW, GridCleave_MW,GridExchange_MW,GridDekite_MW
@@ -166,22 +100,16 @@
       integer Zoomin_MW, Pan_MW
       parameter (Zoomin_MW=55,Pan_MW=56)
 
-      integer LinearTrans_CW
-      parameter (LinearTrans_CW=61)
-
 !       Local variables
 
       integer,save :: nrec,AutoGenFlag
       integer i,ierr
       integer ncode1,ncode2,iecode1,iecode2,ncn
-!      integer HitNum
-!      integer nodetype
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
-      logical, save :: closeRHP, newfile
+      logical, save ::  newfile
       logical IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
-!      CHARACTER*3, save :: mmode
       INTEGER PolyId, numvert
       real vertx1(maxvert+1),verty1(maxvert+1)
 
@@ -199,7 +127,7 @@
 ! ------------------------------------------------------------------------- *
 
       entry Initialiser()
-        Active_CW =INACTIVE_CW
+        !Active_CW =INACTIVE_CW
         Active_MW =INACTIVE_MW
 
         AutoGenFlag = 0
@@ -264,23 +192,21 @@
         FlagG=.false.
         FlagD=.false.
         FlagC=.false.
-        inton=.false.
-        bndon=.false.
         call MNU_NodeMenuDisable
         call MNU_GridMenuDisable
         call MNU_PolyMenuDisable
 
         Program_Name = 'TQGridGen'
-        Revision = '$Revision: 12.11 $'
+        Revision = '$Revision: 13.10 $'
         call About(Program_name, Revision )
 
         itot = 0
         totcoords = 0
 
         CHANGE  = .TRUE.
-        closeRHP = .true.
+!        closeRHP = .true.
 
-        call WPigStatusMessage ('Done'//char(0))
+        call WPigStatusMessage ('Finished initializing'//char(0))
         return
 
 ! Callback routines 
@@ -338,7 +264,7 @@
             call DrwFig(change)
 !            Finished = .FALSE.
           endif
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_NodeMenuDisable
@@ -385,7 +311,7 @@
               call DrwFig(change)
             endif
           endif
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_NodeMenuDisable
@@ -437,7 +363,7 @@
             tottr = 0
             newfile = .true.
           endif
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
@@ -485,7 +411,7 @@
               tottr = 0
             endif
           endif
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
@@ -548,7 +474,7 @@
             change = .true.
             call DrwFig(change)
           endif
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           return
@@ -581,11 +507,11 @@
           call Sample( quit )
 !            IF (itot.gt.1000) outlineonly = .TRUE.
           if(.not.quit) then
-            Active_CW = INACTIVE_CW
+            !Active_CW = INACTIVE_CW
             Active_MW = Sample_MW
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           else
-            Active_CW = INACTIVE_CW
+            !Active_CW = INACTIVE_CW
             Active_MW = INACTIVE_MW
           endif
           call MNU_MainMenuEnable
@@ -677,7 +603,7 @@
           endif
           return
         entry ZoomCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = Zoomin_MW
           call PigStatusMessage('Zoom ACTIVE: Drag area')
           FirstZoom=.true.
@@ -691,7 +617,7 @@
           IF (Redrw) call DrwFig(CHANGE)
           return        
         entry PanCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = Pan_MW
           call PigStatusMessage('Pan ACTIVE: Drag to new location')
           FirstPan=.true.
@@ -705,21 +631,21 @@
           IF (Redrw) call DrwFig(CHANGE)
           return
          entry ScaleCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (1)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
         entry ShiftCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (2)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
         entry RotateCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (3)
           Redrw = .TRUE.
@@ -802,27 +728,27 @@
         entry NodeInfoCB()
 !          mmode = 'CHG'   !  mmode = 'INF'
           call Init_Info()  !mmode)
-          Active_CW = NODEINFO_CW
+          !Active_CW = NODEINFO_CW
           Active_MW = NODEINFO_MW
-          closeRHP = .false.
+!          closeRHP = .false.
           call PigStatusMessage('Info ACTIVE: Pick a point')        
           return
         entry EleInfoCB()
-          Active_CW = TRIINFO_CW
+          !Active_CW = TRIINFO_CW
           Active_MW = TRIINFO_MW
           call InfoTriangle( change )
-          closeRHP = .false.
+!          closeRHP = .false.
           call PigStatusMessage('info ACTIVE: Pick an element')        
           return
         entry NodeCheckCB()
           call FlagsVertices(CHANGE)
           Active_MW = INACTIVE_MW
-          Active_CW = CRITERIA_CW
+          !Active_CW = CRITERIA_CW
           return
         entry EleCheckCB()
           call FlagsTriangles_Init(change)
           Active_MW = INACTIVE_MW
-          Active_CW = FLAGSTRIANGLES_CW
+          !Active_CW = FLAGSTRIANGLES_CW
           return
         entry EraseCheckCB()
 !          call FlagsEraseAll
@@ -836,18 +762,18 @@
           return
         entry PMarkCB()
           Active_MW = PLACEMARKERS_MW
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
 !          call PlaceMarkers_Init
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
          return
         entry PMDelLastCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = PLACEMARKERS_MW
           call RemoveLastMarker( Success )
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
           return
         entry PMDelAllCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ErasePermMarkers
           call PigEraseMessage
@@ -1102,12 +1028,12 @@
 
 ! Node edit menus
         entry DeleteNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeDelBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
           return
         entry MoveNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeMoveBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
           FirstPoint=.true.
@@ -1115,19 +1041,19 @@
 !          call MovTypNode (2)
           return
         entry AddBndNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeAddBnd_MW
           call PigStatusMessage('Pick a NEW boundary point')
 !          call AddBdNode
           return
         entry ReverseBndCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeRevBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary')
 !          call ReverseBoundary
           return
         entry JoinBndCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeJoinBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
@@ -1135,7 +1061,7 @@
 !          call JoinBoundaries
           return
         entry ReselectBndCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeResBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
@@ -1143,7 +1069,7 @@
 !          call ReSelBndNodes
           return
         entry AddBndLineCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeStrBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
@@ -1151,19 +1077,19 @@
 !          call StraightBnd (nrec)
           return
         entry DeleteIslCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeDelIsl_MW
           call PigStatusMessage('Select Any Node On The Island To Delete.')
 !          call DelIsland
           return
         entry AddIntNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeAddInt_MW
           call PigStatusMessage('Pick a NEW interior point')
 !          call AddInNode
           return
         entry AddIntLineCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = NodeStrInt_MW
           call PigStatusMessage('Pick first EXISTING interior point')
           FirstPoint=.true.
@@ -1173,7 +1099,7 @@
 
 !  Grid edit menus
         entry AddGridEdgeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridADDLINE_MW
           call PigStatusMessage('Pick a point')
           FirstPoint=.true.
@@ -1182,28 +1108,28 @@
           CHANGE  = .TRUE.
           return
         entry AddGridNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridAddNode_MW
           call PigStatusMessage('Pick a NEW point')
 !          call AddPro(CHANGE, NREC)
           CHANGE  = .TRUE.
           return
         entry DelGridEdgeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridDelLine_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call DelSeg(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry DelGridNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridDelnode_MW
           call PigStatusMessage('Pick an EXISTING point')
 !          call DelPro(CHANGE)
           CHANGE  = .TRUE.
           return
         entry MoveGridNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridMove_MW
           call PigStatusMessage('Move ACTIVE: Pick first EXISTING point')
           FirstPoint=.true.
@@ -1211,7 +1137,7 @@
 !            call LNCHG2(CHANGE, CHANGEV, NREC)
           return
         entry MergeGridNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridMerge_MW
           call PigStatusMessage('Merge ACTIVE: Pick first EXISTING point')
           FirstPoint=.true.
@@ -1219,28 +1145,28 @@
           CHANGE  = .TRUE.
           return
         entry CleaveGridNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridCleave_MW
           call PigStatusMessage('Cleave ACTIVE: Pick an EXISTING point')
 !          call Cleave(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry InsertGridEdgeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridInsert_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call Insert(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry ExchangeGridEdgeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridExchange_MW
           call PigStatusMessage('Pick an EXISTING edge')
 !          call Xchange(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry DekiteGridCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = GridDekite_MW
           call PigStatusMessage('Pick an EXISTING 4-point')
 !          call DeKite(CHANGE,NREC)
@@ -1257,7 +1183,7 @@
           endif
 
 !            adjust position of nodes with code = 0 in dispaly window
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           do i=1,itot
             polylist(i) = IN_BOX(dxray(i),dyray(i))
@@ -1279,7 +1205,7 @@
 !  polygon generation
         entry CreatePolyCB()
           Ok = .FALSE.
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = PolyDef_MW
           call PigStatusMessage('Pick Vertices, pick first again to close polygon.')
           FirstPoint=.true.
@@ -1733,31 +1659,27 @@
 
 !  configure menus
         entry ConfigNodeCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigNodes_Init
-          Active_CW = CONFIGNODES_CW
+          !Active_CW = CONFIGNODES_CW
           return
         entry ConfigGridCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigLines_Init
-          Active_CW = CONFIG_CW
+          !Active_CW = CONFIG_CW
           return
           return
         entry ConfigContourCB()
-          Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigCntrs_init
-          inton = FlagC
-          bndon = FlagC
-          Active_CW = CONFIGDEPCONT_CW
           return
         entry ConfigDataCB()
-          Active_CW = INACTIVE_CW
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ConfigBoundaries_Init
-          Active_CW = CONFIG_CW
+          !Active_CW = CONFIG_CW
           return
 
 !  about
@@ -1789,10 +1711,10 @@
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif
         elseif(Active_MW.eq.NODEINFO_MW) then
-          if(closeRHP) call Init_Info() !mmode)
+!          if(closeRHP) call Init_Info() !mmode)
           call GetVal_MW_Ehandler (MouseX, MouseY, Index)
         elseif(Active_MW.eq.TRIINFO_MW) then
-          if(closeRHP) call InfoTriangle(change)
+!          if(closeRHP) call InfoTriangle(change)
           call GetTVal_MW_Ehandler (MouseX, MouseY, Index)
         elseif(Active_MW.eq.Zoomin_MW) then
           if(FirstZoom) then

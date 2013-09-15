@@ -3,7 +3,6 @@
 gfortran -c -fdefault-real-8 -Wall ../../src/dataio/MainArrays.f90
 gfortran -c -fdefault-real-8 -Wall ../../src/gridgen/*.f
 gfortran -c -fdefault-real-8 -Wall ../../src/gridgen/*.f90
-gfortran -c -fdefault-real-8 -Wall ../../src/plotsubs/*.f
 gfortran -c -fdefault-real-8 -Wall ../../src/plotsubs/*.f90
 gfortran -c -fdefault-real-8 -Wall ../../src/PigInterface/*.f90
 gfortran -c -fdefault-real-8 -Wall ../../src/gridedit/*.f

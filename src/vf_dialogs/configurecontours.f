@@ -80,6 +80,10 @@ c      integer numhits
 C------------ BEGIN --------
 
 113   FORMAT(F12.3)
+        SMaxVal(1) = maxval(depth(1:itot))         
+        SMinVal(1) = minval(depth(1:itot))
+        NumCntValues(1) = 10
+        FlagC = .true.
 
 C     - set local configuration values as stored in Common CNTCFG
       DO i = 1, NumDataTypes

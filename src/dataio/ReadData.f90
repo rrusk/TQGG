@@ -111,7 +111,7 @@
       implicit none
 
       INCLUDE '../includes/defaults.inc'
-      INCLUDE '../includes/cntcfg.inc'
+!      INCLUDE '../includes/cntcfg.inc'
 
 !     - PASSED VARIABLES
       INTEGER   nunit
@@ -291,16 +291,16 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
 !     - determine max/min depths (datatype 1)
-      SMaxVal(1) = depth(1)
-      SMinVal(1) = depth(1)
-      do i=2,itot
-        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-        SMaxVal(1) = Depth(i)
-        ENDIF
-        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-        SMinVal(1) = Depth(i)
-        ENDIF
-      enddo
+!      SMaxVal(1) = depth(1)
+!      SMinVal(1) = depth(1)
+!      do i=2,itot
+!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
+!        SMaxVal(1) = Depth(i)
+!        ENDIF
+!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
+!        SMinVal(1) = Depth(i)
+!        ENDIF
+!      enddo
 
       RETURN
       END
@@ -316,7 +316,7 @@
       implicit none
 
       INCLUDE '../includes/defaults.inc'
-      INCLUDE '../includes/cntcfg.inc'
+!      INCLUDE '../includes/cntcfg.inc'
 
 !     - PASSED VARIABLES
       LOGICAL Quit
@@ -418,16 +418,16 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
 !     - determine max/min depths (datatype 1)
-      SMaxVal(1) = depth(1)
-      SMinVal(1) = depth(1)
-      do i=2,itot
-        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-        SMaxVal(1) = Depth(i)
-        ENDIF
-        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-        SMinVal(1) = Depth(i)
-        ENDIF
-      enddo
+!      SMaxVal(1) = depth(1)
+!      SMinVal(1) = depth(1)
+!      do i=2,itot
+!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
+!        SMaxVal(1) = Depth(i)
+!        ENDIF
+!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
+!        SMinVal(1) = Depth(i)
+!        ENDIF
+!      enddo
 
       return
       END
@@ -788,7 +788,7 @@
       use MainArrays
 
 ! - "INCLUDES"
-      INCLUDE '../includes/cntcfg.inc'
+!      INCLUDE '../includes/cntcfg.inc'
 
 ! -  Only boundaries are displayed when OUTLINEONLY is .TRUE.
       LOGICAL OUTLINEONLY
@@ -1021,16 +1021,16 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
 !     - determine max/min depths (datatype 1)
-      SMaxVal(1) = depth(1)
-      SMinVal(1) = depth(1)
-      do i=2,itot
-        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-        SMaxVal(1) = Depth(i)
-        ENDIF
-        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-        SMinVal(1) = Depth(i)
-        ENDIF
-      enddo
+!      SMaxVal(1) = depth(1)
+!      SMinVal(1) = depth(1)
+!      do i=2,itot
+!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
+!        SMaxVal(1) = Depth(i)
+!        ENDIF
+!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
+!        SMinVal(1) = Depth(i)
+!        ENDIF
+!      enddo
 
       return
 
@@ -1468,7 +1468,7 @@
       use MainArrays
 
       INCLUDE '../includes/defaults.inc'
-      INCLUDE '../includes/cntcfg.inc'
+!      INCLUDE '../includes/cntcfg.inc'
 
 !     - PASSED VARIABLES
       LOGICAL Quit
@@ -1538,16 +1538,16 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
 !     - determine max/min depths (datatype 1)
-      SMaxVal(1) = depth(1)
-      SMinVal(1) = depth(1)
-      do i=2,itot
-        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-        SMaxVal(1) = Depth(i)
-        ENDIF
-        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-        SMinVal(1) = Depth(i)
-        ENDIF
-      enddo
+!      SMaxVal(1) = depth(1)
+!      SMinVal(1) = depth(1)
+!      do i=2,itot
+!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
+!        SMaxVal(1) = Depth(i)
+!        ENDIF
+!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
+!        SMinVal(1) = Depth(i)
+!        ENDIF
+!      enddo
 
       return
       END

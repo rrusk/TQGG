@@ -336,7 +336,7 @@
 !        IF ( inton ) THEN
 !           - determine color for node's depth value
           lowlim = -1.e30
-          DO i = 1, ncon-1
+          DO i = 1, ncon
             IF ( (ndep .le. rngv(i)) .AND. (ndep .gt. lowlim) ) then
               call PigSetSymbolColour ( rngc(i) )
             endif
@@ -349,8 +349,8 @@
 !         - boundary nodes, check if color coding ON
 !        IF ( bndon ) THEN
 !           - determine color for node's depth value
-          lowlim = -9999
-          DO i = 1, ncon-1
+          lowlim = -1.e30
+          DO i = 1, ncon
             IF ( (ndep .le. rngv(i)) .AND. (ndep .gt. lowlim) ) then
               call PigSetSymbolColour ( rngc(i) )
             endif

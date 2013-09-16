@@ -191,7 +191,7 @@
       integer nx, ny
 
       include '../includes/defaults.inc'
-      INCLUDE '../includes/cntcfg.inc'
+!      INCLUDE '../includes/cntcfg.inc'
 
 !----------------------------------------------------------------------
 
@@ -463,16 +463,16 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
       !     - determine max/min depths (datatype 1)
-      SMaxVal(1) = depth(1)
-      SMinVal(1) = depth(1)
-      do i=2,itot
-        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-        SMaxVal(1) = Depth(i)
-        ENDIF
-        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-        SMinVal(1) = Depth(i)
-        ENDIF
-      enddo
+!      SMaxVal(1) = depth(1)
+!      SMinVal(1) = depth(1)
+!      do i=2,itot
+!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
+!        SMaxVal(1) = Depth(i)
+!        ENDIF
+!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
+!        SMinVal(1) = Depth(i)
+!        ENDIF
+!      enddo
 
       return
 

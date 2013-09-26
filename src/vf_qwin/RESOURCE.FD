@@ -1,0 +1,7 @@
+!
+! resource.fd generated from resource.h
+!
+      integer, parameter :: IDC_EDIT_RETURN = 1000
+      integer, parameter :: $_WIN32 = 1
+      integer, parameter :: IDD_PROMPT = 101
+      integer, parameter :: IDC_TEXT_PROMPT = 1003

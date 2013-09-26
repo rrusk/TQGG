@@ -1475,21 +1475,37 @@
 !+                                       error occurred.
 !+ Effects: User is prompted for appropriate input.
 
-      include 'ipig.def'
+      USE IFLOGM
+      IMPLICIT NONE
+      INCLUDE 'RESOURCE.FD'
+
+      INTEGER retint,ilen
+      LOGICAL retlog
+      TYPE (dialog) dlg
 
       CHARACTER*(*) PromptString
       CHARACTER*(*) RetString
       integer       nchar
-      integer PrevColour
 
 !------------------BEGIN--------------------
 
-      call PigGetTextColour(PrevColour)
-      call PigSetTextColour(PROMPT_COLOR)
+  ! Initialize.
+    IF ( .not. DlgInit( idd_prompt, dlg ) ) THEN
+        WRITE (*,*) "Error: dialog not found"
+    ELSE
+        retlog = DlgSet( dlg, IDC_EDIT_RETURN, "" )
+        
+        ilen = len_trim(PromptString)
+        retlog = DlgSet( dlg, IDC_TEXT_PROMPT, PromptString(1:ilen) )
 
-      call PigPutMessage(PromptString)
-!      call WPigGetString0(PromptString, nchar, RetString)
-      read(*,'(a)') RetString
+        retint = DlgModal( dlg )
+        
+        retlog = DlgGet( dlg, IDC_EDIT_RETURN, RetString )
+
+    ! Release dialog resources.
+        CALL DlgUninit( dlg )
+    END IF
+
       nchar = len_trim( RetString )
 
       if(nchar.eq.-1) then  !cancel
@@ -1497,21 +1513,8 @@
       elseif(nchar.eq.0) then
 	    RetString = ' '
       endif
-      call PigEraseMessage
-      call PigSetTextColour(PrevColour)
+
       END
-
-! ========================================================================= *
-
-!      subroutine WPigGetString0 (PromptString,CharLen, RetString)
-!        character*(*) PromptString
-!        integer       CharLen
-!        character*(*) RetString
-
-!        read(*,'(a)') RetString
-!        CharLen = len_trim( RetString )
-
-!      End
 
 ! ========================================================================= *
 

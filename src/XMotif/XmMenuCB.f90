@@ -741,14 +741,12 @@
           call PigStatusMessage('info ACTIVE: Pick an element')        
           return
         entry NodeCheckCB()
-          call FlagsVertices(CHANGE)
+          call FlagsVertices()
           Active_MW = INACTIVE_MW
-          !Active_CW = CRITERIA_CW
           return
         entry EleCheckCB()
-          call FlagsTriangles_Init(change)
+          call FlagsTriangles_Init()
           Active_MW = INACTIVE_MW
-          !Active_CW = FLAGSTRIANGLES_CW
           return
         entry EraseCheckCB()
 !          call FlagsEraseAll

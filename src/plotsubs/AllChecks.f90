@@ -24,7 +24,29 @@
   !***********************************************************************
 
 !---------------------------------------------------------------------------*
-!      Section for element checks or tests - part of info routines
+!---------------------------------------------------------------------------*
+!     This module contains the dialogs associated with the                  *
+!     quality tests for elements.                                           *
+!---------------------------------------------------------------------------*
+!---------------------------------------------------------------------------*
+      
+      SUBROUTINE FlagsTriangles_Init()
+
+! Purpose: To set up dialog for FlagsTriangles routine.
+! Givens : None
+! Returns: None
+! Effects: Dialog is set up with options to be used by FlagsTriangles routine.
+
+      use MainArrays
+
+      implicit none
+
+!---------- BEGIN --------------
+
+      call WPigElementCheck
+
+      END
+
 !---------------------------------------------------------------------------*
 
       subroutine ElementCheck( ntest, cmode )
@@ -95,6 +117,29 @@
       return
       end
 
+!---------------------------------------------------------------------------*
+!---------------------------------------------------------------------------*
+!     This module contains the dialogs associated with the              *
+!     criteria tests for vertices.                                          *
+!---------------------------------------------------------------------------*
+!---------------------------------------------------------------------------*
+
+      SUBROUTINE FlagsVertices()
+
+! Purpose: Dispatch routine for the placement and deletion of vertice markers.
+! Givens : CHANGE - TRUE IF triangle list needs updating.
+! Returns: None
+! Effects: None
+
+      INCLUDE 'critcom.inc'
+
+      DrawVCrit = .true.
+
+      call WPigNodeCheck(ans, TheCriteria, MaxCrit)
+      
+      END
+
+!---------------------------------------------------------------------------*
 !---------------------------------------------------------------------------*
 !                         NUP.FOR                                           *
 !     This module is concerned with the colouring of triangles              *

@@ -552,7 +552,9 @@ int main (int argc, char *argv[])
     no = XmStringCreateLocalized ("No");
     XtSetArg (args[n], XmNmessageString, xms); n++;
     messageyesno_dialog = XmCreateMessageDialog (menubar, "OK", args, n);
-    XtVaSetValues (messageyesno_dialog, XmNmessageString, xms, XmNokLabelString, yes,
+    XtVaSetValues (messageyesno_dialog, XmNmessageString, xms, 
+        XmNdialogStyle, XmDIALOG_FULL_APPLICATION_MODAL,
+        XmNokLabelString, yes,
         XmNcancelLabelString, no, NULL);    
     XmStringFree (xms);    
     XmStringFree(yes);

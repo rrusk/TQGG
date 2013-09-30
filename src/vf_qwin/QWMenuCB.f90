@@ -276,7 +276,7 @@
         CHANGE  = .TRUE.
         closeRHP = .true.
 
-        call WPigStatusMessage ('Done'//char(0))
+        call WPigStatusMessage ('Finished initialization'//char(0))
         return
 
 ! Callback routines 
@@ -774,7 +774,7 @@
           call PigStatusMessage('info ACTIVE: Pick an element')        
           return
         entry NodeCheckCB()
-          call FlagsVertices(CHANGE)
+          call FlagsVertices()
           Active_MW = INACTIVE_MW
           Active_CW = CRITERIA_CW
           return
@@ -1766,9 +1766,11 @@
           mmode = 'CHG'
           if(closeRHP) call Init_Info()
           call GetVal_MW_Ehandler (mmode, MouseX, MouseY, Index)
+          call PigStatusMessage('Info ACTIVE: Pick a point')        
         elseif(Active_MW.eq.TRIINFO_MW) then
           if(closeRHP) call InfoTriangle(change)
           call GetTVal_MW_Ehandler (MouseX, MouseY, Index)
+          call PigStatusMessage('Info ACTIVE: Pick an element')        
         elseif(Active_MW.eq.Zoomin_MW) then
           call DisplayIn2 (mousex, mousey, Redrw)
           if(FlagPolar) then
@@ -1945,8 +1947,6 @@
               Active_CW = INACTIVE_CW
               Active_MW = INACTIVE_MW
             endif
-          elseif(Active_CW.eq.CRITERIA_CW) then
-            call criteria_ehandler(Hitnum)
           else if (Active_CW.eq.CONFIGNODES_CW) then
             call configNodes_ehandler(Hitnum)
           else if (Active_CW.eq.CONFIGDEPCONT_CW) then
@@ -1965,8 +1965,6 @@
 !            call SconfigBoundaries_ehandler(Hitnum)
           else if (Active_CW.eq.CONFIGSOUND_CW) then
 !            call SconfigSoundings_ehandler(Hitnum)
-          else if (Active_CW.eq.PANELMOD_CW) then
-!       call InteractiveText_ehandler(Hitnum)
           else if (Active_CW.eq.NODEINFO_CW) then
             call GetVal_CW_ehandler(index, nrec, mmode, hitnum)
             if(mmode.eq.'QIT') then
@@ -1979,22 +1977,6 @@
               closeRHP = .true.
               mmode = 'CHG'
             endif
- !         else if (Active_CW.eq.PLACEMARKERS_CW) then
- !           call PlaceMarkers_Ehandler(nrec, DrwFlag, Hitnum)
- !           if(hitnum.eq.1) then
- !             Active_MW = PLACEMARKERS_MW
- !             call PigPutMessage('Pick a marker point')
- !           else
- !             Active_MW = INACTIVE_MW
- !           endif
-          else if (Active_CW.eq.FLAGSTRIANGLES_CW) then
-            call FlagsTriangles_Ehandler(CHANGE, Hitnum)
-!          else if (Active_CW.eq.ADDLINE_CW) then
-!            call AddLine_Ehandler(CHANGE, NREC, Hitnum)
-!          else if (Active_CW.eq.SHOWDEPTHS_CW) then
-!            call ShowDepths_Ehandler(Hitnum)
-!          else if (Active_CW.eq.LinearTrans_CW) then
-!            call LinearTransform(Hitnum, change)
           endif
         else
           write(Message,'(a,i4,a)') 'Invalid hitnum:',hitnum,' < 0'

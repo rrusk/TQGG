@@ -43,7 +43,7 @@
 
 !---------- BEGIN --------------
 
-      call WPigElementCheck
+      call WPigElementCheck ()
 
       END
 
@@ -131,7 +131,11 @@
 ! Returns: None
 ! Effects: None
 
+      IMPLICIT NONE
+      
       INCLUDE 'critcom.inc'
+      
+      logical ans
 
       DrawVCrit = .true.
 
@@ -194,7 +198,7 @@
           TestColour(iTest,i) = Default_TestColour(iTest,i)
         enddo
 ! 
-        call PigPutMessage('Using default color scale for this test..')
+!        call PigPutMessage('Using default color scale for this test..')
       enddo
 
       return

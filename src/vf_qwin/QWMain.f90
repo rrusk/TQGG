@@ -444,7 +444,7 @@
 	ystatus = ydcmax/numrows
 !  compensate for window border
       if(xdcmax.ge.850) then
-	  ydcmax = (1.- 0.08)*ydcmax
+	  ydcmax = (1.- 0.11)*ydcmax
 	elseif(xdcmax.ge.500) then
 	  ydcmax = (1.-2.5/22.5)*ydcmax
       else
@@ -1565,23 +1565,27 @@
 
       Subroutine WPigStatusMessage(Text)
 
-!       Subroutine WPigMessageOK(Text, title)
-!       Call Sequence:
-!         call WPigMessageOK(Text,title)
-!       Purpose:  Creates a message window with (Text) and the caption (title).
-!            Exit with the button OK.
-!       Givens :  character*(*)    Text   :  a variable length character string
-!            character*(*)    Title  :  a variable length character string
-!       Returns:  None
-!       Effects:  Prints Text (trailing blanks are
-!            removed) in a message window.
+!- Purpose:  Draws a text message (Text) at set locations in the STATUSWIN
+!-           window, clears STATUSWIN first then draws
+!- Givens :  character*(*)    Text   :  a variable length character string
+!- Returns:  None
+!- Effects:  Blanks the STATUSWIN, then prints Text (trailing blanks are
+!-           removed) in the current text colour in the STATUSWIN window
 
-        character*(*)   Text
-        integer(4)      len1
+        include 'ipig.def'
 
-        len1 = len_trim(text)
-        call PigPutMessage(text(:len1))
+        character(*)   Text
+        integer         PrevWin
+        integer         len
 
+        len = len_trim(Text)
+        call PigGetWindowNum(PrevWin)
+        call PigSetWindowNum(STATUSWIN)
+
+        call PigErase(STATUSWIN)
+        call PigDrawText(STATUSX, STATUSY, Text(:Len))
+        call PigSetWindowNum(PrevWin)
+        
       end
 
 !***********************************************************************

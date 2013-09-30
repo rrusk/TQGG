@@ -74,6 +74,7 @@
 		<File RelativePath="..\..\src\PigInterface\PigMessage.f90"/>
 		<File RelativePath="..\..\src\plotsubs\Plotsubs.f90"/>
 		<File RelativePath="..\..\src\gridgen\poly_subs.f90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWDialogs.F90"/>
 		<File RelativePath="..\..\src\vf_qwin\QWMain.f90"/>
 		<File RelativePath="..\..\src\vf_qwin\QWMenuCB.f90"/>
 		<File RelativePath="..\..\src\vf_qwin\QWMenuInit.f90"/>

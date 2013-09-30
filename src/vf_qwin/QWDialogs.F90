@@ -6,8 +6,8 @@ SUBROUTINE InitEleInfo(index)
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
 
-    INTEGER :: retint,ilen,index,node,ecode=2
-    real :: x=5.1,y=10.88, z=1009.6
+    INTEGER :: retint,ilen,index,nv(4),ec
+    real :: xc,yc,zc
     LOGICAL retlog
     character(10) CString
     TYPE (dialog) dlg
@@ -21,39 +21,38 @@ SUBROUTINE InitEleInfo(index)
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EINDEX, CString(1:ilen) )
 
-      write(CString,'(F8.2)') x   
+      call UpdateElementInfo(dlg,IDC_EDIT_EINDEX,ilen)
+      call GetElementInfo( index,xc,yc,zc,ec,nv )
+      
+      write(CString,'(F8.2)') xc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EX, CString(1:ilen) )
 
-      write(CString,'(F8.2)') y   
+      write(CString,'(F8.2)') yc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EY, CString(1:ilen) )
 
-      write(CString,'(F8.2)') z   
+      write(CString,'(F8.2)') zc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EZ, CString(1:ilen) )
 
-      write(CString,'(I7)') ecode   
+      write(CString,'(I7)') ec   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_ECODE, CString(1:ilen) )
 
-      node = 770
-      write(CString,'(I8)') node   
+      write(CString,'(I8)') nv(1)   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EN1, CString(1:ilen) )
 
-      node = 87112
-      write(CString,'(I8)') node   
+      write(CString,'(I8)') nv(2)   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EN2, CString(1:ilen) )
 
-      node = 1234567
-      write(CString,'(I8)') node   
+      write(CString,'(I8)') nv(3)   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EN3, CString(1:ilen) )
 
-      node = 0
-      write(CString,'(I7)') node   
+      write(CString,'(I7)') nv(4)   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_EN4, CString(1:ilen) )
     
@@ -74,8 +73,8 @@ SUBROUTINE InitNodeinfo(index)
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
 
-    INTEGER :: j,retint,ilen,index,node,ncode=90,numngh
-    real :: x=5.1,y=10.88, z=1009.6
+    INTEGER :: j,retint,ilen,index,nv(100),numngh,ec
+    real :: xc,yc,zc
     LOGICAL retlog
     character(10) CString
     TYPE (dialog) dlg
@@ -89,27 +88,28 @@ SUBROUTINE InitNodeinfo(index)
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_NINDEX, CString(1:ilen) )
 
-      write(CString,'(F8.2)') x   
+      call UpdateNodeInfo(dlg,IDC_EDIT_NINDEX,ilen)
+      call GetNodeInfo( index,xc,yc,zc,ec,numngh,nv )
+
+      write(CString,'(F8.2)') xc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_NX, CString(1:ilen) )
 
-      write(CString,'(F8.2)') y   
+      write(CString,'(F8.2)') yc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_NY, CString(1:ilen) )
 
-      write(CString,'(F8.2)') z   
+      write(CString,'(F8.2)') zc   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_NZ, CString(1:ilen) )
 
-      write(CString,'(I7)') ncode   
+      write(CString,'(I7)') ec   
       ilen = len_trim(CString)
       retlog = DlgSet( dlg, IDC_EDIT_NCODE, CString(1:ilen) )
 
-      numngh = 10
       retlog = DlgSet(dlg, IDC_LIST_NADJ, numngh, DLG_NUMITEMS)
       do j=1,numngh
-        node = 1006 +21*j
-        write(CString,'(I7)') node   
+        write(CString,'(I7)') nv(j)   
         ilen = len_trim(CString)
         retlog = DlgSet( dlg, IDC_LIST_NADJ, CString(1:ilen),j )
       enddo
@@ -238,9 +238,78 @@ END SUBROUTINE WPigElementCheck
 SUBROUTINE UpdateNodeInfo(dlg,id, callbacktype)
   USE IFLOGM
   IMPLICIT NONE
+  INCLUDE 'RESOURCE.FD'
   type (dialog) dlg
   integer id
   integer callbacktype
+
+    INTEGER :: j,ilen,index,numngh,ec
+    integer :: nv(100)
+    integer, save :: index0, yellow = 14
+    real :: xc,yc,zc
+    LOGICAL retlog
+    character(10) CString
+
+    if(id.eq.IDC_EDIT_NINDEX) then
+      retlog = DlgGet( dlg, IDC_EDIT_NINDEX, CString )
+      read(CString,*) index0   
+    
+    else
+      retlog = DlgGet( dlg, IDC_EDIT_NINDEX, CString )
+      read(CString,*) index   
+
+      if(index.ne.index0) then
+        index0 = index
+        
+        write(CString,'(I8)') index   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NINDEX, CString(1:ilen) )
+
+        call GetNodeInfo( index,xc,yc,zc,ec,numngh,nv )
+	    call PutMarker( xc, yc, 4, yellow)
+        
+        write(CString,'(F8.2)') xc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NX, CString(1:ilen) )
+
+        write(CString,'(F8.2)') yc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NY, CString(1:ilen) )
+
+        write(CString,'(F8.2)') zc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NZ, CString(1:ilen) )
+
+        write(CString,'(I7)') ec   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NCODE, CString(1:ilen) )
+
+        retlog = DlgSet(dlg, IDC_LIST_NADJ, numngh, DLG_NUMITEMS)
+        do j=1,numngh
+          write(CString,'(I7)') nv(j)   
+          ilen = len_trim(CString)
+          retlog = DlgSet( dlg, IDC_LIST_NADJ, CString(1:ilen),j )
+        enddo
+      
+      else
+        
+        retlog = DlgGet( dlg, IDC_EDIT_NZ, CString )
+        read(CString,*) zc   
+        retlog = DlgGet( dlg, IDC_EDIT_NCODE, CString )
+        read(CString,*) ec   
+        
+        call  SetNodeInfo( index,ec,zc )
+
+        write(CString,'(F8.2)') zc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_NZ, CString(1:ilen) )
+        
+        write(CString,'(I7)') ec   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_ECODE, CString(1:ilen) )
+      endif
+      
+    endif
 
 END SUBROUTINE updatenodeinfo
 
@@ -249,10 +318,78 @@ END SUBROUTINE updatenodeinfo
 SUBROUTINE UpdateElementInfo(dlg,id, callbacktype)
   USE IFLOGM
   IMPLICIT NONE
+  INCLUDE 'RESOURCE.FD'
   type (dialog) dlg
   integer id
   integer callbacktype
 
+    INTEGER :: ilen,index,nv(4),ec
+    integer, save :: index0,yellow=14
+    real :: xc,yc,zc
+    LOGICAL retlog
+    character(10) CString
+
+    if(id.eq.IDC_EDIT_EINDEX) then
+      retlog = DlgGet( dlg, IDC_EDIT_EINDEX, CString )
+      read(CString,*) index0   
+    
+    else
+      retlog = DlgGet( dlg, IDC_EDIT_EINDEX, CString )
+      read(CString,*) index   
+
+      if(index.ne.index0) then
+        index0 = index
+        
+        write(CString,'(I8)') index   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EINDEX, CString(1:ilen) )
+
+        call GetElementInfo( index,xc,yc,zc,ec,nv )
+	    call PutMarker( xc, yc, 4, yellow)
+        
+        write(CString,'(F8.2)') xc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EX, CString(1:ilen) )
+
+        write(CString,'(F8.2)') yc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EY, CString(1:ilen) )
+
+        write(CString,'(F8.2)') zc   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EZ, CString(1:ilen) )
+
+        write(CString,'(I7)') ec   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_ECODE, CString(1:ilen) )
+
+        write(CString,'(I8)') nv(1)   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EN1, CString(1:ilen) )
+
+        write(CString,'(I8)') nv(2)   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EN2, CString(1:ilen) )
+
+        write(CString,'(I8)') nv(3)   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EN3, CString(1:ilen) )
+
+        write(CString,'(I7)') nv(4)   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EN4, CString(1:ilen) )
+      
+      else
+        retlog = DlgGet( dlg, IDC_EDIT_ECODE, CString )
+        read(CString,*) ec   
+        call  SetElementInfo( index,ec )
+        write(CString,'(I7)') ec   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_ECODE, CString(1:ilen) )
+      endif
+      
+    endif
+    
 END SUBROUTINE updateelementinfo
 
 !****************************************************************************

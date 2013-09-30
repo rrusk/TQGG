@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by TEST.RC
+// Used by TQGGvf.RC
 //
 #define IDD_PROMPT                      101
 #define IDD_NODEINFO                    102

@@ -41,239 +41,9 @@ C Returns : None.
 C     - PASSED VARIABLES
 
 C--------BEGIN--------------
-
-C       - initialize righthand panel
-	call InitRHPanel
-
-C       - Display Info Screen
-	call Up_TriInfo
-
-	call PigSetTextColour( LabelColor )
-
-	call PanelText( 3, 2, 'ELEMENT INFORMATION', 20)
-
-	call PigPutMessage('Choose element in main window...')
+C       - initialize as needed
+      return
 	END
-
-C*-------------------------------------------------------------------------*
-      SUBROUTINE Up_TriInfo
-C
-C Purpose : To create screen window for INFO.
-C Assume  : InitRHPanel() has been called.
-C Given   : None.
-C Returns : None.
-
-      INCLUDE '../includes/graf.def'
-
-C--------BEGIN--------------
-
-C       - define number of hit areas (options)
-c        call SetNumHits( 0 )
-C       - display labels
-	call PigSetTextColour( LabelColor )
-	call PanelText( 2, 4, 'INDEX:', 6 )
-	call PanelText( 2, 5, 'XCENT:', 6 )
-	call PanelText( 2, 6, 'YCENT:', 6 )
-	call PanelText( 2, 7, 'DEPTH:', 6 )
-	call PanelText( 2, 8, ' TYPE:', 6 )
-
-	call PanelText( 5, 10, 'NODE LIST', 9 )
-	call PanelTextRight( 5, 11, '1:', 2 )
-	call PanelTextRight( 5, 12, '2:', 2 )
-	call PanelTextRight( 5, 13, '3:', 2 )
-	call PanelTextRight( 5, 14, '4:', 2 )
-
-C       - create options
-	call PigSetTextColour( HitColor )
-
-C       - CURSOR option (1)
-	call PanelHit( 10, 22, 1, 'QUIT', 4 )
-
-C       - coord option (3)
-	call PanelHit( 10, 20, 4, 'Coord', 5 )
-
-C       - INDEX option (3)
-	call PanelHit( 10, 19, 2, 'INDEX', 5 )
-
-	END
-
-C*--------------------------------------------------------------------------*
-      SUBROUTINE ChgTVal( changev, index, field )
-C
-C Written :   Russ Kirby,  May 1987
-C Purpose : To change the value for the code, the XY location, or the depth
-C           field for any point on the grid.
-C Assume  : User has made a selection in routine GetVal() indicating the
-C           point and the field to change.
-C Given   : nrec   =  the number of points read in from the data file
-C           index  =  index to data arrays of point whose field to change.
-C           field  =  field to be changed, 1 = (X,Y)
-C                                          2 = DEPTH
-C                                          3 = CODE
-C Return  : changev = logical set TRUE if any changes take place
-C                     to the data that is to be written back
-C                     to the files.
-C Effects: Indicated field is updated with user entered value.
-
-      use MainArrays
-
-      INCLUDE 'ipig.def'
-
-C - PASSED VARIABLES
-      LOGICAL changev
-      integer index, field
-C
-!      REAL    MININ,MAXIN,SCUNIT
-!      COMMON  /MAXMIN/ MININ,MAXIN,SCUNIT
-
-      integer  MVNDX
-      COMMON   /PICK/ MVNDX
-
-C - LOCAL VARIABLES
-      CHARACTER*80 ans
-      integer icode
-C          - temporarily holds a new code entered by the user
-      integer prev_justify
-c      LOGICAL tnear, trans
-      LOGICAL Success
-C          -  marking proximity to neighbour
-c      integer new_index
-C          -  index of near neighbour (dummy)
-      integer anslen, prevcode
-      CHARACTER*6 num
-C-----------------BEGIN------------------------
-
-      MVNDX = index
-      if ( field .eq. 3 ) then
-C       - change the CODE field
-	prevcode = TCODE(index)
-	Success = .FALSE.
-	do while ( .NOT. Success )
-10        continue
-	  call PigPrompt('Enter a Non-Negative code for this'//
-     +                ' triangle:',ans)
-C         - get a new code from the user
-	  READ( ans, FMT = '(I4)', err = 10 ) icode
-	  anslen = LEN_TRIM( ans )
-	  if ( anslen .lt. 1 ) then
-C           - restore original code if only <RTN> entered
-	    icode = prevcode
-	  endif
-	  if ( icode .ge. 0 ) then
-	    Success = .TRUE.
-	  endif
-	enddo
-C         - ( NOT Success )
-        TCODE(index) = icode
-c
-        call PigGetJustification(prev_justify)
-        call PigSetJustification(RIGHT_JUSTIFY)
-c
-        call PigSetTextColour( HitColor )
-C       - code field
-        WRITE( num, '(I6)' ) TCODE(index)
-        call PanelHit( 20, 8, 3, num, 4 )
-       call PigSetJustification(prev_JUSTIFY)
-c
-C       - set the change variable
-        changev = .TRUE.
-
-      endif
-      END
-
-C*--------------------------------------------------------------------------*
-      SUBROUTINE GetTVal_CW_ehandler( index,mmode, Hitnum)
-
-C Purpose : To get all the information for a triangle in the grid
-C Given   : nrec = the number of points read in from the data file
-C Returns : index = index of the point we will be examining,
-C           changev = logical set TRUE if any changes take place
-C                     to the data that is to be written back
-C                     to the files.
-
-      use MainArrays
-
-      INCLUDE '../includes/graf.def'
-
-C - PASSED VARIABLES
-      integer index
-      CHARACTER*3 mmode
-      LOGICAL changev
-
-      REAL     CWXL,CWXH,CWYL,CWYH
-      COMMON  /CURWIN/ CWXL,CWXH,CWYL,CWYH
-
-!      REAL    MININ,MAXIN,SCUNIT
-!      COMMON  /MAXMIN/ MININ,MAXIN,SCUNIT
-
-C - LOCAL VARIABLES
-        LOGICAL Done,success
-C        logical okpoint
-c        REAL xpos, ypos
-        REAL xcent, ycent
-        integer hitnum, i
-	CHARACTER*80 ans
-C--------------BEGIN-----------------
-        changev = .FALSE.
-        Done = .FALSE.
-        if ( hitnum .eq. 1 ) then
-C         - 'QUIT'
-	  INDEX = 0
-	  mmode = 'QIT'
-	  Done = .TRUE.
-	elseif ( hitnum .eq. 2 ) then
-C         - 'INDEX'
-7         continue
-	  call PigPrompt('Enter index:', ans )
-	  READ( ans, FMT = '(I6)', ERR = 7 ) INDEX
-C         - see if point chosen is legal
-	  if ( (INDEX .lt. 1) .or. (INDEX .gt. tottr) ) then
-	    call PigPutMessage('ERROR - Invalid point..')
-	  else
-            xcent = 0.
-            ycent = 0.
-            if(ListTr(4,index).gt.0) then
-              numcn = 4
-            else
-              numcn = 3
-            endif
-            do i=1,numcn
-              xcent = xcent + dxray(ListTr(i,index))/float(numcn)
-              ycent = ycent + dyray(ListTr(i,index))/float(numcn)
-            enddo
-c
-	    call PigSetWindowNum( MAINWIN )
-	    call PutMarker( xcent, ycent, 4, yellow )
-	    call PigSetWindowNum( CONTROLWIN )
-	    call Put_TriVal( index )
-C             - check for a CHANGE option hit
-          endif
-	elseif ( hitnum .eq. 3 ) then
-C              - CHANGE CODE
-	  call ChgTVal( changev, index, 3 )
-	elseif ( hitnum .eq. 4 ) then
-71         continue
-	  call PigPrompt('Enter x coordinate:', ans )
-	  READ( ans, *, ERR = 71 ) xcent
-72         continue
-	  call PigPrompt('Enter y coordinate:', ans )
-	  READ( ans, *, ERR = 72 ) ycent
-	  call PigSetWindowNum( MAINWIN )
-!	  call PutMarker( xcent, ycent, 4, yellow )
-        call PutPermMarker( xcent, ycent, Success )
-        call GetTVal_MW_Ehandler(Xcent, Ycent, Index)
-	  call PigSetWindowNum( CONTROLWIN )
-
-	else
-C           - an invalid point was selected
-c            okpoint = .FALSE.
-	endif
-c
-       if(Done) then
-	  call ClearRHPanel
-       endif
-c
-      END
 
 C*--------------------------------------------------------------------------*
 
@@ -347,7 +117,7 @@ c           INSIDE = .FALSE.
      *           (DELTA.NE.0..AND.DELTA.LE.DA4*1.E-6)) THEN
 c               INSIDE=.TRUE.
                 index = j
-		call PutTriMarker(index)
+		        call PutTriMarker(index)
                 call Put_TriVal( index )
                 go to 999
               endif
@@ -358,6 +128,7 @@ c               INSIDE=.TRUE.
       END
 
 C*--------------------------------------------------------------------------*
+	
 	SUBROUTINE PutTriMarker(index)
 
       use MainArrays
@@ -383,138 +154,126 @@ C*--------------------------------------------------------------------------*
 	end
 
 C*--------------------------------------------------------------------------*
-      SUBROUTINE Repaint_TriInfo
-C
-C Purpose : To repaint put the values on the info screen for a
-C           specified triangle point
-C Given   : last_triangle_index in common
 
-      use MainArrays, only : maxtri
-
-	integer	last_triangle_index
-	common	/last_triangle/ last_triangle_index
-
-	call Init_TriInfo
-
-	if	(	(last_triangle_index .gt. 0)
-     +		.and.	(last_triangle_index .le. MAXTRI)
-     +		) then
-		call PutTriMarker(last_triangle_index)
-		call Put_TriVal(last_triangle_index)
-	endif
-	end
-
-C*--------------------------------------------------------------------------*
       SUBROUTINE Put_TriVal( index )
-C
+
 C Purpose : To put the values on the info screen for a
 C           specified vertex point
 C Given   : index = index to data arrays of point.
 
       use MainArrays
-
-      INCLUDE 'ipig.def'
+      
+      implicit none
 
 C - PASSED VARIABLES
       integer index
-C
-!      REAL    MININ,MAXIN,SCUNIT
-!      COMMON  /MAXMIN/ MININ,MAXIN,SCUNIT
 
 	integer	last_triangle_index
 	common	/last_triangle/ last_triangle_index
-C - LOCAL VARIABLES
-      real xcent,ycent,dcent
-      integer i, prev_justify
-      CHARACTER num*6, rnum*12
 
 C---------BEGIN------------------
 
-        last_triangle_index = index
+       last_triangle_index = index
+       
+       call InitEleInfo(index)
+       return 
 
-C     - set text color according to mode
-       call PigGetJustification(prev_justify)
-       call PigSetJustification(RIGHT_JUSTIFY)
-c
-        call PigSetTextColour( HitColor )
-C       - code field
-        WRITE( num, '(I6)' ) TCODE(index)
-        call PanelHit( 20, 8, 3, num, 4 )
-        call PigSetJustification(LEFT_JUSTIFY)
-c
-        xcent = 0.
-        ycent = 0.
-        dcent = 0.
-        if(ListTr(4,index).gt.0) then
-          numcn = 4
-        else
-          numcn = 3
-        endif
-        do i=1,numcn
-          xcent = xcent + dxray(ListTr(i,index))/float(numcn)
-          ycent = ycent + dyray(ListTr(i,index))/float(numcn)
-          dcent = dcent + depth(ListTr(i,index))/float(numcn)
-        enddo
-
-	call PigSetTextColour( NoHitColor )
-C       - x field
-	WRITE( rnum, '(f12.3)' ) xcent
-	call PanelTextRight( 20, 5, rnum, 12 )
-C       - y field
-	WRITE( rnum, '(f12.3)' ) ycent
-	call PanelTextRight( 20, 6, rnum, 12 )
-C       - depth field
-	WRITE( rnum, '(f12.3)' ) Dcent
-	call PanelTextRight( 20, 7, rnum, 12 )
-
-C     - set color for non-selectable fields
-      call PigSetTextColour( NoHitColor )
-
-C     - index field
-      WRITE( num, '(I6)' ) index
-      call PanelTextRight( 20, 4, num, 6 )
-
-      do i = 1,4
-	write( num, '(I6)' ) ListTr(i,index)
-        call PanelTextRight( 14, (10+i), num, 6)
-      end do
-
-      call PigSetJustification(prev_justify)
       END
 
-C*--------------------------------------------------------------------------*
+!*--------------------------------------------------------------------------*
+      
       SUBROUTINE InfoTriangle(CHANGE)
-C
-C Purpose: Future implementation to display triangle info in the right hand
-C          display window.
-C Givens : CHANGE
-C Returns: CW setup
-C Effects: Updates triangle list if CHANGE=TRUE
+
+! Purpose: Future implementation to display triangle info in the right hand
+!          display window.
+! Givens : CHANGE
+! Returns: CW setup
+! Effects: Updates triangle list if CHANGE=TRUE
 
       use MainArrays
 
-        logical CHANGE
-c
-C Update triangle list beforehand.
+      logical CHANGE
 
-!        if(CHANGE) then
-!          call PigPutMessage('Forming triangle list')
-!          call LdTrLt(CHANGE)
-!          call PigEraseMessage
-!        endif
-        if(change) then
+! Update triangle list beforehand.
+
+      if(change) then
           call RemoveNotExist(itot,code,nbtot,nl)
           call Element_Lister(CHANGE, .FALSE. ,
      &          itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode,
      &          x0off,y0off,scaleX,scaleY,igridtype)
-          change = .false.
-        endif
+        change = .false.
+      endif
 
-        call INIT_TriInfo
+      call INIT_TriInfo
 
-	END
+      END
 
-C-----------------------------------------------------------------------*
-C                       END INFO.FOR                                    *
-C-----------------------------------------------------------------------*
-C-----------------------------------------------------------------------*
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE GetElementInfo( index,xc,yc,zc,ec,nv )
+!
+! Purpose : To get the values for the info dialog for a
+!           specified vertex point
+! Given   : index = index to data arrays of point.
+
+      use MainArrays
+
+      implicit none
+
+! - PASSED VARIABLES
+      integer, intent(in) :: index
+      integer, intent(out) :: ec,nv(4)
+      real, intent(out) :: xc,yc,zc
+
+
+! - LOCAL VARIABLES
+      integer i,numcn
+
+!---------BEGIN------------------
+
+      ec = TCode(index)
+      
+      xc = 0.
+      yc = 0.
+      zc = 0.
+      if(ListTr(4,index).gt.0) then
+        numcn = 4
+      else
+        numcn = 3
+      endif
+      do i=1,numcn
+        xc = xc + dxray(ListTr(i,index))/float(numcn)
+        yc = yc + dyray(ListTr(i,index))/float(numcn)
+        zc = zc + depth(ListTr(i,index))/float(numcn)
+      enddo
+
+      do i = 1,4
+        nv(i) = ListTr(i,index)
+      end do
+
+      END
+
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE SetElementInfo( index,ec )
+!
+! Purpose : To get the values for the info dialog for a
+!           specified vertex point
+! Given   : index = index to data arrays of point.
+
+      use MainArrays
+
+      implicit none
+
+! - PASSED VARIABLES
+      integer, intent(in) :: index,ec
+
+!---------BEGIN------------------
+
+      TCode(index) = ec
+
+      END
+
+!-----------------------------------------------------------------------*
+!                       END INFO.FOR                                    *
+!-----------------------------------------------------------------------*

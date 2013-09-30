@@ -778,26 +778,27 @@
 
 ! Info menu
         entry NodeInfoCB()
-!          mmode = 'CHG'   !  mmode = 'INF'
           call Init_Info()
-          Active_CW = NODEINFO_CW
+          Active_CW = INACTIVE_CW
           Active_MW = NODEINFO_MW
           closeRHP = .false.
           call PigStatusMessage('Info ACTIVE: Pick a point')        
           return
         entry EleInfoCB()
-          Active_CW = TRIINFO_CW
+          Active_CW = INACTIVE_CW
           Active_MW = TRIINFO_MW
           call InfoTriangle( change )
           closeRHP = .false.
           call PigStatusMessage('info ACTIVE: Pick an element')        
           return
         entry NodeCheckCB()
+          call PigEraseMessage        
           call FlagsVertices()
           Active_MW = INACTIVE_MW
           Active_CW = INACTIVE_CW
           return
         entry EleCheckCB()
+          call PigEraseMessage        
           call FlagsTriangles_Init()
           Active_MW = INACTIVE_MW
           Active_CW = INACTIVE_CW
@@ -1940,18 +1941,6 @@
               FlagD = .false.
             endif
             !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
-          else if (Active_CW.eq.NODEINFO_CW) then
-            call GetVal_CW_ehandler(index, nrec, mmode, hitnum)
-            if(mmode.eq.'QIT') then
-              closeRHP = .true.
-              mmode = 'CHG'
-            endif
-          else if (Active_CW.eq.TRIINFO_CW) then
-            call GetTVal_CW_ehandler(index, mmode, hitnum)
-            if(mmode.eq.'QIT') then
-              closeRHP = .true.
-              mmode = 'CHG'
-            endif
           endif
         else
           write(Message,'(a,i4,a)') 'Invalid hitnum:',hitnum,' < 0'

@@ -113,37 +113,24 @@
 ! - PARAMETERS (constants)
 
       INTEGER INACTIVE_CW, INACTIVE_MW, CONFIG_CW,&
-     &    CRITERIA_CW, PANELMOD_CW,XSection_CW,&
      &    NODEINFO_CW, NODEINFO_MW,&
      &    TRIINFO_CW, TRIINFO_MW,&
-     &    PLACEMARKERS_CW, PLACEMARKERS_MW,&
-     &    FLAGSTRIANGLES_CW, ADDLINE_CW, ABOUT_CW
+     &    PLACEMARKERS_MW
+
       PARAMETER (&
      &        INACTIVE_CW=-1,&
      &        INACTIVE_MW=INACTIVE_CW,&
-     &        XSection_CW=17,&
      &        CONFIG_CW=1,&
-     &        CRITERIA_CW=2,&
-     &        PANELMOD_CW=3,&
      &        NODEINFO_CW=4,&
      &        NODEINFO_MW=NODEINFO_CW,&
      &        TRIINFO_CW=9,&
      &        TRIINFO_MW=TRIINFO_CW,&
-     &        PLACEMARKERS_CW=5,&
-     &        PLACEMARKERS_MW=PLACEMARKERS_CW,&
-     &        FLAGSTRIANGLES_CW=6,&
-     &        ADDLINE_CW=7,&
-     &        ABOUT_CW=8)
-      INTEGER CONFIGBND_CW, CONFIGCONT_CW,CONFIGSOUND_CW
+     &        PLACEMARKERS_MW=5)
+
       INTEGER CONFIGNODES_CW, CONFIGDEPCONT_CW
       PARAMETER (&
-     &        CONFIGBND_CW=10,&
-     &        CONFIGCONT_CW=11,&
-     &        CONFIGSOUND_CW=12,&
      &        CONFIGNODES_CW=13,&
      &        CONFIGDEPCONT_CW=14)
-      INTEGER  NADDLINE_CW, SHOWDEPTHS_CW
-      PARAMETER ( NADDLINE_CW=14, SHOWDEPTHS_CW=15)
 
       integer, parameter :: Sample_MW=20
       integer GridInsert_MW, GridCleave_MW,GridExchange_MW,GridDekite_MW
@@ -167,9 +154,6 @@
       integer Zoomin_MW, Pan_MW
       parameter (Zoomin_MW=55,Pan_MW=56)
 
-      integer LinearTrans_CW
-      parameter (LinearTrans_CW=61)
-
 !       Local variables
 
       integer,save :: nrec,AutoGenFlag
@@ -178,7 +162,7 @@
       integer HitNum
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
-      logical, save :: closeRHP, newfile, accept
+      logical, save :: closeRHP, newfile
       logical IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
       CHARACTER*3, save :: mmode
@@ -506,9 +490,44 @@
             endif
           endif
           
-          call XSection( Quit )
-          Active_CW = XSection_CW
+          call XSection( ncode1, Quit )
+          if(.not.quit) then
+            IF (itot.gt.1000) then
+              outlineonly = .TRUE.
+            else
+              outlineonly = .FALSE.
+            endif
+            FlagLin=.false.
+            FlagPolar=.false.
+            FlagMerc=.false.
+            FlagUTM=.false.
+            if(ncode1.eq.0) then
+              FlagG = .false.
+              FlagN = .true.
+              DispNodes = .true.
+              call MNU_GridMenuDisable
+              call MNU_NodeMenuEnable
+              if(numpolys.gt.0) then
+                call MNU_PolyMenuEnable
+              endif
+            else
+              FlagG = .true.
+              FlagN = .false.
+              DispNodes = .false.
+              call MNU_NodeMenuDisable
+              call MNU_GridMenuEnable
+              if(numpolys.gt.0) then
+                call MNU_PolyMenuEnable
+              endif
+            endif
+            call InitVertexMarkers
+!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
+            change = .true.
+            call DrwFig(change)
+          endif
+          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
+          call MNU_MainMenuEnable
           return
 
         entry SampleCB()
@@ -776,12 +795,12 @@
         entry NodeCheckCB()
           call FlagsVertices()
           Active_MW = INACTIVE_MW
-          Active_CW = CRITERIA_CW
+          Active_CW = INACTIVE_CW
           return
         entry EleCheckCB()
           call FlagsTriangles_Init()
           Active_MW = INACTIVE_MW
-          Active_CW = FLAGSTRIANGLES_CW
+          Active_CW = INACTIVE_CW
           return
         entry EraseCheckCB()
 !          call FlagsEraseAll
@@ -1903,51 +1922,13 @@
           call PutPermMarker ( MouseX, MouseY, Success )
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
         endif
-      elseif((Window.eq.CONTROLWIN).and.(Active_CW.ne.INACTIVE_CW).and.(Active_CW.ne.ABOUT_CW)) then
+      elseif((Window.eq.CONTROLWIN).and.(Active_CW.ne.INACTIVE_CW)) then
         Hitnum = -1
         call PanelGetHitnum(MouseX, MouseY, Hitnum)
         if (Hitnum.eq.0) then
         else if (Hitnum.gt.0) then
-          if(Active_CW.eq.XSection_CW) then
-            call XsecEHandler(hitnum,accept,quit)
-            if(accept) then
-              IF (itot.gt.1000) then
-                outlineonly = .TRUE.
-              else
-                outlineonly = .FALSE.
-              endif
-              FlagLin=.false.
-              FlagPolar=.false.
-              FlagMerc=.false.
-              FlagUTM=.false.
-              if(quit) then
-                FlagG = .false.
-                FlagN = .true.
-                DispNodes = .true.
-                call MNU_GridMenuDisable
-                call MNU_NodeMenuEnable
-                if(numpolys.gt.0) then
-                  call MNU_PolyMenuEnable
-                endif
-              else
-                FlagG = .true.
-                FlagN = .false.
-                DispNodes = .false.
-                call MNU_NodeMenuDisable
-                call MNU_GridMenuEnable
-                if(numpolys.gt.0) then
-                  call MNU_PolyMenuEnable
-                endif
-              endif
-              call InitVertexMarkers
-              call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
-              change = .true.
-              call DrwFig(change)
-            elseif(quit) then
-              Active_CW = INACTIVE_CW
-              Active_MW = INACTIVE_MW
-            endif
-          else if (Active_CW.eq.CONFIGNODES_CW) then
+
+          if (Active_CW.eq.CONFIGNODES_CW) then
             call configNodes_ehandler(Hitnum)
           else if (Active_CW.eq.CONFIGDEPCONT_CW) then
             call configDepCntrs_ehandler(Hitnum)
@@ -1959,12 +1940,6 @@
               FlagD = .false.
             endif
             !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
-          else if (Active_CW.eq.CONFIGCONT_CW) then
-!            call SconfigContours_ehandler(Hitnum)
-          else if (Active_CW.eq.CONFIGBND_CW) then
-!            call SconfigBoundaries_ehandler(Hitnum)
-          else if (Active_CW.eq.CONFIGSOUND_CW) then
-!            call SconfigSoundings_ehandler(Hitnum)
           else if (Active_CW.eq.NODEINFO_CW) then
             call GetVal_CW_ehandler(index, nrec, mmode, hitnum)
             if(mmode.eq.'QIT') then

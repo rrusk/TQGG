@@ -12,16 +12,18 @@
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool"/></Configuration>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" FPS4Filenames="true" RuntimeLibrary="rtQuickWin"/>
-				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="40000000"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool"/></Configuration>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Debug|x64">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug" Interfaces="true"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
@@ -93,5 +95,5 @@
 		<File RelativePath="..\..\src\vf_dialogs\vf_elementinfo.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\vf_nodeinfo.f"/>
 		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
-		<File RelativePath="..\..\src\vf_dialogs\Xsection.f"/></Filter></Files>
+		<File RelativePath="..\..\src\dataio\Xsection.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

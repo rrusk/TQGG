@@ -92,8 +92,7 @@
 		<File RelativePath="..\..\src\dataio\Stspl.f"/>
 		<File RelativePath="..\..\src\dataio\stspldf.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\vf_allchecks.f90"/>
-		<File RelativePath="..\..\src\vf_dialogs\vf_elementinfo.f"/>
-		<File RelativePath="..\..\src\vf_dialogs\vf_nodeinfo.f"/>
+		<File RelativePath="..\..\src\vf_dialogs\vf_allinfo.f90"/>
 		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
 		<File RelativePath="..\..\src\dataio\Xsection.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

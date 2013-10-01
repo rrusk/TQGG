@@ -165,7 +165,6 @@
       logical, save :: closeRHP, newfile
       logical IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
-      CHARACTER*3, save :: mmode
       INTEGER PolyId, numvert
       real vertx1(maxvert+1),verty1(maxvert+1)
 
@@ -1783,9 +1782,8 @@
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif
         elseif(Active_MW.eq.NODEINFO_MW) then
-          mmode = 'CHG'
           if(closeRHP) call Init_Info()
-          call GetVal_MW_Ehandler (mmode, MouseX, MouseY, Index)
+          call GetVal_MW_Ehandler (MouseX, MouseY, Index)
           call PigStatusMessage('Info ACTIVE: Pick a point')        
         elseif(Active_MW.eq.TRIINFO_MW) then
           if(closeRHP) call InfoTriangle(change)

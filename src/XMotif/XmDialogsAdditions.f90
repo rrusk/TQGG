@@ -1,6 +1,6 @@
 !****************************************************************************
 
-    SUBROUTINE InitEleInfo(index)
+    SUBROUTINE WpigElementInfo(index)
 
     IMPLICIT NONE
 
@@ -14,11 +14,11 @@
     write(*,*) ' index, code=', index, ec
     write(*,*) ' vertices=',(nv(j),j=1,4)
      
-    END SUBROUTINE initeleinfo
+    END SUBROUTINE wpigelementinfo
 
 !****************************************************************************
 
-    SUBROUTINE InitNodeinfo(index)
+    SUBROUTINE WpigNodeinfo(index)
 
     IMPLICIT NONE
 
@@ -33,6 +33,6 @@
     write(*,*) ' x,y,z=', xc, yc, zc
     write(*,*) ' nbrs=',(nv(j),j=1,numngh)
     
-    END SUBROUTINE initnodeinfo
+    END SUBROUTINE wpignodeinfo
 
 !****************************************************************************

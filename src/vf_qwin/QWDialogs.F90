@@ -1,7 +1,8 @@
 
 !****************************************************************************
 
-SUBROUTINE InitEleInfo(index)
+SUBROUTINE WPigElementInfo(index)
+    
     USE IFLOGM
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
@@ -64,11 +65,12 @@ SUBROUTINE InitEleInfo(index)
         CALL DlgUninit( dlg )
 
     END IF
-END SUBROUTINE initeleinfo
+END SUBROUTINE wpigelementinfo
 
 !****************************************************************************
 
-SUBROUTINE InitNodeinfo(index)
+SUBROUTINE WPigNodeinfo(index)
+    
     USE IFLOGM
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
@@ -122,11 +124,12 @@ SUBROUTINE InitNodeinfo(index)
         CALL DlgUninit( dlg )
 
     END IF
-END SUBROUTINE initnodeinfo
+END SUBROUTINE wpignodeinfo
 
 !****************************************************************************
 
 SUBROUTINE WPigNodeCheck(ans, TheCriteria, MaxCrit)
+    
     USE IFLOGM
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
@@ -196,6 +199,7 @@ END SUBROUTINE wpignodecheck
 !****************************************************************************
 
 SUBROUTINE WPigElementCheck()
+    
     USE IFLOGM
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
@@ -236,6 +240,7 @@ END SUBROUTINE WPigElementCheck
 !****************************************************************************
 
 SUBROUTINE UpdateNodeInfo(dlg,id, callbacktype)
+  
   USE IFLOGM
   IMPLICIT NONE
   INCLUDE 'RESOURCE.FD'
@@ -316,6 +321,7 @@ END SUBROUTINE updatenodeinfo
 !****************************************************************************
 
 SUBROUTINE UpdateElementInfo(dlg,id, callbacktype)
+  
   USE IFLOGM
   IMPLICIT NONE
   INCLUDE 'RESOURCE.FD'
@@ -395,6 +401,7 @@ END SUBROUTINE updateelementinfo
 !****************************************************************************
 
 SUBROUTINE UpdateNodeCheck(dlg,id, callbacktype)
+  
   USE IFLOGM
   IMPLICIT NONE
   INCLUDE 'RESOURCE.FD'
@@ -490,6 +497,7 @@ END SUBROUTINE updatenodecheck
 !****************************************************************************
 
 SUBROUTINE UpdateEleCheck(dlg,id, callbacktype)
+  
   USE IFLOGM
   IMPLICIT NONE
   INCLUDE 'RESOURCE.FD'

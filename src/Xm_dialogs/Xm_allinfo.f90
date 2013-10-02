@@ -131,7 +131,7 @@
 !               INSIDE=.TRUE.
                 index = j
                 call PutTriMarker(index)
-                call InitEleInfo(index)
+                call WpigElementInfo(index)
                 go to 999
               endif
             endif
@@ -282,7 +282,7 @@
         call PigPutMessage('ERROR - Invalid point..')
       else
         call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
-        call InitNodeInfo(index)  !hook for dialog
+        call WPigNodeInfo(index)  !hook for dialog
       endif
       
       END

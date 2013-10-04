@@ -128,15 +128,13 @@ END SUBROUTINE wpignodeinfo
 
 !****************************************************************************
 
-SUBROUTINE WPigNodeCheck(ans, TheCriteria, MaxCrit)
+SUBROUTINE WPigNodeCheck()
     
     USE IFLOGM
     IMPLICIT NONE
     INCLUDE 'RESOURCE.FD'
 
 !     - PASSED PARAMETERS
-    integer MaxCrit
-    logical ans, TheCriteria(MaxCrit)
     
     INTEGER :: retint
     LOGICAL retlog

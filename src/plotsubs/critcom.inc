@@ -9,7 +9,7 @@
 !     -- current version of the editor. Array bound for TheCriteria() below.
 !     -- Mar/91 (JDM), MaxCrit increased from 15 to 16 for new option C= .
       INTEGER MaxCrit
-      PARAMETER( MaxCrit = 16 )
+      PARAMETER( MaxCrit = 19 )
 
 !     - Flag which is set TRUE if any criteria is to be displayed.
       LOGICAL DrawVCrit

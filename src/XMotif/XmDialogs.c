@@ -207,8 +207,8 @@ int *theCriteria, *maxCrit;
 
 unsigned long toggles_set = (unsigned long) 0 ; /* has the bits of which toggles are set */
 
-char *strings[] = { "C0", "C1", "C2", "C3", "C4", "C5", "C6", "NC0",
-	"DLT", "DGT", "DBTW", "NBGT", "NBLT", "NBE", "EXT", "C=?"};
+char *strings[] = { "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9",
+	 "NC0", "C=?","DLT", "DGT", "DBTW", "NBLT", "NBGT", "NBE", "EXT"};
 
 /* callback for all ToggleButtons of WPigNodeCheck.*/
 void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_data)
@@ -221,22 +221,26 @@ void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_da
 	if (toggle_data->set == XmSET){ /* if the toggle button is set, flip its bit */
 		toggles_set |= (1 << bit);
         ntest = which + 1;
-        SetUserValue(&ntest);
-    }else /* if the toggle is "off", turn off the bit. */
+        mode = 1;
+        SetUserValue(&ntest,&mode);
+    }else {/* if the toggle is "off", turn off the bit. */
 		toggles_set &= ~(1 << bit);
+        ntest = which + 1;
+        mode = 0;
+        SetUserValue(&ntest,&mode);}
 }
 
 /* used by check_bits callback for WPigNodeCheck */
-void setupOutput() {
-	int i;
-	for (i = 0; i < *maxCrit; i++) { //XtNumber (strings); i++) {
-		if (toggles_set & (1<<i)) {
-			theCriteria[i] = 1;
-		} else {
-			theCriteria[i] = 0;
-		}
-	}
-}
+//void setupOutput() {
+//	int i;
+//	for (i = 0; i < *maxCrit; i++) { //XtNumber (strings); i++) {
+//		if (toggles_set & (1<<i)) {
+//			theCriteria[i] = 1;
+//		} else {
+//			theCriteria[i] = 0;
+//		}
+//	}
+//}
 
 /* callback for "Run Check" (aka OK) button used by WPigNodeCheck */
 void check_bits (Widget widget, XtPointer client_data, XtPointer call_data)
@@ -244,23 +248,24 @@ void check_bits (Widget widget, XtPointer client_data, XtPointer call_data)
 /*	int parm1 = 0;
 	int change = 1;*/
 
-    setupOutput();
+//    setupOutput();
     ReDrawOnly();
 /*	DrwFig(&parm1, &change);*/
 }
 
 //void WPigNodeCheck(int *ans, int *user_ncount, int *user_ncount1, int *user_ncount2,
-void WPigNodeCheck(int *ans, int TheCriteria[], int *maxcrit)
+//void WPigNodeCheck(int *ans, int TheCriteria[], int *maxcrit)
+void WPigNodeCheck(void)
 {
 	Widget       rowcol, toggle_box, w, t, check, close;
 	int          i;
 	Arg          args[4];
 
-	theCriteria = TheCriteria;
+//	theCriteria = TheCriteria;
 //	userNcount = user_ncount;
 //	userNcount1 = user_ncount1;
 //	userNcount2 = user_ncount2;
-	maxCrit = maxcrit;
+//	maxCrit = maxcrit;
 
 	// hard-coded here so that this skeleton code replicates
 	// functionality of older version
@@ -289,7 +294,7 @@ void WPigNodeCheck(int *ans, int TheCriteria[], int *maxcrit)
 
 	i = 0;
 	XtSetArg (args[i], XmNpacking, XmPACK_COLUMN); i++;
-	XtSetArg (args[i], XmNnumColumns, 3); i++;
+	XtSetArg (args[i], XmNnumColumns, 4); i++;
 	toggle_box = XmCreateRowColumn (rowcol, "togglebox", args, i);
 
 	/* simply loop thru the strings creating a widget for each one */

@@ -5,14 +5,15 @@
 !                                                                       *
 !-----------------------------------------------------------------------*
 
-      integer cc0,cc1,cc2,cc3,cc4,cc5,cc6,cnotc0
+      integer cc0,cc1,cc2,cc3,cc4,cc5,cc6,cc7,cc8,cc9,cnotc0
       integer cdgt,cdlt,cdbtw,cnbgt,cnbe,cnblt
       integer ccuser
 
       PARAMETER( cc0 = white, cc1 = yellow, cc2 = green, cc3 = cyan )
-      PARAMETER( cc4 = blue, cc5 = ltgray, cc6 = violet, cnotc0 = red )
+      PARAMETER( cc4 = blue, cc5 = ltgray, cc6 = green )
+      PARAMETER( cc7 = violet, cc8 = ltgray, cc9 = yellow, cnotc0 = red )
       PARAMETER( cdgt = yellow, cdlt = blue, cdbtw = green )
-      PARAMETER( cnbgt = red, cnbe = green, cnblt = yellow )
+      PARAMETER( cnbgt = cyan, cnbe = red, cnblt = yellow )
       PARAMETER( ccuser = ltgray )
 
 !-------------------------END CRITCOL.DEF-------------------------------*

@@ -135,16 +135,16 @@
       
       INCLUDE 'critcom.inc'
       
-      logical ans
+!      logical ans
 
       DrawVCrit = .true.
 
-      call WPigNodeCheck(ans, TheCriteria, MaxCrit)
+      call WPigNodeCheck()
       
       END
 
 !---------------------------------------------------------------------------*
-!---------------------------------------------------------------------------*
+!-----------------------------------------ans, TheCriteria, MaxCrit----------------------------------*
 !                         NUP.FOR                                           *
 !     This module is concerned with the colouring of triangles              *
 !     by criteria tests, from  a colour table.                              *
@@ -1016,220 +1016,335 @@
 
       nrec = itot
 
-      if (TheCriteria(15)) then
+      if (TheCriteria(19)) then
 !   - EXT, put markers at vertices specified in external file
 !       -- each record of which contains vertex number followed by
 !       -- number of colour required. Record format is (1X,I5,1X,I2)
 !    call EXTERNAL
       else
-    if ( TheCriteria(1) ) then
-!     - C0, code = 0
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 0 ) then
-!       - put a marker wherever the code is 0
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cc0 )
+        if ( TheCriteria(1) ) then
+!         - C0, code = 0
+          do i = 1, nrec
+            if ( code(i).eq.0 ) then
+!           - put a marker wherever the code is 0
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc0 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 0 )
-        endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(1) )
 
-    if ( TheCriteria(8) ) then
-!     - !C0, code not equal to 0
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .gt. 0 ) then
-!           - put a marker wherever the code is NOT 0
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cnotc0 )
+        if ( TheCriteria(11) ) then
+!         - !C0, code not equal to 0
+          do i = 1, nrec
+            if ( CODE(i) .ne. 0 ) then
+!               - put a marker wherever the code is NOT 0
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cnotc0 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) gt 0 )
-        endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec)
-    endif
-!     - ( TheCriteria(8) )
 
-    if ( TheCriteria(2) ) then
-!     - C1, code = 1
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 1 ) then
-!       - put a marker wherever the code is 1
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PUTMARKER ( DXRAY(I), DYRAY(I), 4, cc1 )
+        if ( TheCriteria(2) ) then
+!         - C1, code = 1
+          do i = 1, nrec
+            if ( CODE(i) .eq. 1 ) then
+!           - put a marker wherever the code is 1
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PUTMARKER ( DXRAY(I), DYRAY(I), 4, cc1 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 1 )
-        endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(2) )
 
-    if ( TheCriteria(3) ) then
-!         - C2, code = 2
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 2 ) then
-!       - put a marker wherever the code is 2
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker ( DXRAY(i), DYRAY(i), 4, cc2 )
+        if ( TheCriteria(3) ) then
+!         - C1, code = 2
+          do i = 1, nrec
+            if ( CODE(i) .eq. 2 ) then
+!           - put a marker wherever the code is 2
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PUTMARKER ( DXRAY(I), DYRAY(I), 4, cc2 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 2 )
-        endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( (TheCriteria(3) )
 
-    if ( TheCriteria(4) ) then
-!     - C3, code = 3
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 3 ) then
-!       - put a marker wherever the code is 3
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cc3 )
+        if ( TheCriteria(4) ) then
+!         - C3, code = 3
+          do i = 1, nrec
+            if ( CODE(i) .eq. 3 ) then
+!           - put a marker wherever the code is 3
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc3 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 3 )
+
+        if ( TheCriteria(5) ) then
+!         - C4, code = 4
+          do I = 1, NREC
+            if ( CODE(i) .eq. 4 ) then
+!           - put a marker wherever the code is 4
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc4 )
+              endif
+            endif
+          enddo
         endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(4) )
 
-    if ( TheCriteria(5) ) then
-!     - C4, code = 4
-      do I = 1, NREC
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 4 ) then
-!       - put a marker wherever the code is 4
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cc4 )
+        if ( TheCriteria(6) ) then
+!         - C5, code = 5
+          do i = 1, nrec
+            if ( CODE(i) .eq. 5 ) then
+!           - put a marker wherever the code is 5
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc5 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 4 )
+
+        if ( TheCriteria(7) ) then
+!         - C6, code = 6
+          do i = 1, nrec
+            if ( CODE(i) .eq. 6 ) then
+!           - put a marker wherever the code is 6
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc6 )
+              endif
+            endif
+          enddo
         endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(5) )
 
-    if ( TheCriteria(6) ) then
-!     - C5, code = 5
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 5 ) then
-!       - put a marker wherever the code is 5
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cc5 )
+        if ( TheCriteria(8) ) then
+!         - C7, code = 7
+          do i = 1, nrec
+            if ( CODE(i) .eq. 7 ) then
+!           - put a marker wherever the code is 7
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc7 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 5 )
+
+        if ( TheCriteria(9) ) then
+!         - C8, code = 8
+          do i = 1, nrec
+            if ( CODE(i) .eq. 8 ) then
+!           - put a marker wherever the code is 8
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc8 )
+              endif
+            endif
+          enddo
         endif
-!         - ( code(i).ge.0 )
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(6) )
 
-    if ( TheCriteria(7) ) then
-!     - C6, code = 7
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. 7 ) then
-!       - put a marker wherever the code is 6
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, cc6 )
+
+        if ( TheCriteria(10) ) then
+!         - C6, code = 9
+          do i = 1, nrec
+            if ( CODE(i) .eq. 9 ) then
+!           - put a marker wherever the code is 9
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, cc9 )
+              endif
+            endif
+          enddo
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq 7 )
+
+        if ( TheCriteria(12) ) then
+!         - C=?, code = USER_CODE
+          do i = 1, nrec
+            if ( CODE(i) .eq. USER_CODE ) then
+!           - put a marker wherever the code is USER_CODE
+              if ( In_Box(DXRAY(i),DYRAY(i)) ) then
+                call PutMarker( DXRAY(i), DYRAY(i), 4, ccuser )
+              endif
+            endif
+          enddo
         endif
-!         - code(i).ge.0
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(7) )
 
-!   - Mar/91 (JDM), new check added for TheCriteria(16)
-    if ( TheCriteria(16) ) then
-!     - C=?, code = USER_CODE
-      do i = 1, nrec
-        if ( code(i).ge.0 ) then
-          if ( CODE(i) .eq. USER_CODE ) then
-!       - put a marker wherever the code is USER_CODE
-        if ( In_Box(DXRAY(i),DYRAY(i)) ) then
-          call PutMarker( DXRAY(i), DYRAY(i), 4, ccuser )
+        if ( TheCriteria(13) ) then
+!         - DLT, depthless than USER_COUNT
+            call Depth_Less( nrec )
         endif
-!         - ( In_Box(DXRAY(i),DYRAY(i)) )
-          endif
-!       - ( CODE(i) eq USER_CODE )
+
+        if ( TheCriteria(14) ) then
+!         - DGT, depth greater than USER_COUNT
+          call Depth_Greater( nrec )
         endif
-!         - code(i).ge.0
-      enddo
-!       - ( i = 1 to nrec )
-    endif
-!     - ( TheCriteria(16) )
 
-    if ( TheCriteria(10) ) then
-!     - DGT, depth greater than USER_COUNT
-      call Depth_Greater( nrec )
-    endif
+        if ( TheCriteria(15) ) then
+!         - DBTW, depth between UPPERD and LOWERD
+          call Depth_Between( nrec )
+        endif
 
-    if ( TheCriteria(9) ) then
-!     - DLT, depthless than USER_COUNT
-        call Depth_Less( nrec )
-    endif
+        if ( TheCriteria(16) ) then
+!         - NBLT, neighbours less than USER_NCOUNT
+          call Mark_Nbs_Under( nrec )
+        endif
 
-    if ( TheCriteria(11) ) then
-!     - DBTW, depth between UPPERD and LOWERD
-      call Depth_Between( nrec )
-    endif
+        if ( TheCriteria(17) ) then
+!         - NBGT, neighbours greater than USER_NCOUNT
+          call Mark_Nbs_Over( nrec )
+        endif
 
-    if ( TheCriteria(12) ) then
-!     - NBGT, neighbours greater than USER_NCOUNT
-      call Mark_Nbs_Over( nrec )
-    endif
-
-    if ( TheCriteria(14) ) then
-!     - NBE, neighbours equal to USER_NCOUNT
-      call Mark_Nbs_Equal( nrec )
-    endif
-
-    if ( TheCriteria(13) ) then
-!     - NBLT, neighbours less than USER_NCOUNT
-      call Mark_Nbs_Under( nrec )
-    endif
+        if ( TheCriteria(18) ) then
+!         - NBE, neighbours equal to USER_NCOUNT
+          call Mark_Nbs_Equal( nrec )
+        endif
 
       endif
-!   - ( TheCriteria(15) )
+
 999   continue
 
       RETURN
       END
 
+!---------------------------------------------------------------------------*
+
+      SUBROUTINE SetUserValue(ntest,check)
+
+! Purpose : To place markers at vertices if certain
+!           criteria are satisfied
+! Given   : None
+! Returns : Ok - TRUE if a redraw is needed
+
+      implicit none
+
+      INCLUDE '../includes/defaults.inc'
+      INCLUDE '../plotsubs/critcom.inc'
+      INCLUDE '../includes/graf.def'
+
+! critcom.inc:  array TheCriteria(1->MaxCrit) contents
+! [1] CO [2] C1 [3] C2 [4] C3 [5] C4 [6] C5 [7] C6 [8] NC0
+! [9] DLT [10] DGT [11] DBTW [12] NBGT [13] NBLT [14] NBE [15] EXT
+
+! - PASSED VARIABLES
+      integer ntest
+
+! - LOCAL VARIABLES
+      integer :: ntest_local
+      real rval
+      logical Success,check
+      character*80 ans
+
+!----------BEGIN----------------------
+
+!      write(*,*) ' ntest,check=',ntest,check
+      
+      if(ntest.ge.1.and.ntest.le.11) then  !codes
+        TheCriteria(ntest) = check
+      
+      elseif(ntest.eq.12) then !C=?
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter integer code:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid integer','ncheck')
+          else
+            USER_CODE = nint(rval)
+          endif
+        endif
+
+      elseif(ntest.eq.13) then  !DLT
+        ntest_local = 9
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter depth for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid number','ncheck')
+          else
+            USER_COUNT=rval
+          endif
+        endif
+        
+      elseif(ntest.eq.14) then !DGT
+        ntest_local = 10
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter depth for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid number','ncheck')
+          else
+            USER_COUNT1=rval
+          endif
+        endif
+      
+      elseif(ntest.eq.15) then !DBTW
+        ntest_local = 11
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter lower depth for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid number','ncheck')
+          else
+            lowerd=rval
+            call PigPrompt('Enter upper depth for comparison:',ans )
+            call PigReadReal( ans, rval, Success )
+            IF ( .NOT. Success ) THEN
+              call PigMessageOK('Invalid number','ncheck')
+            else
+              upperd=rval
+            endif
+          endif
+        endif
+      
+      elseif(ntest.eq.16) then !NLT
+        ntest_local = 13
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter integer count for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid integer','ncheck')
+          else
+            USER_NCOUNT1 = nint(rval)
+          endif
+        endif
+      
+      elseif(ntest.eq.17) then !NGT
+        ntest_local = 12
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter integer count for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid integer','ncheck')
+          else
+            USER_NCOUNT = nint(rval)
+          endif
+        endif
+      
+      elseif(ntest.eq.18) then !NBE
+        ntest_local = 14
+        TheCriteria(ntest) = check
+        if(check) then
+          call PigPrompt('Enter integer count for comparison:',ans )
+          call PigReadReal( ans, rval, Success )
+          IF ( .NOT. Success ) THEN
+            call PigMessageOK('Invalid integer','ncheck')
+          else
+            USER_NCOUNT2 = nint(rval)
+          endif
+        endif
+      
+!      elseif(ntest.eq.19) then !EXT
+      
+      
+      endif
+
+      return
+      END
+
+!---------------------------------------------------------------------------*
+!---------------------------------------------------------------------------*
 !---------------------------------------------------------------------------*
 

@@ -49,6 +49,7 @@
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<File RelativePath="..\..\src\vf_qwin\AboutLimitsgr.f90"/>
 		<File RelativePath="..\..\src\plotsubs\AllChecks.f90"/>
+		<File RelativePath="..\..\src\plotsubs\Allinfo.f90"/>
 		<File RelativePath="..\..\src\vf_dialogs\configurecontours.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\configuregrid.f"/>
 		<File RelativePath="..\..\src\vf_dialogs\configurenodes.f"/>

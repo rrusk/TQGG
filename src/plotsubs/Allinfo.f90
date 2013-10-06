@@ -250,7 +250,9 @@
 !--------BEGIN--------------
 !       - initialize if needed
       
-      return
+      ! TODO: get info for selected node and pass to CreateNodeInfoDialog
+      call CreateNodeInfoDialog()
+
       END
 
 !--------------------------------------------------------------------------*

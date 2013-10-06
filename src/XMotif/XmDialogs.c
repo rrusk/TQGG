@@ -32,6 +32,132 @@
 
 /*----------------------------------------------------------------------------*/
 
+// Implements the Info/NodeInfo menu item
+
+typedef struct {
+	Widget index_widget;
+	Widget x_widget;
+	Widget y_widget;
+	Widget z_widget;
+	Widget code_widget;
+} NodeInfoWidget;
+
+Widget create_labeled_textfield(Widget *parent, char *label_string) {
+	Widget form_widget;
+	Widget label_widget;
+	Widget text_widget;
+	Arg args[8];
+	int n = 0;
+
+	XtSetArg(args[n], XmNfractionBase, 10); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	form_widget = XmCreateForm(*parent, "form", args, n);
+
+	n = 0;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
+	XtSetArg(args[n], XmNrightPosition, 3); n++;
+	XtSetArg(args[n], XmNalignment, XmALIGNMENT_END); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	label_widget = XmCreateLabelGadget(form_widget, label_string, args, n);
+	XtManageChild(label_widget);
+
+	n = 0;
+	XtSetArg(args[n], XmNtraversalOn, True); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION); n++;
+	XtSetArg(args[n], XmNleftPosition, 4); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNnavigationType, XmTAB_GROUP); n++;
+	text_widget = XmCreateTextField(form_widget, "text", args, n);
+	XtManageChild(text_widget);
+
+	XtManageChild(form_widget);
+
+	return text_widget;
+}
+
+NodeInfoWidget *create_node_info_widget(Widget *parent) {
+	NodeInfoWidget *node_info_widget;
+
+	node_info_widget = (NodeInfoWidget *)malloc(sizeof(NodeInfoWidget));
+	node_info_widget->index_widget = create_labeled_textfield(parent, "Index:");
+	node_info_widget->x_widget = create_labeled_textfield(parent, "X:");
+	node_info_widget->y_widget = create_labeled_textfield(parent, "Y:");
+	node_info_widget->z_widget = create_labeled_textfield(parent, "Z:");
+	node_info_widget->code_widget = create_labeled_textfield(parent, "Code:");
+
+	return node_info_widget;
+}
+
+void update_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
+	puts("Update was pressed.");
+	NodeInfoWidget *node_info_widget = (NodeInfoWidget *)client_data;
+
+	// TODO: perform actual update with the current values
+
+//	puts(XmTextFieldGetString(node_info_widget->index_widget));
+//	puts(XmTextFieldGetString(node_info_widget->x_widget));
+//	puts(XmTextFieldGetString(node_info_widget->y_widget));
+//	puts(XmTextFieldGetString(node_info_widget->z_widget));
+//	puts(XmTextFieldGetString(node_info_widget->code_widget));
+}
+
+void close_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
+	XtDestroyWidget(XtParent(widget));
+}
+
+void CreateNodeInfoDialog() {
+	// TODO: Accept parameters for index, x, y, z, etc. and display them
+
+	Widget dialog;
+	Widget row_column;
+	NodeInfoWidget* node_info_widget;
+
+	XmString title;
+	XmString update_label;
+	XmString close_label;
+
+	Arg args[6];
+
+	int n = 0;
+
+	title = XmStringCreateLocalized("the title");
+	update_label = XmStringCreateLocalized("Update");
+	close_label = XmStringCreateLocalized("Close");
+	XtSetArg (args[n], XmNselectionLabelString, title); n++;
+	XtSetArg (args[n], XmNautoUnmanage, False); n++;
+	XtSetArg (args[n], XmNuserData, 0); n++;
+	XtSetArg (args[n], XmNcancelLabelString, close_label); n++;
+	XtSetArg (args[n], XmNokLabelString, update_label); n++;
+
+	// TODO: more appropriate dialog (without these unneeded extra pieces)?
+	dialog = XmCreatePromptDialog (toplevel, "NodeInfo", args, n);
+	XtAddCallback(dialog, XmNokCallback, update_callback, NULL);
+	XtAddCallback(dialog, XmNcancelCallback, close_callback, NULL);
+
+	// Hide unwanted buttons
+	XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
+	XtUnmanageChild(XtNameToWidget(dialog, "Text"));
+	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
+
+	XmStringFree(title);
+	XmStringFree(update_label);
+	XmStringFree(close_label);
+
+	row_column = XmCreateRowColumn(dialog, "MainRowCol", NULL, 0);
+
+	node_info_widget = create_node_info_widget(&row_column);
+
+	XtManageChild(row_column);
+	XtManageChild(dialog);
+
+	free(node_info_widget);
+}
+
+/*----------------------------------------------------------------------------*/
+
 // The following code implements the info/elementcheck menu item
 
 int ntest;

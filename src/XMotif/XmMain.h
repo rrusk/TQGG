@@ -19,9 +19,12 @@
 #include <Xm/DialogS.h>
 #include <Xm/SelectioB.h>
 #include <Xm/FileSB.h>
+#include <Xm/Form.h>
+#include <Xm/TextF.h>
 #include <Xm/ToggleB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/Label.h>       /* Label */
+#include <Xm/LabelG.h>
 #include <stdlib.h>
 
 #include "f90_c.h"			/* binds gfortran subroutines to c */

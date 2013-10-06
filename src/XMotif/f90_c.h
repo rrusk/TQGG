@@ -137,4 +137,6 @@
 #define  ReDrawOnly redrawonly_
 #define  SetUserValue setuservalue_
 
+#define CreateNodeInfoDialog createnodeinfodialog_
+
 #endif /* F90_C_H_ */

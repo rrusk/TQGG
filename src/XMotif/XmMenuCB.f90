@@ -124,6 +124,8 @@
       logical, save :: FirstZoom=.false., LastZoom=.false.
       logical, save :: FirstPoint=.false., NextPoint=.false.
 
+      logical, save :: should_launch_node_info_dialog = .false.
+
 ! ------------------------------------------------------------------------- *
 
       entry Initialiser()
@@ -727,11 +729,12 @@
 ! Info menu
         entry NodeInfoCB()
 !          mmode = 'CHG'   !  mmode = 'INF'
-          call Init_Info()  !mmode)
+          !call Init_Info(Index)  !mmode)
           !Active_CW = NODEINFO_CW
+          should_launch_node_info_dialog = .true.
           Active_MW = NODEINFO_MW
-!          closeRHP = .false.
-          call PigStatusMessage('Info ACTIVE: Pick a point')        
+          !closeRHP = .false.
+          call PigStatusMessage('Info ACTIVE: Pick a point')
           return
         entry EleInfoCB()
           !Active_CW = TRIINFO_CW
@@ -1709,8 +1712,9 @@
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif
         elseif(Active_MW.eq.NODEINFO_MW) then
-!          if(closeRHP) call Init_Info() !mmode)
+          !if(closeRHP) call Init_Info() !mmode)
           call GetVal_MW_Ehandler (MouseX, MouseY, Index)
+          if(should_launch_node_info_dialog) call Init_Info(Index)
         elseif(Active_MW.eq.TRIINFO_MW) then
 !          if(closeRHP) call InfoTriangle(change)
           call GetTVal_MW_Ehandler (MouseX, MouseY, Index)

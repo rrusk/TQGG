@@ -241,17 +241,33 @@
 !---------------------------------------------------------------------------*
 !---------------------------------------------------------------------------*
       
-      SUBROUTINE Init_Info( )
+      SUBROUTINE Init_Info(Index)
 
 ! Purpose : To initialize the node INFO dialog.
-! Given   : none 
+! Given   : Index
 ! Returns : None.
 
 !--------BEGIN--------------
 !       - initialize if needed
+
+      use MainArrays
+
+      implicit none
       
+      ! Input variables
+      integer :: Index
+
+      integer :: ec, numngh, nv(nbtotr)
+      real :: x, y, z
+
+      call GetNodeInfo(Index, x, y, z, ec, numngh, nv)
+
+      print *, "X=", x
+      print *, "Y=", y
+      print *, "Z=", z
+
       ! TODO: get info for selected node and pass to CreateNodeInfoDialog
-      call CreateNodeInfoDialog()
+      call CreateNodeInfoDialog(Index, x, y, z, ec)
 
       END
 

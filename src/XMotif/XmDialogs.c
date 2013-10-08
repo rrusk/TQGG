@@ -26,6 +26,8 @@
   !***********************************************************************
 */
 
+#include "math.h"
+
 #include "XmMain.h"
 
 // nodeinfo, element info, node check, element check dialog
@@ -41,6 +43,28 @@ typedef struct {
 	Widget z_widget;
 	Widget code_widget;
 } NodeInfoWidget;
+
+char *int_to_str(int integer, int max_chars) {
+	/* Modified from
+	 * http://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c
+	 * to accomodate the value 0.  Does not handle negatives. */
+
+//	int num_chars = 0;
+//
+//	int order = integer > 0 ? (int)(ceil(log10(integer))) : 1;
+//	int num_chars = order + 1
+//	printf("%f\n", log10(integer));
+//	printf("%f\n", ceil(log10(integer)));
+//	int num_chars = (int)((ceil(log10(integer)) + 1));
+
+//	printf("Calculated number of characters: %d\n", num_chars);
+	char *str = (char *)malloc(max_chars * sizeof(char));
+//	puts("Allocated string");
+	sprintf(str, "%d", integer);
+//	puts("Did sprintf");
+
+	return str;
+}
 
 Widget create_labeled_textfield(Widget *parent, char *label_string) {
 	Widget form_widget;
@@ -78,8 +102,16 @@ Widget create_labeled_textfield(Widget *parent, char *label_string) {
 	return text_widget;
 }
 
-NodeInfoWidget *create_node_info_widget(Widget *parent) {
+NodeInfoWidget *create_node_info_widget(Widget *parent, int index, float x,
+		float y, float z, int code) {
+
 	NodeInfoWidget *node_info_widget;
+	char *index_str;
+	char *x_str;
+	char *y_str;
+	char *z_str;
+	char *code_str;
+	int max_chars;
 
 	node_info_widget = (NodeInfoWidget *)malloc(sizeof(NodeInfoWidget));
 	node_info_widget->index_widget = create_labeled_textfield(parent, "Index:");
@@ -87,6 +119,23 @@ NodeInfoWidget *create_node_info_widget(Widget *parent) {
 	node_info_widget->y_widget = create_labeled_textfield(parent, "Y:");
 	node_info_widget->z_widget = create_labeled_textfield(parent, "Z:");
 	node_info_widget->code_widget = create_labeled_textfield(parent, "Code:");
+
+	max_chars = 10;
+
+	index_str = int_to_str(index, max_chars);
+	puts("Created index string");
+	XmTextFieldSetString(node_info_widget->index_widget, index_str);
+	puts("Set index string in GUI");
+	free(index_str);
+	puts("Freed index string");
+
+//	XmTextFieldSetString(node_info_widget->x_widget, x);
+//	XmTextFieldSetString(node_info_widget->y_widget, y);
+//	XmTextFieldSetString(node_info_widget->z_widget, z);
+
+	code_str = int_to_str(code, max_chars);
+	XmTextFieldSetString(node_info_widget->code_widget, code_str);
+	free(code_str);
 
 	return node_info_widget;
 }
@@ -108,8 +157,15 @@ void close_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
 	XtDestroyWidget(XtParent(widget));
 }
 
-void CreateNodeInfoDialog() {
+void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code) {
 	// TODO: Accept parameters for index, x, y, z, etc. and display them
+
+	printf("C code received:");
+	printf("index: %d\n", *index);
+	printf("x: %f\n", *x);
+	printf("y: %f\n", *y);
+	printf("z: %f\n", *z);
+	printf("code: %d\n", *code);
 
 	Widget dialog;
 	Widget row_column;
@@ -148,7 +204,8 @@ void CreateNodeInfoDialog() {
 
 	row_column = XmCreateRowColumn(dialog, "MainRowCol", NULL, 0);
 
-	node_info_widget = create_node_info_widget(&row_column);
+	node_info_widget = create_node_info_widget(&row_column,
+			*index, *x, *y, *z, *code);
 
 	XtManageChild(row_column);
 	XtManageChild(dialog);

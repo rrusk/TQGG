@@ -1,6 +1,7 @@
 *.o
 *.mod
 *~
+*.gch
 bin/
 .settings
 TQGGWS/TQGG/TQGG.suo

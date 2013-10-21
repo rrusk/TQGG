@@ -195,6 +195,8 @@ void  HelpCB(void);
 //    void  MouseEHandler(int *, int *, float *, float *);
 void  drawing_area_callback(Widget, XtPointer, XtPointer);
 
+extern void getnodeinfo_(int *, double *, double *, double *, int *, int *, int *);
+extern void getelementinfo_(int *, double *, double *, double *, int *, int *);
 extern void elementcheck_(int *num, int *mode);
 extern void redrawonly_(void);
 extern void setuservalue_(int *num, int *mode);

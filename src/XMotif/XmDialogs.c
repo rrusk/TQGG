@@ -156,7 +156,7 @@ void update_callback(Widget widget, XtPointer client_data, XtPointer call_data) 
 void close_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
 	XtDestroyWidget(XtParent(widget));
 }
-
+  
 void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code) {
 	// TODO: Accept parameters for index, x, y, z, etc. and display them
 
@@ -211,6 +211,92 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
 	XtManageChild(dialog);
 
 	free(node_info_widget);
+}
+
+void WPigNodeInfo(int *index) {
+    
+    int NodeInfoDialogExists;
+    double xn;
+    double yn;
+    double zn;
+    int index2;
+    int ncode;
+    int numngh;
+    int nv[100];
+
+    printf("C code received:");
+    printf("index: %d\n", *index);
+
+    NodeInfoDialogExists=0;
+    // TODO: if dialog doesn't exist, create it. Otherwise skip this.
+    if(NodeInfoDialogExists==0) {
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
+        index2 = *index;
+        GetNodeInfo( &index2,&xn,&yn,&zn,&ncode,&numngh,&nv );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xn: %f\n", xn);
+        printf("yn: %f\n", yn);
+        printf("zn: %f\n", zn);
+        printf("ncode: %d\n", ncode);
+        printf("numngh: %d\n", numngh);
+        CreateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+    }
+    else{
+      if(*index>0){
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and update display
+        index2 = *index;
+        GetNodeInfo( &index2,&xn,&yn,&zn,&ncode,&numngh,&nv );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xn: %f\n", xn);
+        printf("yn: %f\n", yn);
+        printf("zn: %f\n", zn);
+        printf("ncode: %d\n", ncode);
+        printf("ncode: %d\n", numngh);
+        //UpdateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+      }
+    }
+}
+
+void WPigElementInfo(int *index) {
+    
+    int ElementInfoDialogExists;
+    int index2;
+    double xc;
+    double yc;
+    double zc;
+    int ecode;
+    int elist[4];
+  
+    ElementInfoDialogExists=0;
+    // TODO: if dialog doesn't exist, create it. Otherwise skip this.
+    if(ElementInfoDialogExists==0) {
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
+        index2 = *index;
+        GetElementInfo( &index2,&xc,&yc,&zc,&ecode,&elist );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xc: %f\n", xc);
+        printf("yc: %f\n", yc);
+        printf("zc: %f\n", zc);
+        printf("ecode: %d\n", ecode);
+        //CreateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+    }
+    else{
+      if(*index>0){
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and update display
+        index2 = *index;
+        GetElementInfo( &index2,&xc,&yc,&zc,&ecode,&elist );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xc: %f\n", xc);
+        printf("yc: %f\n", yc);
+        printf("zc: %f\n", zc);
+        printf("ecode: %d\n", ecode);
+        //UpdateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+      }
+    }
 }
 
 /*----------------------------------------------------------------------------*/

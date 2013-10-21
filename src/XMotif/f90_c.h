@@ -106,7 +106,6 @@
 #define  HelpCB  helpcb_
 //#define  MenuCB  menucb_
 //#define  MouseEHandler  mouseehandler_
-#define  WPigElementCheck wpigelementcheck_
 #define  WPigMessageOK  wpigmessageok_
 #define  WPigStatusMessage  wpigstatusmessage_
 #define  WPigCursYesNo  wpigcursyesno_
@@ -132,11 +131,14 @@
 #define  MNU_NodeMenuDisable mnu_nodemenudisable_
 #define  MNU_PolyMenuEnable mnu_polymenuenable_
 #define  MNU_PolyMenuDisable mnu_polymenudisable_
-#define  ElementCheck elementcheck_
+#define  WPigNodeInfo wpignodeinfo_
+#define  GetNodeInfo getnodeinfo_
+#define  WPigElementInfo wpigelementinfo_
+#define  GetElementInfo getelementinfo_
 #define  WPigNodeCheck wpignodecheck_
+#define  WPigElementCheck wpigelementcheck_
+#define  ElementCheck elementcheck_
 #define  ReDrawOnly redrawonly_
 #define  SetUserValue setuservalue_
-
-#define CreateNodeInfoDialog createnodeinfodialog_
 
 #endif /* F90_C_H_ */

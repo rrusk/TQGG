@@ -540,3 +540,146 @@ SUBROUTINE UpdateEleCheck(dlg,id, callbacktype)
 END SUBROUTINE updateelecheck
 
 !****************************************************************************
+!*--------------------------------------------------------------------------*
+      
+      SUBROUTINE InfoFiles
+
+! Purpose : Displays the default filenames currently in use during the
+!           current interactive session.
+! Givens  : None
+! Returns : None
+! Effects : None
+
+      INCLUDE '../includes/defaults.inc'
+
+      character*256 cstr
+      integer len1, len2, len3, len4
+
+!-----------BEGIN------------------
+
+      if(DispNodes) then
+        len1 = len_trim(NodeRName)
+      else
+        len1 = len_trim(GridRName)
+      endif
+      len2 = len_trim(LastInterim)
+      len3 = len_trim(ContFName)
+      len4 = len_trim(BoundFName)
+
+      if(DispNodes) then
+        cstr = 'Node File: '// NodeRName(:len1)//char(13)//&
+               'Last Interim Node File: '// LastInterim(:len2)//char(13)//&
+               'Contours File: '// ContFName(:len3)//char(13)//&
+               'Boundary File: '// BoundFName(:len4)//char(0)
+      else
+        cstr = 'Grid File: '// GridRName(:len1)//char(13)//&
+               'Last Interim Grid File: '// LastInterim(:len2)//char(13)//&
+               'Contours File: '// ContFName(:len3)//char(13)//&
+               'Boundary File: '// BoundFName(:len4)//char(0)
+      endif
+
+      call PigMessageOK(cstr, 'FILES')
+
+      END
+
+!-----------------------------------------------------------------------*
+
+      SUBROUTINE About(RevisionP)
+
+! Purpose: Write the version number and opening title for TRIGRID.
+! Givens : ProgramP - character*(*) program name
+!          RevisionP - character*(*) program revision number
+!          Nrec - number of nodes used
+!          Nbtotr - number of neighbours used
+!          NNB - number of boundaries used
+! Returns: None
+! Effects: Window displays Title and version number. 
+!----------------------------------------------------------------
+
+      USE DFLIB
+
+!     - INCLUDES
+!      INCLUDE '..\includes\graf.def'
+
+      character*(*) RevisionP
+!   character*(*) ProgramP
+      integer tmplen
+      character*(30) Revision
+!      character*(30) Program
+!      character*(30) Platform
+
+!-----------------START ROUTINE------------------------------------
+
+!      Program = ProgramP
+!      RevisionP = '$Revision: 2.11.5 $' !RevisionP
+      Revision = RevisionP
+
+! display program identifications
+
+!      call PigSetTextColour (TitleColor)
+!      tmplen = len_trim(Program)
+!      call PigSetTextColour (foregr)
+! remove the $ signs from the RCS Revision string above
+!      Revision = '$Revision: 12.7 $'  !RevisionP
+      Revision = Revision(2:)
+      Revision(len_trim(Revision):) = ' '
+      tmplen = len_trim(Revision)
+
+      tmplen1 = aboutboxqq(&
+       'TQGG  '//char(13)//&
+        Revision(:tmplen)//char(13)//&
+       'Triangle and Quadrilateral Grid Generation and Editing,'//char(13)//&
+       'Developed from programs GridGen and Trigrid by Roy Walters.'//char(13)//&
+       'Base programs developed by Roy Walters, R.F. Henry, and others.'//char(13)//&
+       'Roy A. Walters'//char(13)//&
+       'rwalters@shaw.ca'//char(13)//&       
+       'R F. Henry'//char(13)//&
+       'rfhenry@shaw.ca'C)
+
+      return
+
+      END
+
+!-----------------------------------------------------------------------*
+
+      Subroutine Limits(nrec,mrec,nbtot,maxnnb)
+
+      USE DFLIB
+
+      integer tmplen,tmplen1,tmplen2
+      integer nrec,mrec,nbtot,maxnnb
+      character*80 msg,msg1,msg2
+
+      write(msg,'(a,i7,a,i7)') 'Nodes used/allocated=',nrec,'/',MREC
+      tmplen = len_trim(msg)
+      write(msg1,'(a,i3)') 'Max Neighbours:', NBTOT
+      tmplen1 = len_trim(msg1)
+      write(msg2,'(a,i5)') 'Max Boundaries:', MAXNNB
+      tmplen2 = len_trim(msg2)
+      msg2 = msg2(:tmplen2)//char(0)
+
+      tmplen = messageboxqq(msg(:tmplen)//char(13)//msg1(:tmplen1)//char(13)//msg2,'Limits'C,MB$OK)
+
+      return
+      end
+!*--------------------------------------------------------------------------*
+
+      SUBROUTINE GridGenHelp
+
+!  Purpose : The purpose of this routine is to display a help file
+!            in a child window
+!  Given   : None.
+!  Returns : None.
+!  Effect  : A help file is opened and the data read and displayed
+
+      USE DFLIB
+
+      integer*2 result
+
+!----------BEGIN--------------
+
+      result = RUNQQ( 'winhlp32','C:\TQGG\doc\gridgen.hlp' )
+
+      END
+!-----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*

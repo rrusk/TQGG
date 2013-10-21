@@ -251,7 +251,7 @@
         call MNU_GridMenuDisable
         call MNU_PolyMenuDisable
 
-        call About('$Revision: 12.11 $')
+        call About('$Revision: 13.10 $')
 
         itot = 0
         totcoords = 0

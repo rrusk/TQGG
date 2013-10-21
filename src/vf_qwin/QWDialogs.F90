@@ -262,15 +262,16 @@ SUBROUTINE UpdateNodeInfo(dlg,id, callbacktype)
       read(CString,*) index   
 
       if(index.ne.index0) then
+ 
+        call GetNodeInfo( index,xc,yc,zc,ec,numngh,nv )
+
+        if(ec.ne.-999) call PutMarker( xc, yc, 4, yellow)        
         index0 = index
         
         write(CString,'(I8)') index   
         ilen = len_trim(CString)
         retlog = DlgSet( dlg, IDC_EDIT_NINDEX, CString(1:ilen) )
-
-        call GetNodeInfo( index,xc,yc,zc,ec,numngh,nv )
-	    call PutMarker( xc, yc, 4, yellow)
-        
+          
         write(CString,'(F8.2)') xc   
         ilen = len_trim(CString)
         retlog = DlgSet( dlg, IDC_EDIT_NX, CString(1:ilen) )
@@ -349,7 +350,7 @@ SUBROUTINE UpdateElementInfo(dlg,id, callbacktype)
         retlog = DlgSet( dlg, IDC_EDIT_EINDEX, CString(1:ilen) )
 
         call GetElementInfo( index,xc,yc,zc,ec,nv )
-	    call PutMarker( xc, yc, 4, yellow)
+	    if(ec.ne.-999) call PutMarker( xc, yc, 4, yellow)
         
         write(CString,'(F8.2)') xc   
         ilen = len_trim(CString)

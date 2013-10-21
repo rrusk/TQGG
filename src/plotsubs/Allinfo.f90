@@ -154,7 +154,7 @@
 
 
 ! - LOCAL VARIABLES
-      integer i,numcn,ierr
+      integer i,numcn
 
 !---------BEGIN------------------
 
@@ -177,10 +177,14 @@
         do i = 1,4
           nv(i) = ListTr(i,index)
         end do
-        ierr = 0
+
       else
-        call PigMessageOK('Invalid element index','ElementInfo')
-        ierr = 1
+        call PigMessageOK('Invalid element index','GetElementInfo')
+        ec = -999      
+        xc = 0.
+        yc = 0.
+        zc = 0.
+        nv = 0
       endif
 
       END
@@ -199,16 +203,13 @@
 
 ! - PASSED VARIABLES
       integer, intent(in) :: index,ec
-      integer :: ierr
 
 !---------BEGIN------------------
 
       if(index.gt.0.and.index.le.TotTr) then
         TCode(index) = ec
-        ierr = 0
       else
-        call PigMessageOK('Invalid element index','ElementInfo')
-        ierr = 1
+        call PigMessageOK('Invalid element index','SetElementInfo')
       endif
 
       END
@@ -233,7 +234,7 @@
 
 
 ! - LOCAL VARIABLES
-      integer i,ierr
+      integer i
 
 !---------BEGIN------------------
 
@@ -242,14 +243,24 @@
         yc = dyray(index)
         zc = depth(index)
         ec = Code(index)
-        numngh = nbtotr
-        do i = 1,numngh
-          nv(i) = NL(i,index)
+        numngh = 0
+        nv = 0
+        do i = 1,nbtotr
+          if(NL(i,index).gt.0) then
+            if(code(NL(i,index)).ne.-9) then
+              numngh = numngh + 1
+              nv(numngh) = NL(i,index)
+            endif
+          endif
         end do
-        ierr = 0
       else
-        call PigMessageOK('Invalid node index','NodeInfo')
-        ierr = 1
+        call PigMessageOK('Invalid node index','GetNodeInfo')
+        xc = 0.
+        yc = 0.
+        zc = 0.
+        ec = -999
+        numngh = 0
+        nv = 0
       endif
 
       END
@@ -269,17 +280,14 @@
 ! - PASSED VARIABLES
       integer, intent(in) :: index,ec
       real, intent(in) :: zc
-      integer :: ierr
 
 !---------BEGIN------------------
 
       if(index.gt.0.and.index.le.itot) then
         depth(index) = zc
         Code(index) = ec
-        ierr = 0
       else
-        call PigMessageOK('Invalid node index','NodeInfo')
-        ierr = 1
+        call PigMessageOK('Invalid node index','SetNodeInfo')
       endif
 
       END

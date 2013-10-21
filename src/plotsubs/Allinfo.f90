@@ -30,47 +30,8 @@
 !     for triangle codes, aka material types.                               *
 !---------------------------------------------------------------------------*
 !---------------------------------------------------------------------------*
-      
-      SUBROUTINE InfoTriangle(CHANGE)
 
-! Purpose: display triangle info
-! Givens : CHANGE
-! Returns: CW setup
-! Effects: Updates triangle list if CHANGE=TRUE
-
-      use MainArrays
-
-      logical CHANGE
-
-! Update triangle list beforehand.
-
-      if(change) then
-          call RemoveNotExist(itot,code,nbtot,nl)
-          call Element_Lister(CHANGE, .FALSE. ,&
-     &          itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode,&
-     &          x0off,y0off,scaleX,scaleY,igridtype)
-        change = .false.
-      endif
-
-      call INIT_TriInfo
-
-      END
-
-!---------------------------------------------------------------------------*
-      
-      SUBROUTINE Init_TriInfo
-
-! Purpose : To initialize the element INFO screen.
-! Returns : None.
-
-!--------BEGIN--------------
-!       - initialize as needed
-      return
-      END
-
-!---------------------------------------------------------------------------*
-
-      SUBROUTINE GetTVal_MW_Ehandler(Xinp, Yinp, Index)
+      SUBROUTINE LocateElement(Xinp, Yinp, Index, ierr)
 
 ! Purpose : To get all the information for a triangle in the grid
 ! Given   : Xinp = x position to locate node
@@ -82,8 +43,8 @@
       implicit none
 
 ! - PASSED VARIABLES
-      real xinp, yinp
-      integer index
+      real, intent(in) :: xinp, yinp
+      integer, intent(out) :: index, ierr
 
 ! *** LOCAL VARIABLES ***
       integer j
@@ -91,8 +52,9 @@
       real x0, x1, x2, x3, y0, y1, y2, y3
       real delta, da1, da2, da3, da4
 
-!     - get the point
+!     - get the element
 
+        ierr = 1
         do j=1,TotTr
 
           xm0 = min(dxray(ListTr(1,j)),dxray(ListTr(2,j)))
@@ -130,8 +92,9 @@
               IF (DELTA.EQ.0..OR.(DELTA.NE.0..AND.DELTA.LE.DA4*1.E-6)) THEN
 !               INSIDE=.TRUE.
                 index = j
-                call PutTriMarker(index)
-                call WPigElementInfo(index)
+!                call PutTriMarker(index)
+!                call WPigElementInfo(index)
+                ierr = 0
                 go to 999
               endif
             endif
@@ -148,7 +111,7 @@
       
       implicit none
 
-      integer index
+      integer, intent(in) :: index
 
       INCLUDE '../includes/graf.def'
 
@@ -195,25 +158,34 @@
 
 !---------BEGIN------------------
 
-      ec = TCode(index)
-      
-      xc = 0.
-      yc = 0.
-      zc = 0.
-      if(ListTr(4,index).gt.0) then
-        numcn = 4
-      else
-        numcn = 3
-      endif
-      do i=1,numcn
-        xc = xc + dxray(ListTr(i,index))/float(numcn)
-        yc = yc + dyray(ListTr(i,index))/float(numcn)
-        zc = zc + depth(ListTr(i,index))/float(numcn)
-      enddo
+      if(index.gt.0.and.index.le.TotTr) then
+        ec = TCode(index)      
+        xc = 0.
+        yc = 0.
+        zc = 0.
+        if(ListTr(4,index).gt.0) then
+          numcn = 4
+        else
+          numcn = 3
+        endif
+        do i=1,numcn
+          xc = xc + dxray(ListTr(i,index))/float(numcn)
+          yc = yc + dyray(ListTr(i,index))/float(numcn)
+          zc = zc + depth(ListTr(i,index))/float(numcn)
+        enddo
 
-      do i = 1,4
-        nv(i) = ListTr(i,index)
-      end do
+        do i = 1,4
+          nv(i) = ListTr(i,index)
+        end do
+
+      else
+        call PigMessageOK('Invalid element index','GetElementInfo')
+        ec = -999      
+        xc = 0.
+        yc = 0.
+        zc = 0.
+        nv = 0
+      endif
 
       END
 
@@ -234,61 +206,17 @@
 
 !---------BEGIN------------------
 
-      TCode(index) = ec
-
-      END
-
-!---------------------------------------------------------------------------*
-!---------------------------------------------------------------------------*
-      
-      SUBROUTINE Init_Info( )
-
-! Purpose : To initialize the node INFO dialog.
-! Given   : none 
-! Returns : None.
-
-!--------BEGIN--------------
-!       - initialize if needed
-      
-      return
-      END
-
-!--------------------------------------------------------------------------*
-
-      SUBROUTINE GetVal_MW_Ehandler( Xinp, Yinp, Index)
-
-! Purpose : To get all the information for a point on the grid
-! Given   : nrec = the number of points read in from the data file
-!           Xinp = x position to locate node
-!           Yinp = y position to locate node
-! Returns : index = index of the point we will be examining,
-
-      use MainArrays
-      
-      implicit none
-
-      INCLUDE '../includes/defaults.inc'
-
-! - PASSED VARIABLES
-      real xinp, yinp
-      integer index
-
-! *** LOCAL VARIABLES ***
-      integer ierr
-
-!     - see if the point exists
-      call CHKPT( xinp, yinp, INDEX, ierr )
-      if ( ierr .eq. 1 ) then
-        call PigPutMessage('ERROR - Invalid point..')
+      if(index.gt.0.and.index.le.TotTr) then
+        TCode(index) = ec
       else
-        call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
-        call WPigNodeInfo(index)  !hook for dialog
+        call PigMessageOK('Invalid element index','SetElementInfo')
       endif
-      
+
       END
 
 !---------------------------------------------------------------------------*
-
+!---------------------------------------------------------------------------*
+      
       SUBROUTINE GetNodeInfo( index,xc,yc,zc,ec,numngh,nv )
 !
 ! Purpose : To get the values for the info dialog for a
@@ -310,14 +238,30 @@
 
 !---------BEGIN------------------
 
-      xc = dxray(index)
-      yc = dyray(index)
-      zc = depth(index)
-      ec = Code(index)
-      numngh = nbtotr
-      do i = 1,numngh
-        nv(i) = NL(i,index)
-      end do
+      if(index.gt.0.and.index.le.itot) then
+        xc = dxray(index)
+        yc = dyray(index)
+        zc = depth(index)
+        ec = Code(index)
+        numngh = 0
+        nv = 0
+        do i = 1,nbtotr
+          if(NL(i,index).gt.0) then
+            if(code(NL(i,index)).ne.-9) then
+              numngh = numngh + 1
+              nv(numngh) = NL(i,index)
+            endif
+          endif
+        end do
+      else
+        call PigMessageOK('Invalid node index','GetNodeInfo')
+        xc = 0.
+        yc = 0.
+        zc = 0.
+        ec = -999
+        numngh = 0
+        nv = 0
+      endif
 
       END
 
@@ -339,8 +283,12 @@
 
 !---------BEGIN------------------
 
-      depth(index) = zc
-      Code(index) = ec
+      if(index.gt.0.and.index.le.itot) then
+        depth(index) = zc
+        Code(index) = ec
+      else
+        call PigMessageOK('Invalid node index','SetNodeInfo')
+      endif
 
       END
 

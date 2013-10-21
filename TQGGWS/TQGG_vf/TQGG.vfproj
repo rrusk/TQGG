@@ -47,7 +47,6 @@
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		<File RelativePath="..\..\src\vf_qwin\TQGGvf.RC"/></Filter>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath="..\..\src\vf_qwin\AboutLimitsgr.f90"/>
 		<File RelativePath="..\..\src\plotsubs\AllChecks.f90"/>
 		<File RelativePath="..\..\src\plotsubs\Allinfo.f90"/>
 		<File RelativePath="..\..\src\vf_dialogs\configurecontours.f"/>
@@ -92,7 +91,6 @@
 		<File RelativePath="..\..\src\gridedit\StraightLine.f"/>
 		<File RelativePath="..\..\src\dataio\Stspl.f"/>
 		<File RelativePath="..\..\src\dataio\stspldf.f"/>
-		<File RelativePath="..\..\src\vf_dialogs\vf_allinfo.f90"/>
 		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
 		<File RelativePath="..\..\src\dataio\Xsection.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

@@ -362,6 +362,8 @@
     call WPigMessageOK ('See doc directory'//char(0),'help'//char(0)) 
     end
 
+!**********************************************************************
+
     Subroutine limits ( np,npmax,nbmax,bndmax )
     implicit none
 
@@ -384,13 +386,95 @@
 
     end
 
+!**********************************************************************
+
     Subroutine about (pname, version)
     implicit none    
     character(*) pname, version
     write(*,*) 'Program ',pname,' ',version
     end
 
+!**********************************************************************
+
     Subroutine resetmouseoption ()
     end
 
-!**********************************************************************
+!---------------------------------------------------------------------------*
+
+      FUNCTION length ( s )
+
+! Purpose : Determines the length of the string up to but not including the
+! first null character; for working with strings passed to C routines, gives
+! same result as strlen on null-terminated strings.
+! Givens  : string s
+! Returns : number of characters in s before null character
+! Effects : None
+
+        implicit none
+        character(len=*) :: s
+        integer length
+
+        do length = 0, len(s)-1, 1
+            if (s(length+1:length+1) .eq. char(0)) return
+        end do
+      end function length
+
+!--------------------------------------------------------------------------*
+
+      SUBROUTINE InfoFiles
+
+! Purpose : Displays the default filenames currently in use during the
+!           current interactive session.
+! Givens  : None
+! Returns : None
+! Effects : None
+
+      INCLUDE '../includes/defaults.inc'
+
+      character*2048 cstr ! must be large enough for concatenation of all output
+      integer len1, len2, len3, len4, lenx
+!-----------BEGIN------------------
+
+      if(DispNodes) then
+        len1 = len_trim(NodeRName)
+        lenx = length (NodeRName)
+      else
+        len1 = len_trim(GridRName)
+        lenx = length(GridRName)
+      endif
+      ! if string is null-terminated, only include characters up to
+      ! the null-termination
+      len1 = min(len1, lenx)
+
+      len2 = len_trim(LastInterim)
+      lenx = length(LastInterim)
+      len2 = min(len2, lenx)
+
+      len3 = len_trim(ContFName)
+      lenx = length(ContFName)
+      len3 = min(len3, lenx)
+
+      len4 = len_trim(BoundFName)
+      lenx = length(BoundFName)
+      len4 = min(len4, lenx)
+
+      if(DispNodes) then
+        cstr = &
+       'Node File: '// NodeRName(:len1)//char(10)//&
+       'Last Interim Node File: '// LastInterim(:len2)//char(10)//&
+       'Contours File: '// ContFName(:len3)//char(10)//&
+       'Boundary File: '// BoundFName(:len4)//char(0)
+      else
+        cstr = &
+       'Grid File: '// GridRName(:len1)//char(10)//&
+       'Last Interim Grid File: '// LastInterim(:len2)//char(10)//&
+       'Contours File: '// ContFName(:len3)//char(10)//&
+       'Boundary File: '// BoundFName(:len4)//char(0)
+      endif
+
+      call PigMessageOK(cstr, 'FILES')
+
+      END
+
+!-----------------------------------------------------------------------*
+

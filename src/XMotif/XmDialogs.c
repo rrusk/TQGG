@@ -26,9 +26,278 @@
   !***********************************************************************
 */
 
+#include "math.h"
+
 #include "XmMain.h"
 
 // nodeinfo, element info, node check, element check dialog
+
+/*----------------------------------------------------------------------------*/
+
+// Implements the Info/NodeInfo menu item
+
+typedef struct {
+	Widget index_widget;
+	Widget x_widget;
+	Widget y_widget;
+	Widget z_widget;
+	Widget code_widget;
+} NodeInfoWidget;
+
+char *int_to_str(int integer, int max_chars) {
+	/* Modified from
+	 * http://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c
+	 * to accomodate the value 0.  Does not handle negatives. */
+
+//	int num_chars = 0;
+//
+//	int order = integer > 0 ? (int)(ceil(log10(integer))) : 1;
+//	int num_chars = order + 1
+//	printf("%f\n", log10(integer));
+//	printf("%f\n", ceil(log10(integer)));
+//	int num_chars = (int)((ceil(log10(integer)) + 1));
+
+//	printf("Calculated number of characters: %d\n", num_chars);
+	char *str = (char *)malloc(max_chars * sizeof(char));
+//	puts("Allocated string");
+	sprintf(str, "%d", integer);
+//	puts("Did sprintf");
+
+	return str;
+}
+
+Widget create_labeled_textfield(Widget *parent, char *label_string) {
+	Widget form_widget;
+	Widget label_widget;
+	Widget text_widget;
+	Arg args[8];
+	int n = 0;
+
+	XtSetArg(args[n], XmNfractionBase, 10); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	form_widget = XmCreateForm(*parent, "form", args, n);
+
+	n = 0;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
+	XtSetArg(args[n], XmNrightPosition, 3); n++;
+	XtSetArg(args[n], XmNalignment, XmALIGNMENT_END); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	label_widget = XmCreateLabelGadget(form_widget, label_string, args, n);
+	XtManageChild(label_widget);
+
+	n = 0;
+	XtSetArg(args[n], XmNtraversalOn, True); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_POSITION); n++;
+	XtSetArg(args[n], XmNleftPosition, 4); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNnavigationType, XmTAB_GROUP); n++;
+	text_widget = XmCreateTextField(form_widget, "text", args, n);
+	XtManageChild(text_widget);
+
+	XtManageChild(form_widget);
+
+	return text_widget;
+}
+
+NodeInfoWidget *create_node_info_widget(Widget *parent, int index, float x,
+		float y, float z, int code) {
+
+	NodeInfoWidget *node_info_widget;
+	char *index_str;
+	char *x_str;
+	char *y_str;
+	char *z_str;
+	char *code_str;
+	int max_chars;
+
+	node_info_widget = (NodeInfoWidget *)malloc(sizeof(NodeInfoWidget));
+	node_info_widget->index_widget = create_labeled_textfield(parent, "Index:");
+	node_info_widget->x_widget = create_labeled_textfield(parent, "X:");
+	node_info_widget->y_widget = create_labeled_textfield(parent, "Y:");
+	node_info_widget->z_widget = create_labeled_textfield(parent, "Z:");
+	node_info_widget->code_widget = create_labeled_textfield(parent, "Code:");
+
+	max_chars = 10;
+
+	index_str = int_to_str(index, max_chars);
+	puts("Created index string");
+	XmTextFieldSetString(node_info_widget->index_widget, index_str);
+	puts("Set index string in GUI");
+	free(index_str);
+	puts("Freed index string");
+
+//	XmTextFieldSetString(node_info_widget->x_widget, x);
+//	XmTextFieldSetString(node_info_widget->y_widget, y);
+//	XmTextFieldSetString(node_info_widget->z_widget, z);
+
+	code_str = int_to_str(code, max_chars);
+	XmTextFieldSetString(node_info_widget->code_widget, code_str);
+	free(code_str);
+
+	return node_info_widget;
+}
+
+void update_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
+	puts("Update was pressed.");
+	NodeInfoWidget *node_info_widget = (NodeInfoWidget *)client_data;
+
+	// TODO: perform actual update with the current values
+
+//	puts(XmTextFieldGetString(node_info_widget->index_widget));
+//	puts(XmTextFieldGetString(node_info_widget->x_widget));
+//	puts(XmTextFieldGetString(node_info_widget->y_widget));
+//	puts(XmTextFieldGetString(node_info_widget->z_widget));
+//	puts(XmTextFieldGetString(node_info_widget->code_widget));
+}
+
+void close_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
+	XtDestroyWidget(XtParent(widget));
+}
+  
+void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code) {
+	// TODO: Accept parameters for index, x, y, z, etc. and display them
+
+	printf("C code received:");
+	printf("index: %d\n", *index);
+	printf("x: %f\n", *x);
+	printf("y: %f\n", *y);
+	printf("z: %f\n", *z);
+	printf("code: %d\n", *code);
+
+	Widget dialog;
+	Widget row_column;
+	NodeInfoWidget* node_info_widget;
+
+	XmString title;
+	XmString update_label;
+	XmString close_label;
+
+	Arg args[6];
+
+	int n = 0;
+
+	title = XmStringCreateLocalized("the title");
+	update_label = XmStringCreateLocalized("Update");
+	close_label = XmStringCreateLocalized("Close");
+	XtSetArg (args[n], XmNselectionLabelString, title); n++;
+	XtSetArg (args[n], XmNautoUnmanage, False); n++;
+	XtSetArg (args[n], XmNuserData, 0); n++;
+	XtSetArg (args[n], XmNcancelLabelString, close_label); n++;
+	XtSetArg (args[n], XmNokLabelString, update_label); n++;
+
+	// TODO: more appropriate dialog (without these unneeded extra pieces)?
+	dialog = XmCreatePromptDialog (toplevel, "NodeInfo", args, n);
+	XtAddCallback(dialog, XmNokCallback, update_callback, NULL);
+	XtAddCallback(dialog, XmNcancelCallback, close_callback, NULL);
+
+	// Hide unwanted buttons
+	XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
+	XtUnmanageChild(XtNameToWidget(dialog, "Text"));
+	XtUnmanageChild(XtNameToWidget(dialog, "Help"));
+
+	XmStringFree(title);
+	XmStringFree(update_label);
+	XmStringFree(close_label);
+
+	row_column = XmCreateRowColumn(dialog, "MainRowCol", NULL, 0);
+
+	node_info_widget = create_node_info_widget(&row_column,
+			*index, *x, *y, *z, *code);
+
+	XtManageChild(row_column);
+	XtManageChild(dialog);
+
+	free(node_info_widget);
+}
+
+void WPigNodeInfo(int *index) {
+    
+    int NodeInfoDialogExists;
+    double xn;
+    double yn;
+    double zn;
+    int index2;
+    int ncode;
+    int numngh;
+    int nv[100];
+
+    printf("C code received:");
+    printf("index: %d\n", *index);
+
+    NodeInfoDialogExists=0;
+    // TODO: if dialog doesn't exist, create it. Otherwise skip this.
+    if(NodeInfoDialogExists==0) {
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
+        index2 = *index;
+        GetNodeInfo( &index2,&xn,&yn,&zn,&ncode,&numngh,&nv );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xn: %f\n", xn);
+        printf("yn: %f\n", yn);
+        printf("zn: %f\n", zn);
+        printf("ncode: %d\n", ncode);
+        printf("numngh: %d\n", numngh);
+        CreateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+    }
+    else{
+      if(*index>0){
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and update display
+        index2 = *index;
+        GetNodeInfo( &index2,&xn,&yn,&zn,&ncode,&numngh,&nv );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xn: %f\n", xn);
+        printf("yn: %f\n", yn);
+        printf("zn: %f\n", zn);
+        printf("ncode: %d\n", ncode);
+        printf("ncode: %d\n", numngh);
+        //UpdateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+      }
+    }
+}
+
+void WPigElementInfo(int *index) {
+    
+    int ElementInfoDialogExists;
+    int index2;
+    double xc;
+    double yc;
+    double zc;
+    int ecode;
+    int elist[4];
+  
+    ElementInfoDialogExists=0;
+    // TODO: if dialog doesn't exist, create it. Otherwise skip this.
+    if(ElementInfoDialogExists==0) {
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
+        index2 = *index;
+        GetElementInfo( &index2,&xc,&yc,&zc,&ecode,&elist );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xc: %f\n", xc);
+        printf("yc: %f\n", yc);
+        printf("zc: %f\n", zc);
+        printf("ecode: %d\n", ecode);
+        //CreateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+    }
+    else{
+      if(*index>0){
+    // TODO: if index>0 get parameters for index, x, y, z, etc. and update display
+        index2 = *index;
+        GetElementInfo( &index2,&xc,&yc,&zc,&ecode,&elist );
+        printf("C code received2:");
+        printf("index: %d\n", *index);
+        printf("xc: %f\n", xc);
+        printf("yc: %f\n", yc);
+        printf("zc: %f\n", zc);
+        printf("ecode: %d\n", ecode);
+        //UpdateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+      }
+    }
+}
 
 /*----------------------------------------------------------------------------*/
 

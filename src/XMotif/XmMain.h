@@ -19,9 +19,12 @@
 #include <Xm/DialogS.h>
 #include <Xm/SelectioB.h>
 #include <Xm/FileSB.h>
+#include <Xm/Form.h>
+#include <Xm/TextF.h>
 #include <Xm/ToggleB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/Label.h>       /* Label */
+#include <Xm/LabelG.h>
 #include <stdlib.h>
 
 #include "f90_c.h"			/* binds gfortran subroutines to c */
@@ -192,6 +195,8 @@ void  HelpCB(void);
 //    void  MouseEHandler(int *, int *, float *, float *);
 void  drawing_area_callback(Widget, XtPointer, XtPointer);
 
+extern void getnodeinfo_(int *, double *, double *, double *, int *, int *, int *);
+extern void getelementinfo_(int *, double *, double *, double *, int *, int *);
 extern void elementcheck_(int *num, int *mode);
 extern void redrawonly_(void);
 extern void setuservalue_(int *num, int *mode);

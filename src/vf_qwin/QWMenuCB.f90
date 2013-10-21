@@ -251,7 +251,7 @@
         call MNU_GridMenuDisable
         call MNU_PolyMenuDisable
 
-        call About('$Revision: 12.11 $')
+        call About('$Revision: 13.10 $')
 
         itot = 0
         totcoords = 0
@@ -777,17 +777,25 @@
 
 ! Info menu
         entry NodeInfoCB()
-          call Init_Info()
+!          call Init_Info()  !modal dialog, do not init
           Active_CW = INACTIVE_CW
           Active_MW = NODEINFO_MW
-          closeRHP = .false.
+!          closeRHP = .false.
           call PigStatusMessage('Info ACTIVE: Pick a point')        
           return
         entry EleInfoCB()
           Active_CW = INACTIVE_CW
           Active_MW = TRIINFO_MW
-          call InfoTriangle( change )
-          closeRHP = .false.
+! Update triangle list as needed.
+          if(change) then
+            call RemoveNotExist(itot,code,nbtot,nl)
+            call Element_Lister(CHANGE, .FALSE. ,&
+     &          itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode,&
+     &          x0off,y0off,scaleX,scaleY,igridtype)
+            change = .false.
+          endif
+!          call InfoTriangle( change )
+!          closeRHP = .false.
           call PigStatusMessage('info ACTIVE: Pick an element')        
           return
         entry NodeCheckCB()
@@ -1782,12 +1790,27 @@
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif
         elseif(Active_MW.eq.NODEINFO_MW) then
-          if(closeRHP) call Init_Info()
-          call GetVal_MW_Ehandler (MouseX, MouseY, Index)
+!          if(closeRHP) call Init_Info()
+!          call GetVal_MW_Ehandler (MouseX, MouseY, Index)
+!     - see if the point exists
+          call CHKPT( MouseX, MouseY, INDEX, ierr )
+          if ( ierr .eq. 1 ) then
+            call PigMessageOK('ERROR - Invalid point.','NodeInfo')
+          else
+            call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
+            call WPigNodeInfo(index)  !hook for dialog
+          endif
           call PigStatusMessage('Info ACTIVE: Pick a point')        
         elseif(Active_MW.eq.TRIINFO_MW) then
-          if(closeRHP) call InfoTriangle(change)
-          call GetTVal_MW_Ehandler (MouseX, MouseY, Index)
+          call LocateElement( MouseX, MouseY, INDEX, ierr )
+          if ( ierr .eq. 1 ) then
+            call PigMessageOK('ERROR - Invalid element.','ElementInfo')
+          else
+            call PutTriMarker(index)
+            call WPigElementInfo(index)  !hook for dialog
+          endif
+!          if(closeRHP) call InfoTriangle(change)
+!          call GetTVal_MW_Ehandler (MouseX, MouseY, Index)
           call PigStatusMessage('Info ACTIVE: Pick an element')        
         elseif(Active_MW.eq.Zoomin_MW) then
           call DisplayIn2 (mousex, mousey, Redrw)

@@ -183,6 +183,8 @@
         Active_CW =INACTIVE_CW
         Active_MW =INACTIVE_MW
 
+        newline = char(13)
+        
         AutoGenFlag = 0
         newfile = .false.
 !       - initialize EDPOLYS variables
@@ -259,7 +261,7 @@
         CHANGE  = .TRUE.
         closeRHP = .true.
 
-        call WPigStatusMessage ('Finished initialization'//char(0))
+        call WPigStatusMessage ('Finished initializing'//char(0))
         return
 
 ! Callback routines 
@@ -298,7 +300,11 @@
               outlineonly = .FALSE.
             endif
             call InitVertexMarkers
-            CHANGE  = .TRUE.
+            if(TotTr.eq.0) then
+              CHANGE  = .TRUE.
+            else
+              CHANGE  = .FALSE.
+            endif
             FlagG = .true.
             FlagN = .false.
             FlagLin=.false.
@@ -1786,6 +1792,7 @@
           if(quit) then
             Active_MW = INACTIVE_MW
             call PigStatusMessage('Done')
+            call DrwFig(CHANGE)
           else
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif

@@ -130,6 +130,8 @@
         !Active_CW =INACTIVE_CW
         Active_MW =INACTIVE_MW
 
+        newline = char(10)
+        
         AutoGenFlag = 0
         newfile = .false.
 !       - initialize EDPOLYS variables
@@ -192,8 +194,8 @@
         FlagG=.false.
         FlagD=.false.
         FlagC=.false.
-        call MNU_NodeMenuDisable
-        call MNU_GridMenuDisable
+!        call MNU_NodeMenuDisable
+        call MNU_GridAndNodeMenuDisable
         call MNU_PolyMenuDisable
 
         Program_Name = 'TQGridGen'
@@ -507,12 +509,12 @@
           call Sample( quit )
 !            IF (itot.gt.1000) outlineonly = .TRUE.
           if(.not.quit) then
-            !Active_CW = INACTIVE_CW
             Active_MW = Sample_MW
+            call MNU_GridAndNodeMenuDisable
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           else
-            !Active_CW = INACTIVE_CW
             Active_MW = INACTIVE_MW
+            call MNU_NodeMenuEnable
           endif
           call MNU_MainMenuEnable
           return
@@ -1705,7 +1707,9 @@
           call Set_Resolution (MouseX, MouseY, quit) 
           if(quit) then
             Active_MW = INACTIVE_MW
+            call MNU_NodeMenuEnable
             call PigStatusMessage('Done')
+            call DrwFig(CHANGE)
           else
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           endif

@@ -745,6 +745,14 @@ void MNU_MainMenuEnable ()
     XtSetSensitive(TopMenuW, True);
 }
 
+void MNU_GridAndNodeMenuDisable ()
+{
+    XtSetSensitive(GridEditW, False);
+    XtSetSensitive(GroupEditW, False);
+    XtSetSensitive(GridGenW, False);
+    XtSetSensitive(NodeEditW, False);
+}
+
 
 void MNU_GridMenuDisable ()
 {
@@ -756,7 +764,7 @@ void MNU_GridMenuDisable ()
 void MNU_GridMenuEnable ()
 {
     XtSetSensitive(GridEditW, True);
-    /*XtSetSensitive(XtNameToWidget(GridGenW,"OverlayHex" ), True);*/
+    XtSetSensitive(GridGenW, True);
 }
 
 
@@ -768,17 +776,16 @@ void MNU_NodeMenuDisable ()
 void MNU_NodeMenuEnable ()
 {
     XtSetSensitive(NodeEditW, True);
+    XtSetSensitive(GridGenW, True);
 }
 
 void MNU_PolyMenuDisable ()
 {
     XtSetSensitive(GroupEditW, False);
-    /*XtSetSensitive(XtNameToWidget(GridGenW,"OverlayHex" ), False);*/
 }
 
 void MNU_PolyMenuEnable ()
 {
     XtSetSensitive(GroupEditW, True);
-    /*XtSetSensitive(XtNameToWidget(GridGenW,"OverlayHex" ), True);*/
 }
 

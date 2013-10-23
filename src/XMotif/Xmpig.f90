@@ -466,7 +466,7 @@
        'Boundary File: '// BoundFName(:len4)//char(0)
       else
         cstr = &
-       'Grid File: '// GridRName(:len1)//char(10)//&
+       'Grid File: '// GridRName(:len1)//newline//&
        'Last Interim Grid File: '// LastInterim(:len2)//char(10)//&
        'Contours File: '// ContFName(:len3)//char(10)//&
        'Boundary File: '// BoundFName(:len4)//char(0)

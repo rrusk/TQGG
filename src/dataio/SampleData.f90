@@ -69,25 +69,34 @@
 
 ! *** start
 
+! *** read new file?
+      cstr= 'Read new file?:'
+      ans = PigCursYesNo (cstr)
+      if (ANS(1:1) .eq. 'Y') then
+
 ! *** open, parse, and read data file
-      call Sample_Input (gridcode,quit)
-      if(quit) return
+        call Sample_Input (gridcode,quit)
+        if(quit) return
 
 ! *** join segments
-      if(gridcode.eq.1) call Join_Segments ()
+        if(gridcode.eq.1) call Join_Segments ()
 
-      If(TotCoords.gt.0) then
-        dispnodes = .true.
-        change = .false.
-        call DrwFig(change)
-      else
-        return
+        If(TotCoords.gt.0) then
+          dispnodes = .true.
+          change = .false.
+          call DrwFig(change)
+        else
+          return
+        endif
+      
       endif
 
 ! *** define resolution
       cstr= 'Add points to set spacing ?:'
       ans = PigCursYesNo (cstr)
-      if (ANS(1:1) .ne. 'Y') then
+      if (ANS(1:1) .eq. 'Y') then
+        quit = .false.
+      else
         quit = .true.
       endif
 !      call Set_Resolution ()
@@ -108,12 +117,14 @@
       INCLUDE '../includes/defaults.inc'
 
 !     - local variables
-      integer j,Fnlen,nunit,stat,segcode,gridcode
+      integer j,Fnlen,nunit,stat,segcode,gridcode,isave
       logical PigOpenFileCD
-      real xtest,ytest,ztest,xmin,xmax,ymin,ymax
+      real xtest,ytest,ztest,xmin,xmax,ymin,ymax,dsmin
+      real xlast,ylast,dx,dy,ds2,dl2
       CHARACTER*256 fle
       character(80) Firstline
       logical Quit
+      CHARACTER*80 cstr, retstring
 
 ! *** start
       nunit = 3
@@ -143,6 +154,7 @@
         quit = .true.
       elseif(firstline(1:4).eq."#NOD") then  !nod point file
         rewind nunit
+        Quit = .true.
         call ReadNodeFile ( Quit )
       elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
         call PigMessageOK('Cannot sample from xye file ','Sample')
@@ -150,17 +162,22 @@
       elseif(firstline(1:4).eq."#XYZ") then  !xyz  file, new format
         call ReadXYZData (Quit)
       else  !then just parse the file for coordinates
-        read(firstline,*,iostat=stat) xtest,ytest,ztest,segcode  !xyc file
+        read(firstline,*,iostat=stat) xlast,ylast,ztest,segcode  !xyc file
         if(stat.eq.0) then
           gridcode = 1
-          dxray(1) = xtest
-          dyray(1) = ytest
+          dxray(1) = xlast
+          dyray(1) = ylast
           depth(1) = ztest
           code(1) = segcode
           j=1
           do
             j = j+1
-            read(nunit,*,iostat=stat) dxray(j),dyray(j),depth(j),code(j)
+            read(nunit,*,iostat=stat) xtest,ytest,ztest,segcode
+            ! test for closeness here
+            dxray(j) = xtest
+            dyray(j) = ytest
+            depth(j) = ztest
+            code(j) = segcode
             if(stat.ne.0) then
               TotCoords = j-1
               TotBndys = 1
@@ -178,17 +195,28 @@
             !exist(j) = .true.
           enddo
         else
-          read(firstline,*,iostat=stat) xtest,ytest,ztest  !xyz file, node pairs
+          read(firstline,*,iostat=stat) xlast,ylast,ztest  !xyz file, node pairs
           if(stat.eq.0) then
-            dxray(1) = xtest
-            dyray(1) = ytest
+
+10          cstr= 'Enter minimum subsample spacing (0 = all data):'
+            call PigPrompt( cstr, RetString )
+            read(RetString,*,iostat=stat) dsmin
+            if(stat.ne.0) then
+              call PigMessageOK('Error reading real number:','Sample')
+              go to 10
+            endif
+            
+            ds2 = dsmin*dsmin
+            dxray(1) = xlast
+            dyray(1) = ylast
             depth(1) = ztest
+            isave = 1
             j=1
             do
               j = j+1
-              read(nunit,*,iostat=stat) dxray(j),dyray(j),depth(j)
+              read(nunit,*,iostat=stat) xtest,ytest,ztest 
               if(stat.ne.0) then
-                TotCoords = j-1
+                TotCoords = isave !j-1
                 TotBndys = 1
                 PtsThisBnd(1) = TotCoords
                 TotIntBndys = 0
@@ -201,8 +229,19 @@
                 call fullsize(xmin,ymin,xmax,ymax)
                 exit
               endif
-              !exist(j) = .true.
-              code(j) = 1    
+            ! test for closeness here
+              dx = xtest - xlast
+              dy = ytest - ylast
+              dl2 = dx*dx + dy*dy
+              if(dl2.ge.ds2) then !save it
+                isave = isave + 1
+                dxray(isave) = xtest
+                dyray(isave) = ytest
+                depth(isave) = ztest
+                code(isave) = 1
+                xlast = xtest
+                ylast = ytest
+              endif
             enddo
           else
             call PigMessageOK('Unsupported file format ','Sample')

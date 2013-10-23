@@ -125,6 +125,7 @@
 #define  WPigExit  wpigexit_
 #define  MNU_MainMenuEnable mnu_mainmenuenable_
 #define  MNU_MainMenuDisable mnu_mainmenudisable_
+#define  MNU_GridAndNodeMenuDisable mnu_gridandnodemenudisable_
 #define  MNU_GridMenuEnable mnu_gridmenuenable_
 #define  MNU_GridMenuDisable mnu_gridmenudisable_
 #define  MNU_NodeMenuEnable mnu_nodemenuenable_

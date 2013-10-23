@@ -28,8 +28,9 @@
       INTEGER TitleColour
       PARAMETER( TitleColour = 3 )
 
+      character*1 :: newline
       INTEGER MarkType1
-      COMMON /MoreDefaults/ MarkType1
+      COMMON /MoreDefaults/ MarkType1,newline
 
 !*----------------------------------------------------------------------*
 !                       NODEDEF.INC                                     *
@@ -60,6 +61,7 @@
       PARAMETER( MinMarkType = -1 )
 
 !*------------------------ END NODEDEF.INC ------------------------------*
+
 
 !--------------------- END DEFAULTS.INC --------------------------------*
 

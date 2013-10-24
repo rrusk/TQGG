@@ -566,12 +566,16 @@
           if(.not.quit) then
             Active_CW = INACTIVE_CW
             Active_MW = Sample_MW
+            call MNU_MainMenuEnable
+            call MNU_GridAndNodeMenuDisable
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           else
             Active_CW = INACTIVE_CW
             Active_MW = INACTIVE_MW
+            call MNU_MainMenuEnable
+            call MNU_GridMenuDisable
+            call MNU_NodeMenuEnable
           endif
-          call MNU_MainMenuEnable
           return
         entry SaveInterimCB()
           if(itot.gt.0) then
@@ -1791,6 +1795,9 @@
           call Set_Resolution (MouseX, MouseY, quit) 
           if(quit) then
             Active_MW = INACTIVE_MW
+            call MNU_MainMenuEnable
+            call MNU_GridMenuDisable
+            call MNU_NodeMenuEnable
             call PigStatusMessage('Done')
             call DrwFig(CHANGE)
           else

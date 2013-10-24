@@ -323,6 +323,23 @@
 
 !**********************************************************************
 
+      Subroutine MNU_GridAndNodeMenuDisable
+
+    USE DFLIB
+
+    logical result
+
+    result = modifymenuflagsqq(4,0,$MENUGRAYED)
+    result = modifymenuflagsqq(5,0,$MENUGRAYED)
+    result = modifymenuflagsqq(6,0,$MENUGRAYED)
+    result = modifymenuflagsqq(8,0,$MENUGRAYED)
+    result = modifymenuflagsqq(9,0,$MENUGRAYED)
+
+    return
+    end
+
+!**********************************************************************
+
       Subroutine MNU_PolyMenuEnable
 
 	USE DFLIB

@@ -102,12 +102,12 @@
 
 !       Local variables
 
-      integer,save :: nrec,AutoGenFlag
+      integer,save :: nrec,AutoGenFlag=0
       integer i,ierr
       integer ncode1,ncode2,iecode1,iecode2,ncn
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
-      logical, save ::  newfile
+      logical, save ::  newfile=.false., sample_point=.false.
       logical IN_BOX
       character cstr*80, ans*10, PigCursYesNo*1, deltype*1
       INTEGER PolyId, numvert
@@ -132,8 +132,8 @@
 
         newline = char(10)
         
-        AutoGenFlag = 0
-        newfile = .false.
+!        AutoGenFlag = 0
+!        newfile = .false.
 !       - initialize EDPOLYS variables
         actvpoly = 0
         curpoly = 1
@@ -217,6 +217,7 @@
 !  File menu
         entry OpenGridFileCB() !open grid
           call MNU_MainMenuDisable
+          sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
@@ -278,6 +279,7 @@
           return
         entry AddGridFileCB() !add grid
           call MNU_MainMenuDisable
+          sample_point=.false.
           IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
             IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
               Quit = .false.
@@ -325,6 +327,7 @@
           return
         entry OpenNodeFileCB()
           call MNU_MainMenuDisable
+          sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
@@ -378,6 +381,7 @@
             return
           endif
           call MNU_MainMenuDisable
+          sample_point=.false.
           IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
             IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
               FlagN = .true.
@@ -423,6 +427,7 @@
         entry XSectionCB()
           call MNU_MainMenuDisable
           if(itot.gt.0) then
+          sample_point=.false.
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
                 IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
@@ -481,39 +486,45 @@
           call MNU_MainMenuEnable
           return
         entry SampleCB()
-          call MNU_MainMenuDisable
-          if(itot.gt.0) then
-            IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
-              IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
+          if(sample_point) then
+            quit = .false.
+          else
+            call MNU_MainMenuDisable
+            if(itot.gt.0) then
+              IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
+                IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
+                  IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
+                    if(DispNodes) then
+                      call SaveNFinal(Quit)
+                    else
+                      call SaveFinal( change,Quit)
+                    endif
+                  endif
+                else 
                   if(DispNodes) then
                     call SaveNFinal(Quit)
                   else
                     call SaveFinal( change,Quit)
                   endif
                 endif
-              else 
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
               endif
             endif
+            FlagLin=.false.
+            FlagPolar=.false.
+            FlagMerc=.false.
+            FlagUTM=.false.
+!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
+            call Sample( quit )
+!              IF (itot.gt.1000) outlineonly = .TRUE.
           endif
-          FlagLin=.false.
-          FlagPolar=.false.
-          FlagMerc=.false.
-          FlagUTM=.false.
-!          call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
-          call Sample( quit )
-!            IF (itot.gt.1000) outlineonly = .TRUE.
           if(.not.quit) then
             Active_MW = Sample_MW
+            sample_point=.true.
             call MNU_GridAndNodeMenuDisable
             call PigStatusMessage('Sample ACTIVE: Pick a point')
           else
             Active_MW = INACTIVE_MW
+            sample_point=.false.
             call MNU_NodeMenuEnable
           endif
           call MNU_MainMenuEnable
@@ -1704,14 +1715,22 @@
       nrec = itot + 1
       if( (MouseButton.eq.BDOWN).and.(Active_MW.ne.INACTIVE_MW)) then
         if(Active_MW.eq.sample_MW) then
-          call Set_Resolution (MouseX, MouseY, quit) 
-          if(quit) then
-            Active_MW = INACTIVE_MW
-            call MNU_NodeMenuEnable
-            call PigStatusMessage('Done')
-            call DrwFig(CHANGE)
+          call CHKPT( MouseX, MouseY, INDEX, ierr )
+          if ( ierr .eq. 1 ) then
+            call PigMessageOK('ERROR - Invalid point.','NodeInfo')
           else
-            call PigStatusMessage('Sample ACTIVE: Pick a point')
+            call PigDrawCoinSymbol(MouseX, MouseY)
+            call Set_Resolution (index, quit) 
+            if(quit) then
+              Active_MW = INACTIVE_MW
+              sample_point=.false.
+              call MNU_NodeMenuEnable
+              call PigStatusMessage('Done')
+              call DrwFig(CHANGE)
+            else
+              sample_point=.true.
+              call PigStatusMessage('Sample ACTIVE: Pick a point')
+            endif
           endif
         elseif(Active_MW.eq.NODEINFO_MW) then
 !     - see if the point exists

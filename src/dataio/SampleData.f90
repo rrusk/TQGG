@@ -63,7 +63,7 @@
       logical quit,change
 
 !     - local variables
-      integer gridcode
+      integer gridcode,index
       character PigCursYesNo*1
       CHARACTER*80 ans, cstr
 
@@ -92,6 +92,8 @@
       endif
 
 ! *** define resolution
+      index = 0
+      call Set_Resolution (index, quit)  !initialize points 
       cstr= 'Add points to set spacing ?:'
       ans = PigCursYesNo (cstr)
       if (ANS(1:1) .eq. 'Y') then
@@ -210,6 +212,7 @@
             dxray(1) = xlast
             dyray(1) = ylast
             depth(1) = ztest
+            code(1) = 1
             isave = 1
             j=1
             do
@@ -267,43 +270,60 @@
 
 ! ********************************************************************
 
-      subroutine Set_Resolution (x,y,quit)
+      subroutine Set_Resolution (index,quit)
 
       implicit none
 
 !     - passed variables
-      real x,y
+      integer :: index
       logical quit
 
 !     - local variables
-      integer stat
-      real ds
+      integer :: nscale = 0
+      integer stat,nscalepoint(100)
+      real ds, dsscale(100)
       character PigCursYesNo*1
       CHARACTER*80 ans, cstr, retstring
 
-! *** start
-
-      call PigDrawCoinSymbol(x, y)
-      cstr= 'Enter spacing at this point:'
-      call PigPrompt( cstr, RetString )
-      read(RetString,*,iostat=stat) ds
-      if(stat.ne.0) then
-        call PigMessageOK('Error reading real number:','Sample')
+! *** initialize
+      if(index.le.0) then
+        nscale = 0
+        nscalepoint = 0
+        dsscale = 0.
       else
+! *** add points
+        ans = 'N'
+        cstr= 'Enter spacing at this point:'
+        call PigPrompt( cstr, RetString )
+        read(RetString,*,iostat=stat) ds
+        if(stat.ne.0) then
+          call PigMessageOK('Error reading real number:','Sample')
+        else
 ! *** store data point and spacing
-      endif
+          if(nscale+1.gt.100) then
+            cstr= 'Maximum exceeded - too many points. Finish?:'
+            ans = PigCursYesNo (cstr)
+          else
+            nscale = nscale + 1
+            dsscale(nscale) = ds
+          endif
+        endif
 
-      cstr= 'Add points to set spacing ?:'
-      ans = PigCursYesNo (cstr)
-      if (ANS(1:1) .eq. 'Y') then
-        quit = .false.
-        return
-      endif
-
+        if(ans(1:1).eq.'N') then
+          cstr= 'Add points to set spacing ?:'
+          ans = PigCursYesNo (cstr)
+        else
+          ans = 'N'
+        endif
+        if (ANS(1:1) .eq. 'Y') then
+          quit = .false.
+!        return
+        else
 ! *** interpolate and quit
-      call Sample_Boundary (ds)
-
-      quit = .true.
+          call Sample_Boundary (ds)
+          quit = .true.
+        endif
+      endif
 
       end subroutine
 
@@ -327,23 +347,29 @@
       icount = 0
       isave = 1
 !   outer boundary
-      do j= 1,PtsThisBnd(1)
-        icount = icount + 1
-        dx = x0 - dxray(icount)
-        dy = y0 - dyray(icount)
+      do j= 2,PtsThisBnd(1)
+!        icount = icount + 1
+        dx = x0 - dxray(j)
+        dy = y0 - dyray(j)
         dl2 = dx*dx + dy*dy
         if(dl2.ge.ds2) then !save it
           isave = isave + 1
-          x0 = dxray(icount)
-          y0 = dyray(icount)
+          x0 = dxray(j)
+          y0 = dyray(j)
           dxray(isave) = x0
           dyray(isave) = y0
         endif
-        PtsThisBnd(1) = isave
       enddo
+      icount = PtsThisBnd(1)+1
+      PtsThisBnd(1) = isave
 !   loop over other boundaries
       do k = 2,TotBndys
-        do j= 1,PtsThisBnd(k)
+        x0 = dxray(icount)
+        y0 = dyray(icount)
+        isave = isave + 1
+        dxray(isave) = x0
+        dyray(isave) = y0
+        do j= 2,PtsThisBnd(k)
           icount = icount + 1
           dx = x0 - dxray(icount)
           dy = y0 - dyray(icount)
@@ -355,8 +381,9 @@
             dxray(isave) = x0
             dyray(isave) = y0
           endif
-          PtsThisBnd(k) = isave - PtsThisBnd(k-1)
         enddo
+        PtsThisBnd(k) = isave - PtsThisBnd(k-1)
+        icount = icount + 1
       enddo
       TotCoords = isave
       itot = isave

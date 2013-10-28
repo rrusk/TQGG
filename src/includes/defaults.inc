@@ -2,9 +2,10 @@
 !                                                                       *
 !                       DEFAULTS.INC                                    *
 !       The following common block declarations keep track of all       *
-!       default variables used in the new version of the TRIGRID        *
-!       Editor.                                                         *
+!       default variables.                                              *
 !                                                                       *
+!-----------------------------------------------------------------------*
+!        Grid related variables                                         *
 !-----------------------------------------------------------------------*
 
       CHARACTER*256 GridRName, GridIName, LastInterim, Fblank
@@ -32,12 +33,9 @@
       INTEGER MarkType1
       COMMON /MoreDefaults/ MarkType1,newline
 
-!*----------------------------------------------------------------------*
-!                       NODEDEF.INC                                     *
-!       The following common block declarations keep track of all       *
-!       default variables used in the TRIGRID NODER.                    *
-!
-!*----------------------------------------------------------------------*
+!-----------------------------------------------------------------------*
+!        Node related variables                                         *
+!-----------------------------------------------------------------------*
 
 ! - FILE NAMES
       CHARACTER*256 NodeRName, NodeIName, LastNInterim
@@ -59,8 +57,6 @@
       integer MaxMarkType,MinMarkType
       PARAMETER( MaxMarkType = 5 )
       PARAMETER( MinMarkType = -1 )
-
-!*------------------------ END NODEDEF.INC ------------------------------*
 
 
 !--------------------- END DEFAULTS.INC --------------------------------*

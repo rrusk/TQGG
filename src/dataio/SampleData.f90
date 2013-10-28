@@ -2,7 +2,7 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
+  !        TQGridGen@gmail.com
   !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
@@ -279,9 +279,9 @@
       logical quit
 
 !     - local variables
-      integer :: nscale = 0
-      integer stat,nscalepoint(100)
-      real ds, dsscale(100)
+      integer,save :: nscale = 0, nscalepoint(100)
+      integer :: stat
+      real, save :: ds, dsscale(100)
       character PigCursYesNo*1
       CHARACTER*80 ans, cstr, retstring
 
@@ -292,48 +292,45 @@
         dsscale = 0.
       else
 ! *** add points
-        ans = 'N'
-        cstr= 'Enter spacing at this point:'
-        call PigPrompt( cstr, RetString )
-        read(RetString,*,iostat=stat) ds
-        if(stat.ne.0) then
-          call PigMessageOK('Error reading real number:','Sample')
-        else
-! *** store data point and spacing
-          if(nscale+1.gt.100) then
-            cstr= 'Maximum exceeded - too many points. Finish?:'
-            ans = PigCursYesNo (cstr)
-          else
-            nscale = nscale + 1
-            dsscale(nscale) = ds
-          endif
-        endif
-
-        if(ans(1:1).eq.'N') then
-          cstr= 'Add points to set spacing ?:'
+        if(nscale+1.gt.100) then
+          cstr= 'Maximum exceeded - too many points. Continue(Y) or finish(N)?:'
           ans = PigCursYesNo (cstr)
         else
-          ans = 'N'
+          cstr= 'Enter spacing at this point:'
+          call PigPrompt( cstr, RetString )
+          read(RetString,*,iostat=stat) ds
+          if(stat.ne.0) then
+            call PigMessageOK('Error reading real number:','Sample')
+            ans = 'Y'
+          else
+! *** store data point and spacing
+            nscale = nscale + 1
+            dsscale(nscale) = ds
+            cstr= 'Add points to set spacing ?:'
+            ans = PigCursYesNo (cstr)
+          endif
         endif
         if (ANS(1:1) .eq. 'Y') then
           quit = .false.
-!        return
         else
 ! *** interpolate and quit
-          call Sample_Boundary (ds)
+          call Sample_Boundary (nscale,nscalepoint,dsscale)
           quit = .true.
         endif
       endif
-
+      
       end subroutine
 
 ! ********************************************************************
 
-      subroutine Sample_Boundary (ds)
+      subroutine Sample_Boundary (nscale,nscalepoint,dsscale)
 
       use MainArrays
 
       implicit none
+
+      integer,intent(in) :: nscale, nscalepoint(100)
+      real, intent(in) :: dsscale(100)
 
 !     - local variables
       integer j, k, icount, isave
@@ -341,6 +338,8 @@
       real x0, y0, dx, dy, dl2
 
 ! *** start
+      ds = dsscale(nscale)
+      k = nscalepoint(nscale) !dummy to kill warning
       ds2 = ds*ds
       x0 = dxray(1)
       y0 = dyray(1)

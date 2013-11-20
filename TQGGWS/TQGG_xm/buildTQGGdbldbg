@@ -8,7 +8,6 @@ gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit/*.f90
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f90
-gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/Xm_dialogs/*.f90
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/XMotif/*.f90
 gcc -c -Wall -g ../../src/XMotif/XmMain.c
 gcc -c -Wall -g ../../src/XMotif/XmDrawdbl.c

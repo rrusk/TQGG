@@ -119,9 +119,10 @@
       INCLUDE '../includes/defaults.inc'
 
 !     - local variables
-      integer j,Fnlen,nunit,stat,segcode,gridcode,isave
+      integer j,Fnlen,nunit,stat
+      integer segcode,seglast,gridcode,isave,TotCoordslast
       logical PigOpenFileCD
-      real xtest,ytest,ztest,xmin,xmax,ymin,ymax,dsmin
+      real xtest,ytest,ztest,segtest,xmin,xmax,ymin,ymax,dsmin
       real xlast,ylast,dx,dy,ds2,dl2
       CHARACTER*256 fle
       character(80) Firstline
@@ -164,28 +165,38 @@
       elseif(firstline(1:4).eq."#XYZ") then  !xyz  file, new format
         call ReadXYZData (Quit)
       else  !then just parse the file for coordinates
-        read(firstline,*,iostat=stat) xlast,ylast,ztest,segcode  !xyc file
-        if(stat.eq.0) then
+        read(firstline,*,iostat=stat) xlast,ylast,ztest,segtest  !xyz+segment file
+        if(stat.eq.0) then ! ok format
+
+20        cstr= 'Enter minimum subsample spacing (0 = all data):'
+          call PigPrompt( cstr, RetString )
+          read(RetString,*,iostat=stat) dsmin
+          if(stat.ne.0) then
+            call PigMessageOK('Error reading real number:','Sample')
+            go to 20
+          endif
+            
+          seglast = nint(segtest)
+          ds2 = dsmin*dsmin
           gridcode = 1
           dxray(1) = xlast
           dyray(1) = ylast
           depth(1) = ztest
-          code(1) = segcode
+          code(1) = seglast
+          TotBndys = 1
+          TotCoordslast = 0
+          TotIntBndys = 0
+          TotIntPts = 0
+          isave = 1
           j=1
           do
             j = j+1
-            read(nunit,*,iostat=stat) xtest,ytest,ztest,segcode
-            ! test for closeness here
-            dxray(j) = xtest
-            dyray(j) = ytest
-            depth(j) = ztest
-            code(j) = segcode
+            read(nunit,*,iostat=stat) xtest,ytest,ztest,segtest
+            segcode = nint(segtest)
+!            write(*,*) 'j,seglast,segcode',j,seglast,segcode
             if(stat.ne.0) then
-              TotCoords = j-1
-              TotBndys = 1
-              PtsThisBnd(1) = TotCoords
-              TotIntBndys = 0
-              TotIntPts = 0
+              TotCoords = isave
+              PtsThisBnd(TotBndys) = TotCoords - TotCoordslast
               itot = TotCoords
               xmin = minval(dxray(1:itot))
               xmax = maxval(dxray(1:itot))
@@ -193,11 +204,37 @@
               ymax = maxval(dyray(1:itot))
               call fullsize(xmin,ymin,xmax,ymax)
               exit
+            elseif(segcode.ne.seglast) then !new boundary segment
+              TotCoords = isave
+              PtsThisBnd(TotBndys) = TotCoords - TotCoordslast
+              TotCoordslast = isave
+              TotBndys = TotBndys + 1
+              seglast = segcode
+              isave = isave + 1
+              dxray(isave) = xtest
+              dyray(isave) = ytest
+              depth(isave) = ztest
+              code(isave) = 1
+              xlast = xtest
+              ylast = ytest
+            else  !add to current boundary
+            ! test for closeness here
+              dx = xtest - xlast
+              dy = ytest - ylast
+              dl2 = dx*dx + dy*dy
+              if(dl2.ge.ds2) then !save it
+                isave = isave + 1
+                dxray(isave) = xtest
+                dyray(isave) = ytest
+                depth(isave) = ztest
+                code(isave) = 1
+                xlast = xtest
+                ylast = ytest
+              endif
             endif
-            !exist(j) = .true.
           enddo
         else
-          read(firstline,*,iostat=stat) xlast,ylast,ztest  !xyz file, node pairs
+          read(firstline,*,iostat=stat) xlast,ylast,ztest  !xyz file, one boundary
           if(stat.eq.0) then
 
 10          cstr= 'Enter minimum subsample spacing (0 = all data):'

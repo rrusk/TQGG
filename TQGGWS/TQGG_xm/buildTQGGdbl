@@ -8,7 +8,6 @@ gfortran -c -fdefault-real-8 -Wall ../../src/gridedit/*.f
 gfortran -c -fdefault-real-8 -Wall ../../src/gridedit/*.f90
 gfortran -c -fdefault-real-8 -Wall ../../src/dataio/*.f
 gfortran -c -fdefault-real-8 -Wall ../../src/dataio/*.f90
-gfortran -c -fdefault-real-8 -Wall ../../src/Xm_dialogs/*.f90
 gfortran -c -fdefault-real-8 -Wall ../../src/XMotif/*.f90
 gcc -c -Wall ../../src/XMotif/XmMain.c
 gcc -c -Wall ../../src/XMotif/XmDrawdbl.c

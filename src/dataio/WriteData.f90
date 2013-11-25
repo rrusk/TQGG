@@ -121,7 +121,7 @@
 ! Local variables
       integer nindex(0:itot)
       CHARACTER*256 ans
-      integer nunit,j,k,kk,nb
+      integer nunit,j,k,kk,nb,istat,fnlen
       character PigCursYesNo*1, ans1*1
       LOGICAL ListTri,ListCri
       logical PigOpenFileCD, ResOK
@@ -131,19 +131,13 @@
       ans = ' '
       nunit = 9
       ResOK = PigOpenFileCD(nunit,'Save Grid File', ans,                &
-     &    'Neighbour File (*.ngh),*.ngh;All Files (*.*),*.*;')
+     &    'Neighbour File (*.[n][gc]*),*.ngh;All Files (*.*),*.*;')
 
-      if(.not.resOK) return
+      if(.not.resOK) then
+        quit = .true.
+        return
+      endif
       
-!       sync arrays
-!      do j=1,itot
-!        if(code(j).lt.0) then
-!          exist(j) = .false.
-!        elseif(.not.exist(j)) then
-!          code(j) = -9
-!        endif
-!      enddo      
-
       ! *** remove ghosts
       do j=1,itot
         if(code(j).ge.0) then
@@ -164,49 +158,72 @@
 
       call PigPutMessage('Writing new grid file..')
 
-      call write_ngh_file (nunit, nindex)
-      close( nunit )
-      call PigPutMessage('Done')
-
-      if(.not.quit) then
-
-        ans1 = PigCursYesNo('Save Triangle List File?')
-
-        if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
-          ans = ' '
-          if(change) then
-            call RemoveNotExist(itot,code,nbtot,nl)
-            call Element_Lister(CHANGE, .FALSE. , &
-               itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
-               x0off,y0off,scaleX,scaleY,igridtype)
-            change = .false.
-          endif
-          nunit = 11
-          ResOK = PigOpenFileCD(nunit,'Save Element File', ans,           &
-     &      'Element File(*.el*), *.el*; All Files(*.*),*.*;' )
-          if(ResOK) then
-            ListCri = .false.
-            ListTri = .true.
-            call Tr_Dump(nunit,nindex)
-            close(nunit)
-          endif
-        endif
-
-        ans1 = PigCursYesNo('Save Open Boundary File?')
-
-        if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
-          ans = ' '
-          nunit = 9
-          ResOK = PigOpenFileCD(nunit,'Save Open Boundary File', ans,           &
-     &      'Boundary File(*.bpt), *.bpt; All Files(*.*),*.*;' )
-          if(ResOK) then
-            call WRBndFILE(nunit,nindex)
-            close(nunit)
-          endif
-        endif
+      istat = index( ans, char(0) )
+      if(istat.gt.0) then ! c string
+        fnlen = istat -1
+      else ! f string
+        fnlen = len_trim( ans )
       endif
 
-      quit = .false.
+      write(*,*) fnlen-2,fnlen
+      write(*,*) ans(fnlen-2:fnlen)
+!      istat = index( ans, '.nc' )
+      if(ans(fnlen-2:fnlen).eq.'.nc') then !netCDF file
+        if(change) then
+          call RemoveNotExist(itot,code,nbtot,nl)
+          call Element_Lister(CHANGE, .FALSE. , &
+             itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
+             x0off,y0off,scaleX,scaleY,igridtype)
+          change = .false.
+        endif
+        close(nunit,status='keep')
+        call WritenetCDFData(ans,Quit)
+      else
+
+        call write_ngh_file (nunit, nindex)
+        close( nunit )
+        call PigPutMessage('Done')
+
+!        if(.not.quit) then
+
+          ans1 = PigCursYesNo('Save Triangle List File?')
+
+          if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
+            ans = ' '
+            if(change) then
+              call RemoveNotExist(itot,code,nbtot,nl)
+              call Element_Lister(CHANGE, .FALSE. , &
+                 itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
+                 x0off,y0off,scaleX,scaleY,igridtype)
+              change = .false.
+            endif
+            nunit = 11
+            ResOK = PigOpenFileCD(nunit,'Save Element File', ans,           &
+     &        'Element File(*.el*), *.el*; All Files(*.*),*.*;' )
+            if(ResOK) then
+              ListCri = .false.
+              ListTri = .true.
+              call Tr_Dump(nunit,nindex)
+              close(nunit)
+            endif
+          endif
+
+          ans1 = PigCursYesNo('Save Open Boundary File?')
+
+          if(ans1.eq.'Y'.or.ans1(1:1).eq.'Y') then
+            ans = ' '
+            nunit = 9
+            ResOK = PigOpenFileCD(nunit,'Save Open Boundary File', ans,           &
+     &        'Boundary File(*.bpt), *.bpt; All Files(*.*),*.*;' )
+            if(ResOK) then
+              call WRBndFILE(nunit,nindex)
+              close(nunit)
+            endif
+          endif
+!        endif
+        quit = .false.
+      endif
+
 
       END
 

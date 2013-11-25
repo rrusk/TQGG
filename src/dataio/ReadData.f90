@@ -45,52 +45,71 @@
 
       CHARACTER*256 fle
       LOGICAL addfile, newformat
-      integer  nunit, Fnlen, istat,linenum
-      logical PigOpenFileCD
+      integer  nunit, fnlen, istat,linenum
+      logical PigOpenFileCD,lexist
       character(80) Firstline
 !------------------BEGIN------------------
 
       addfile = Quit
       Quit = .FALSE.
       nunit = 8
+      fle = 'NONE'
 
       if(.not.PigOpenFileCD(nunit,'Open Grid File', fle,&
-     &     'Grid Files (*.[xn][yg][eh]),*.ngh;All Files (*.*),*.*;')) then
+     &     'Grid Files (*.[xn][ygc]*),*.ngh;All Files (*.*),*.*;')) then  !bail out
         Quit = .TRUE.
-!        fnlen = len_trim( Fle )
-!        call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'
         return
       else
-        GridRName =  fle
-        fnlen = len_trim( Fle )
-        call PigPutMessage('Reading file '//fle(:fnlen))
-
-        READ(nunit,'(a)',IOSTAT=istat) Firstline
-        linenum = 1
-        if(istat.ne.0) then
-          call StatusError(istat,linenum,'ReadGrid' )
+        inquire(nunit,name=fle,exist=lexist)
+        if(.not.lexist) then ! no file
           Quit = .TRUE.
-          close( nunit )
+          GridRName =  'NONE'
           return
-        endif
-        
-        if(firstline(1:4).eq."#NOD") then  !node file, new format
-          call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
-          Quit = .true.
-        elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
-          call ReadXYEData (nunit,Quit)
-        elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
-          newformat = .true.
-          call ReadNGHData (nunit,addfile,newformat)
-          Quit = addfile
-          if(.not.quit) call DoCheckEdges()
-        else ! guess format
-          newformat = .false.
-          call ReadNGHData (nunit,addfile,newformat)
-          Quit = addfile
-          if(.not.quit) then
-            call DoCheckEdges()
+        else
+          istat = index( fle, char(0) )
+          if(istat.gt.0) then ! c string
+            fnlen = istat -1
+          else ! f string
+            fnlen = len_trim( fle )
+          endif
+          call PigPutMessage('Reading file '//fle(:fnlen))
+          GridRName =  fle
+          write(*,*) fnlen-2,fnlen
+          write(*,*) fle(fnlen-2:fnlen)
+!          istat = index( fle, '.nc' )
+          if(fle(fnlen-2:fnlen).eq.'.nc') then !netCDF file
+            close(nunit,status='keep')
+            call ReadnetCDFData(fle,Quit)
+          else
+!            open(nunit,file=fle,status='old')
+            READ(nunit,'(a)',IOSTAT=istat) Firstline
+            linenum = 1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadGrid' )
+              Quit = .TRUE.
+              close( nunit )
+              return
+            endif
+            
+            if(firstline(1:4).eq."#NOD") then  !node file, new format
+              call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
+              Quit = .true.
+            elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
+              call ReadXYEData (nunit,Quit)
+            elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
+              newformat = .true.
+              call ReadNGHData (nunit,addfile,newformat)
+              Quit = addfile
+              if(.not.quit) call DoCheckEdges()
+            else ! guess format
+              newformat = .false.
+              call ReadNGHData (nunit,addfile,newformat)
+              Quit = addfile
+              if(.not.quit) then
+                call DoCheckEdges()
+              endif
+            endif
           endif
         endif
      

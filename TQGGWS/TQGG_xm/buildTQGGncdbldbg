@@ -8,10 +8,11 @@ gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit/*.f90
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f90
-gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace  ../../src/netcdf/nullReadWriteCDF.f90
+gfortran -c -g -O2 -Wall -fcheck=bounds -fbacktrace -I/usr/include/netcdff ../../src/netcdf/UGrid_io_netCDF.f90
+gfortran -c -g -O2 -Wall -fcheck=bounds -fbacktrace -I/usr/include/netcdff ../../src/netcdf/ReadWriteCDF.f90
 gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/XMotif/*.f90
 gcc -c -Wall -g ../../src/XMotif/XmMain.c
 gcc -c -Wall -g ../../src/XMotif/XmDrawdbl.c
 gcc -c -Wall -g ../../src/XMotif/XmDialogs.c
-gfortran -fcheck=bounds -fbacktrace *.o  -o TQGGdbg -lXm -lXt -lX11
+gfortran -fcheck=bounds -fbacktrace *.o  -o TQGGncdbg -lnetcdff -lnetcdf -lXm -lXt -lX11
 rm *.o

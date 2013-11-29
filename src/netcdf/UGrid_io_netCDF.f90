@@ -1207,11 +1207,14 @@
 !
 
     implicit none
+      
+    INCLUDE '../includes/defaults.inc'
 
     integer,intent(in)  ::  status
 
     if(status /= nf90_noerr)then
-      write(*,*)'netCDF status error: ',trim(nf90_strerror(status))
+!      write(*,*)'netCDF status error: ',trim(nf90_strerror(status))
+      call PigMessageOK('netCDF status error:'//newline//trim(nf90_strerror(status)),'netCDF')
 !      stop 'Execution Stopped'
     endif
 

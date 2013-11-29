@@ -29,12 +29,12 @@
         if(quit) return
       elseif(ncn.eq.3) then
         ListTr = 0
-        allocate(nen(ncn,ne),stat=istat)
+        allocate(nen(3,TotTr),stat=istat)
         call Read_Grid_netCDF ( np,ne,ncn,dxray,dyray,depth,code,Tcode,nen,&
                                 iXYcoord,iZcoord,quit )
         if(quit) return
-        do j=1,ne
-          do k=1,ncn
+        do j=1,TotTr
+          do k=1,3
             ListTr(k,j) = nen(k,j)
           enddo
         enddo
@@ -42,6 +42,15 @@
       else
         Quit = .true.
       endif
+      igridtype = iXYcoord
+      izup = iZcoord
+
+!      call Read_BoundarySize_netCDF (nbp,nbnd,nbnd1,err)
+    
+!      call Read_Boundary_netCDF (nbp,nbnd,bnode_index,bnode_id,bnodes,err)
+    
+      call Close_netCDF (quit)
+      if(quit) return
 
 ! *** generate neighbor list
 

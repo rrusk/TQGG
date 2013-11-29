@@ -44,6 +44,16 @@ typedef struct {
 	Widget code_widget;
 } NodeInfoWidget;
 
+// Implements the Info/ElementInfo menu item
+
+typedef struct {
+    Widget index_widget;
+    Widget x_widget;
+    Widget y_widget;
+    Widget z_widget;
+    Widget code_widget;
+} ElementInfoWidget;
+
 char *int_to_str(int integer, int max_chars) {
 	/* Modified from
 	 * http://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c
@@ -64,6 +74,16 @@ char *int_to_str(int integer, int max_chars) {
 //	puts("Did sprintf");
 
 	return str;
+}
+
+char *real_to_str(double num, int max_chars) {
+
+    char *str = (char *)malloc(max_chars * sizeof(char));
+//    puts("Allocated real string");
+    sprintf(str, "%f", num);
+//    puts("Did f sprintf");
+
+    return str;
 }
 
 Widget create_labeled_textfield(Widget *parent, char *label_string) {
@@ -120,7 +140,7 @@ NodeInfoWidget *create_node_info_widget(Widget *parent, int index, float x,
 	node_info_widget->z_widget = create_labeled_textfield(parent, "Z:");
 	node_info_widget->code_widget = create_labeled_textfield(parent, "Code:");
 
-	max_chars = 10;
+	max_chars = 15;
 
 	index_str = int_to_str(index, max_chars);
 	puts("Created index string");
@@ -129,9 +149,15 @@ NodeInfoWidget *create_node_info_widget(Widget *parent, int index, float x,
 	free(index_str);
 	puts("Freed index string");
 
-//	XmTextFieldSetString(node_info_widget->x_widget, x);
-//	XmTextFieldSetString(node_info_widget->y_widget, y);
-//	XmTextFieldSetString(node_info_widget->z_widget, z);
+    x_str = real_to_str(x, max_chars);
+	XmTextFieldSetString(node_info_widget->x_widget, x_str);
+    free(x_str);
+    y_str = real_to_str(y, max_chars);
+	XmTextFieldSetString(node_info_widget->y_widget, y_str);
+    free(y_str);
+    z_str = real_to_str(z, max_chars);
+	XmTextFieldSetString(node_info_widget->z_widget, z_str);
+    free(z_str);
 
 	code_str = int_to_str(code, max_chars);
 	XmTextFieldSetString(node_info_widget->code_widget, code_str);
@@ -259,6 +285,106 @@ void WPigNodeInfo(int *index) {
     }
 }
 
+ElementInfoWidget *create_element_info_widget(Widget *parent, int index, float x,
+        float y, float z, int code) {
+
+    ElementInfoWidget *element_info_widget;
+    char *index_str;
+    char *x_str;
+    char *y_str;
+    char *z_str;
+    char *code_str;
+    int max_chars;
+
+    element_info_widget = (ElementInfoWidget *)malloc(sizeof(ElementInfoWidget));
+    element_info_widget->index_widget = create_labeled_textfield(parent, "Index:");
+    element_info_widget->x_widget = create_labeled_textfield(parent, "X:");
+    element_info_widget->y_widget = create_labeled_textfield(parent, "Y:");
+    element_info_widget->z_widget = create_labeled_textfield(parent, "Z:");
+    element_info_widget->code_widget = create_labeled_textfield(parent, "Code:");
+
+    max_chars = 15;
+
+    index_str = int_to_str(index, max_chars);
+    puts("Created index string");
+    XmTextFieldSetString(element_info_widget->index_widget, index_str);
+    puts("Set index string in GUI");
+    free(index_str);
+    puts("Freed index string");
+
+    x_str = real_to_str(x, max_chars);
+    XmTextFieldSetString(element_info_widget->x_widget, x_str);
+    free(x_str);
+    y_str = real_to_str(y, max_chars);
+    XmTextFieldSetString(element_info_widget->y_widget, y_str);
+    free(y_str);
+    z_str = real_to_str(z, max_chars);
+    XmTextFieldSetString(element_info_widget->z_widget, z_str);
+    free(z_str);
+
+    code_str = int_to_str(code, max_chars);
+    XmTextFieldSetString(element_info_widget->code_widget, code_str);
+    free(code_str);
+
+    return element_info_widget;
+}
+  
+void CreateElementInfoDialog(int *index, double *x, double *y, double *z, int *code) {
+    // TODO: Accept parameters for index, x, y, z, etc. and display them
+
+    printf("C code received:");
+    printf("index: %d\n", *index);
+    printf("x: %f\n", *x);
+    printf("y: %f\n", *y);
+    printf("z: %f\n", *z);
+    printf("code: %d\n", *code);
+
+    Widget dialog;
+    Widget row_column;
+    ElementInfoWidget* element_info_widget;
+
+    XmString title;
+    XmString update_label;
+    XmString close_label;
+
+    Arg args[6];
+
+    int n = 0;
+
+    title = XmStringCreateLocalized("the title");
+    update_label = XmStringCreateLocalized("Update");
+    close_label = XmStringCreateLocalized("Close");
+    XtSetArg (args[n], XmNselectionLabelString, title); n++;
+    XtSetArg (args[n], XmNautoUnmanage, False); n++;
+    XtSetArg (args[n], XmNuserData, 0); n++;
+    XtSetArg (args[n], XmNcancelLabelString, close_label); n++;
+    XtSetArg (args[n], XmNokLabelString, update_label); n++;
+
+    // TODO: more appropriate dialog (without these unneeded extra pieces)?
+    dialog = XmCreatePromptDialog (toplevel, "ElementInfo", args, n);
+    XtAddCallback(dialog, XmNokCallback, update_callback, NULL);
+    XtAddCallback(dialog, XmNcancelCallback, close_callback, NULL);
+
+    // Hide unwanted buttons
+    XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
+    XtUnmanageChild(XtNameToWidget(dialog, "Text"));
+    XtUnmanageChild(XtNameToWidget(dialog, "Help"));
+
+    XmStringFree(title);
+    XmStringFree(update_label);
+    XmStringFree(close_label);
+
+    row_column = XmCreateRowColumn(dialog, "MainRowCol", NULL, 0);
+
+    element_info_widget = create_element_info_widget(&row_column,
+            *index, *x, *y, *z, *code);
+
+    XtManageChild(row_column);
+    XtManageChild(dialog);
+
+    free(element_info_widget);
+}
+
 void WPigElementInfo(int *index) {
     
     int ElementInfoDialogExists;
@@ -281,7 +407,7 @@ void WPigElementInfo(int *index) {
         printf("yc: %f\n", yc);
         printf("zc: %f\n", zc);
         printf("ecode: %d\n", ecode);
-        //CreateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+        CreateElementInfoDialog(&index2,&xc,&yc,&zc,&ecode);
     }
     else{
       if(*index>0){
@@ -294,7 +420,7 @@ void WPigElementInfo(int *index) {
         printf("yc: %f\n", yc);
         printf("zc: %f\n", zc);
         printf("ecode: %d\n", ecode);
-        //UpdateElementInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+        //UpdateElementInfoDialog(&index2,&xc,&yc,&zc,&ecode);
       }
     }
 }

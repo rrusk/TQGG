@@ -16,7 +16,7 @@ CC = gcc
 C_FLAGS = -Wall
 LIBS = -lXm -lXt -lX11
 
-all:
+TQGG:
 	$(FC) $(F_FLAGS) -c \
 		src/dataio/MainArrays.f90 \
 		src/gridgen/*.f90 \
@@ -24,13 +24,30 @@ all:
 		src/PigInterface/*.f90 \
 		src/gridedit/*.f src/gridedit/*.f90 \
 		src/dataio/*.f src/dataio/*.f90 \
-		src/Xm_dialogs/*.f90 \
+		src/netcdf/nullReadWriteCDF.f90 \
 		src/XMotif/*.f90
 	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
 		src/XMotif/XmMain.h src/XMotif/XmMain.c \
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
-	$(FC) *.o -o bin/TQGGdbl $(LIBS)
+	$(FC) *.o -o bin/TQGG $(LIBS)
+
+TQGGnc:
+	$(FC) $(F_FLAGS) -c -I/usr/include/netcdff \
+		src/dataio/MainArrays.f90 \
+		src/gridgen/*.f90 \
+		src/plotsubs/*.f90 \
+		src/PigInterface/*.f90 \
+		src/gridedit/*.f src/gridedit/*.f90 \
+		src/dataio/*.f src/dataio/*.f90 \
+		src/netcdf/UGrid_io_netCDF.f90 \
+		src/netcdf/ReadWriteCDF.f90 \
+		src/XMotif/*.f90
+	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
+		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
+	mkdir -p ./bin
+	$(FC) *.o -o bin/TQGGnc -lnetcdff -lnetcdf $(LIBS)
 
 clean:
 	rm -f bin/TQGGdbl *.o *.mod

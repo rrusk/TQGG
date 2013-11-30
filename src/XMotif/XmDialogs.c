@@ -54,6 +54,14 @@ typedef struct {
     Widget code_widget;
 } ElementInfoWidget;
 
+    Widget nodeinfo_dialog;
+    Widget elementinfo_dialog;
+    Widget node_row_column;
+    Widget element_row_column;
+    
+    int NodeInfoDialogExists=0;
+    int ElementInfoDialogExists=0;
+
 char *int_to_str(int integer, int max_chars) {
 	/* Modified from
 	 * http://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c
@@ -181,6 +189,7 @@ void update_callback(Widget widget, XtPointer client_data, XtPointer call_data) 
 
 void close_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
 	XtDestroyWidget(XtParent(widget));
+    NodeInfoDialogExists=0;
 }
   
 void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code) {
@@ -235,13 +244,44 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
 
 	XtManageChild(row_column);
 	XtManageChild(dialog);
+    node_row_column = row_column;
+    nodeinfo_dialog = dialog;
 
 	free(node_info_widget);
 }
 
+void UpdateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code) {
+    // TODO: Accept parameters for index, x, y, z, etc. and update them
+    
+    char *index_str;
+    char *x_str;
+    char *y_str;
+    char *z_str;
+    char *code_str;
+    int max_chars;
+    
+    printf("C code received:");
+    printf("index: %d\n", *index);
+    printf("x: %f\n", *x);
+    printf("y: %f\n", *y);
+    printf("z: %f\n", *z);
+    printf("code: %d\n", *code);
+    
+    // set strings here
+    max_chars = 15;
+
+    index_str = int_to_str(*index, max_chars);
+    puts("Created index string");
+    puts(index_str);
+//    XmTextFieldSetString(node_info_widget->index_widget, index_str);
+    
+    XtManageChild(nodeinfo_dialog);
+
+}
+
 void WPigNodeInfo(int *index) {
     
-    int NodeInfoDialogExists;
+//    int NodeInfoDialogExists;
     double xn;
     double yn;
     double zn;
@@ -253,7 +293,7 @@ void WPigNodeInfo(int *index) {
     printf("C code received:");
     printf("index: %d\n", *index);
 
-    NodeInfoDialogExists=0;
+//    NodeInfoDialogExists=0;
     // TODO: if dialog doesn't exist, create it. Otherwise skip this.
     if(NodeInfoDialogExists==0) {
     // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
@@ -267,6 +307,7 @@ void WPigNodeInfo(int *index) {
         printf("ncode: %d\n", ncode);
         printf("numngh: %d\n", numngh);
         CreateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+        NodeInfoDialogExists=1;
     }
     else{
       if(*index>0){
@@ -279,8 +320,8 @@ void WPigNodeInfo(int *index) {
         printf("yn: %f\n", yn);
         printf("zn: %f\n", zn);
         printf("ncode: %d\n", ncode);
-        printf("ncode: %d\n", numngh);
-        //UpdateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
+        printf("numngh: %d\n", numngh);
+        UpdateNodeInfoDialog(&index2,&xn,&yn,&zn,&ncode);
       }
     }
 }
@@ -328,7 +369,12 @@ ElementInfoWidget *create_element_info_widget(Widget *parent, int index, float x
 
     return element_info_widget;
 }
-  
+
+void close_ele_callback(Widget widget, XtPointer client_data, XtPointer call_data) {
+    XtDestroyWidget(XtParent(widget));
+    ElementInfoDialogExists=0;
+}
+    
 void CreateElementInfoDialog(int *index, double *x, double *y, double *z, int *code) {
     // TODO: Accept parameters for index, x, y, z, etc. and display them
 
@@ -363,7 +409,7 @@ void CreateElementInfoDialog(int *index, double *x, double *y, double *z, int *c
     // TODO: more appropriate dialog (without these unneeded extra pieces)?
     dialog = XmCreatePromptDialog (toplevel, "ElementInfo", args, n);
     XtAddCallback(dialog, XmNokCallback, update_callback, NULL);
-    XtAddCallback(dialog, XmNcancelCallback, close_callback, NULL);
+    XtAddCallback(dialog, XmNcancelCallback, close_ele_callback, NULL);
 
     // Hide unwanted buttons
     XtUnmanageChild(XtNameToWidget(dialog, "Selection"));
@@ -385,9 +431,21 @@ void CreateElementInfoDialog(int *index, double *x, double *y, double *z, int *c
     free(element_info_widget);
 }
 
+void UpdateElementInfoDialog(int *index, double *x, double *y, double *z, int *code) {
+    // TODO: Accept parameters for index, x, y, z, etc. and display them
+
+    printf("C code received:");
+    printf("index: %d\n", *index);
+    printf("xc: %f\n", *x);
+    printf("yc: %f\n", *y);
+    printf("zc: %f\n", *z);
+    printf("ecode: %d\n", *code);
+}
+
+
 void WPigElementInfo(int *index) {
     
-    int ElementInfoDialogExists;
+//    int ElementInfoDialogExists;
     int index2;
     double xc;
     double yc;
@@ -395,7 +453,7 @@ void WPigElementInfo(int *index) {
     int ecode;
     int elist[4];
   
-    ElementInfoDialogExists=0;
+//    ElementInfoDialogExists=0;
     // TODO: if dialog doesn't exist, create it. Otherwise skip this.
     if(ElementInfoDialogExists==0) {
     // TODO: if index>0 get parameters for index, x, y, z, etc. and display them
@@ -408,6 +466,7 @@ void WPigElementInfo(int *index) {
         printf("zc: %f\n", zc);
         printf("ecode: %d\n", ecode);
         CreateElementInfoDialog(&index2,&xc,&yc,&zc,&ecode);
+        ElementInfoDialogExists=1;
     }
     else{
       if(*index>0){
@@ -420,7 +479,7 @@ void WPigElementInfo(int *index) {
         printf("yc: %f\n", yc);
         printf("zc: %f\n", zc);
         printf("ecode: %d\n", ecode);
-        //UpdateElementInfoDialog(&index2,&xc,&yc,&zc,&ecode);
+        UpdateElementInfoDialog(&index2,&xc,&yc,&zc,&ecode);
       }
     }
 }

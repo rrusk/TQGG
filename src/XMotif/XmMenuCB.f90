@@ -2,7 +2,7 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
+  !        TQGridGen@gmail.com
   !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
@@ -199,7 +199,7 @@
         call MNU_PolyMenuDisable
 
         Program_Name = 'TQGridGen'
-        Revision = '$Revision: 13.10 $'
+        Revision = '$Revision: 13.12 $'
         call About(Program_name, Revision )
 
         itot = 0
@@ -756,11 +756,11 @@
           return
         entry NodeCheckCB()
           call FlagsVertices()
-          Active_MW = INACTIVE_MW
+!          Active_MW = INACTIVE_MW
           return
         entry EleCheckCB()
           call FlagsTriangles_Init()
-          Active_MW = INACTIVE_MW
+!          Active_MW = INACTIVE_MW
           return
         entry EraseCheckCB()
 !          call FlagsEraseAll

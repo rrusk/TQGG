@@ -79,6 +79,8 @@
 #define IDC_BUTTON_RUNNODECHECK         1039
 #define IDC_BOX_NCODECHECK              1040
 #define IDC_BUTTON_ELEUPDATE            1042
+#define IDC_BUTTON_ELEUPDATE2           1043
+#define IDC_BUTTON_ELELOCATE            1043
 
 // Next default values for new objects
 // 

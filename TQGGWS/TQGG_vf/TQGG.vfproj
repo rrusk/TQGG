@@ -67,6 +67,7 @@
 		<File RelativePath="..\..\src\gridedit\NodeReselect.f"/>
 		<File RelativePath="..\..\src\gridedit\NODEUPDT7-7-14.f"/>
 		<File RelativePath="..\..\src\gridedit\nodeutil.f"/>
+		<File RelativePath="..\..\src\netcdf\nullReadWriteCDF.f90"/>
 		<File RelativePath="..\..\src\gridgen\OverlayGridCells10-7-28.f90"/>
 		<File RelativePath="..\..\src\plotsubs\permmark.f90"/>
 		<File RelativePath="..\..\src\gridedit\Piced1.f"/>

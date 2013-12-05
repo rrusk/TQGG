@@ -65,6 +65,7 @@
       integer, parameter :: IDD_ELEMENTCHECK = 104
       integer, parameter :: IDC_TEXT_NX = 1012
       integer, parameter :: IDC_BUTTON_ELEUPDATE = 1042
+      integer, parameter :: IDC_BUTTON_ELELOCATE = 1043
       integer, parameter :: IDC_TEXT_NY = 1013
       integer, parameter :: IDC_CHECK_NDLT = 1010
       integer, parameter :: IDC_TEXT_NZ = 1014

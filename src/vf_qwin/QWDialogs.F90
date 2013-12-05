@@ -12,7 +12,7 @@ SUBROUTINE WPigElementInfo(index)
     LOGICAL retlog
     character(10) CString
     TYPE (dialog) dlg
-    external UpdateElementInfo
+    external UpdateElementInfo,LocateElementInfo
 
   ! Initialize.
     IF ( .not. DlgInit( idd_eleinfo, dlg ) ) THEN
@@ -58,6 +58,8 @@ SUBROUTINE WPigElementInfo(index)
       retlog = DlgSet( dlg, IDC_EDIT_EN4, CString(1:ilen) )
     
       retlog = DlgSetSub(dlg,IDC_BUTTON_ELEUPDATE, UpdateElementInfo)
+
+      retlog = DlgSetSub(dlg,IDC_BUTTON_ELELOCATE, LocateElementInfo)
 
       retint = DlgModal( dlg )
         
@@ -338,6 +340,9 @@ SUBROUTINE UpdateElementInfo(dlg,id, callbacktype)
       retlog = DlgGet( dlg, IDC_EDIT_EINDEX, CString )
       read(CString,*) index0   
     
+    elseif(id.eq.IDC_EDIT_EX) then
+      index0 = 0   
+
     else
       retlog = DlgGet( dlg, IDC_EDIT_EINDEX, CString )
       read(CString,*) index   
@@ -396,6 +401,52 @@ SUBROUTINE UpdateElementInfo(dlg,id, callbacktype)
     endif
     
 END SUBROUTINE updateelementinfo
+
+!****************************************************************************
+
+SUBROUTINE LocateElementInfo(dlg,id, callbacktype)
+  
+  USE IFLOGM
+  IMPLICIT NONE
+  INCLUDE 'RESOURCE.FD'
+  type (dialog) dlg
+  integer id, ierr
+  integer callbacktype
+
+    INTEGER :: ilen,index,nv(4),ecode
+    integer, save :: index0,yellow=14
+    real :: xc,yc,zc
+    LOGICAL retlog
+    character(10) CString
+
+    if(id.eq.IDC_EDIT_EINDEX) then
+      retlog = DlgGet( dlg, IDC_EDIT_EINDEX, CString )
+      read(CString,*) index0   
+    
+    else
+      retlog = DlgGet( dlg, IDC_EDIT_EX, CString )
+      read(CString,*) xc   
+
+      retlog = DlgGet( dlg, IDC_EDIT_EY, CString )
+      read(CString,*) yc
+      
+      call PutPermMarker( xc, yc, retlog )
+      call LocateElement( xc, yc, index, ierr)
+      if(ierr.eq.0) then
+              
+        write(CString,'(I8)') index   
+        ilen = len_trim(CString)
+        retlog = DlgSet( dlg, IDC_EDIT_EINDEX, CString(1:ilen) )
+
+        call PutTrimarker(index);
+        call GetElementInfo( index, xc, yc, zc,ecode,nv )
+        call UpdateElementInfo(dlg,IDC_EDIT_EX, callbacktype)
+        call UpdateElementInfo(dlg,id, callbacktype)
+      endif
+      
+    endif
+    
+END SUBROUTINE locateelementinfo
 
 !****************************************************************************
 

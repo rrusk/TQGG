@@ -171,7 +171,7 @@
       integer  newnf, newnf0, newnbreak, breaki, fi
       integer, save :: nf, nbreak
       integer, allocatable, save :: break(:), f(:), oldf(:)
-      integer newf(nce*2), newbreak(nce/2)
+      integer newf(100000), newbreak(nce)
 !      real, allocatable, save :: reflength(:)
       real angle, theta, alpha,vax,vbx,vay,vby,Lb,l,Lbavg,snum,Lavg,snum1
       real Lba,Lbb,Lbmin,Lbmax
@@ -190,7 +190,7 @@
        
 ! *** Allocate arrays
       if(ncb0.eq.0) then         
-        ALLOCATE (break(nce/2), f(nce*2), oldf(nce*2), STAT = istat )   !RefLength(npts), STAT = istat )
+        ALLOCATE (break(nce), f(100000), oldf(100000), STAT = istat )   !RefLength(npts), STAT = istat )
         if(istat.ne.0) then
               call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
               AutoGenFlag = -1
@@ -207,7 +207,7 @@
         if(nce.gt.ncb00) then
           if(allocated(break)) Deallocate(break)
           if(allocated(f)) deallocate(f)
-          ALLOCATE (break(nce/2), f(nce*2), STAT = istat )
+          ALLOCATE (break(nce), f(100000), STAT = istat )
           if(istat.ne.0) then
                 call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
                 AutoGenFlag = -1

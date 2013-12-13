@@ -982,7 +982,7 @@
 !     This value of TOL is suitable for single precision on most
 !     32-bit machines (which typically have a precision of 0.000001)
 
-      PARAMETER (TOL=1.E-10)
+      PARAMETER (TOL=1.E-20)
       PARAMETER (C00000=0.0, C00100=100.0)
 
 !---------------------------------------------------------------------
@@ -2261,7 +2261,7 @@
       REAL C00000  !,C00100
       REAL X(NPTS+3),Y(NPTS+3)
     
-      PARAMETER (TOL=1.E-10)
+      PARAMETER (TOL=1.E-20)
       PARAMETER (C00000=0.0)
 
 !       Check that new point is not coincident with any previous point

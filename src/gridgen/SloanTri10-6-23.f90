@@ -1891,7 +1891,7 @@
 !     Check triangulation is valid
 
 
-      ierror = 0
+!      ierror = 0
 
 
       IF(NBOV.LT.3)THEN
@@ -1964,7 +1964,7 @@
         ENDIF
       ENDIF
 
-      if(ierror.ne.0) then
+      if(ierror.lt.0) then
 
         cstr =' WARNING: grid errors- see file TriErrors.txt'
 

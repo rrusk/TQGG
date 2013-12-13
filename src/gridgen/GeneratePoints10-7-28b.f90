@@ -70,6 +70,10 @@
           np0 = n
           call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
           if(n.le.np0) exit
+          if(AutoGenFlag.ne.2) then
+            call PigMessageOK('ERROR: Front too long, check for overrefinement','newnf')
+            exit
+          endif
         enddo
         deallocate(RefLength)
       elseif(AutoGenFlag.eq.3) then  !add points from clusters
@@ -171,7 +175,7 @@
       integer  newnf, newnf0, newnbreak, breaki, fi
       integer, save :: nf, nbreak
       integer, allocatable, save :: break(:), f(:), oldf(:)
-      integer newf(100000), newbreak(nce)
+      integer newf(2*nce), newbreak(nce)
 !      real, allocatable, save :: reflength(:)
       real angle, theta, alpha,vax,vbx,vay,vby,Lb,l,Lbavg,snum,Lavg,snum1
       real Lba,Lbb,Lbmin,Lbmax
@@ -190,7 +194,7 @@
        
 ! *** Allocate arrays
       if(ncb0.eq.0) then         
-        ALLOCATE (break(nce), f(100000), oldf(100000), STAT = istat )   !RefLength(npts), STAT = istat )
+        ALLOCATE (break(nce), f(2*nce), oldf(2*nce), STAT = istat )   !RefLength(npts), STAT = istat )
         if(istat.ne.0) then
               call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
               AutoGenFlag = -1
@@ -207,7 +211,7 @@
         if(nce.gt.ncb00) then
           if(allocated(break)) Deallocate(break)
           if(allocated(f)) deallocate(f)
-          ALLOCATE (break(nce), f(100000), STAT = istat )
+          ALLOCATE (break(nce), f(2*nce), STAT = istat )
           if(istat.ne.0) then
                 call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
                 AutoGenFlag = -1
@@ -466,6 +470,10 @@
             distv3= sqrt((x(v3)-xp)**2 + (y(v3)-yp)**2)
             if (amin1(distv1,distv2,distv3).lt.0.8*L) goto 90        ! too close, then skip 
 
+            if(newnf+1.ge.2*nce) then !we have a problem Houston
+              AutoGenFlag = 0
+              return
+            endif
             n=n+1
 ! *** put new node into newf
             newnf=newnf+1
@@ -525,6 +533,10 @@
               distv3= sqrt((x(v3)-xp)**2 + (y(v3)-yp)**2)
               if (amin1(distv1,distv2,distv3).lt.0.8*L) goto 91        ! skip
 
+              if(newnf+1.ge.2*nce) then !we have a problem Houston
+                AutoGenFlag = 0
+                return
+              endif
 ! ***  put new node into newf
               n=n+1
               newnf=newnf+1

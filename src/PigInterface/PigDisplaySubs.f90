@@ -260,16 +260,39 @@
           WYL(j-1) = WYL(j)
           WYH(j-1) = WYH(j)
         enddo          
+
         LEVEL = LIMWIN
-        WXL(LEVEL) = WXL(LEVEL-1)*0.875
-        WXH(LEVEL) = WXH(LEVEL-1)*1.125
-        WYL(LEVEL) = WYL(LEVEL-1)*0.875
-        WYH(LEVEL) = WYH(LEVEL-1)*1.125
+
+        meanx = (WXL(LEVEL-1)+WXH(LEVEL-1))/2
+        meany = (WYH(LEVEL-1)+WYL(LEVEL-1))/2
+
+        delx = (WXH(LEVEL-1)-WXL(LEVEL-1))/2
+        dely = (WYH(LEVEL-1)-WYL(LEVEL-1))/2
+
+        delx = delx * 2
+        dely = dely * 2
+
+        WXL(LEVEL) =  meanx - delx
+        WXH(LEVEL) =  meanx + delx
+        WYL(LEVEL) =  meany - dely
+        WYH(LEVEL) =  meany + dely  
+
       else
-        WXL(LEVEL) = WXL(LEVEL-1)*0.875
-        WXH(LEVEL) = WXH(LEVEL-1)*1.125
-        WYL(LEVEL) = WYL(LEVEL-1)*0.875
-        WYH(LEVEL) = WYH(LEVEL-1)*1.125
+
+        meanx = (WXL(LEVEL-1)+WXH(LEVEL-1))/2
+        meany = (WYH(LEVEL-1)+WYL(LEVEL-1))/2
+
+        delx = (WXH(LEVEL-1)-WXL(LEVEL-1))/2
+        dely = (WYH(LEVEL-1)-WYL(LEVEL-1))/2
+
+        delx = delx * 2
+        dely = dely * 2
+
+        WXL(LEVEL) =  meanx - delx
+        WXH(LEVEL) =  meanx + delx
+        WYL(LEVEL) =  meany - dely
+        WYH(LEVEL) =  meany + dely 
+ 
       endif
       cwxl = wxl(level)
       cwxh = wxh(level)

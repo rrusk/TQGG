@@ -29,6 +29,7 @@
 #include "math.h"
 
 #include "XmMain.h"
+#include <Xm/Text.h>
 
 extern void getnodeinfo_(int *, double *, double *, double *, int *, int *, int * );
 extern void setnodeinfo_(int *, int *, double *);
@@ -54,6 +55,7 @@ extern void setuservalue_(int *num, int *mode);
     Widget node_y_widget;
     Widget node_z_widget;
     Widget node_code_widget;
+    Widget adj_nodes_widget;
     Widget elementinfo_dialog;
     Widget element_index_widget;
     Widget element_x_widget;
@@ -136,6 +138,52 @@ Widget create_labeled_textfield(Widget *parent, char *label_string) {
 	XtManageChild(form_widget);
 
 	return text_widget;
+}
+
+Widget create_scrolled_textfield(Widget *parent, char *label_string, char *nodes) {
+	Widget form_widget;
+	Widget label_widget;
+	Widget scrolled_text_widget;
+	Arg args[20]; // make sure this array is big enough for all the configurable options being used
+	int n = 0;
+
+	XtSetArg(args[n], XmNfractionBase, 10); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	form_widget = XmCreateForm(*parent, "form", args, n);
+
+	n = 0;
+	XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	XtSetArg(args[n], XmNrightAttachment, XmATTACH_POSITION); n++;
+	XtSetArg(args[n], XmNrightPosition, 3); n++;
+	XtSetArg(args[n], XmNalignment, XmALIGNMENT_END); n++;
+	XtSetArg(args[n], XmNnavigationType, XmNONE); n++;
+	label_widget = XmCreateLabelGadget(form_widget, label_string, args, n);
+	XtManageChild(label_widget);
+
+    n = 0;
+	XtSetArg (args[n], XmNtraversalOn, True); n++;
+	XtSetArg (args[n], XmNleftAttachment, XmATTACH_POSITION); n++;
+	XtSetArg (args[n], XmNleftPosition, 4); n++;
+	XtSetArg (args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	XtSetArg (args[n], XmNnavigationType, XmTAB_GROUP); n++;
+    XtSetArg (args[n], XmNscrollVertical, True); n++;
+    XtSetArg (args[n], XmNscrollHorizontal, False); n++;
+    XtSetArg (args[n], XmNeditable, False); n++;
+    XtSetArg (args[n], XmNeditMode, XmMULTI_LINE_EDIT); n++;
+    XtSetArg (args[n], XmNeditable, False); n++;
+    XtSetArg (args[n], XmNcursorPositionVisible, False); n++;
+    XtSetArg (args[n], XmNwordWrap, True); n++;
+    XtSetArg(args[n], XmNvalue, nodes); n++;
+    XtSetArg (args[n], XmNrows, 6); n++;
+    scrolled_text_widget = XmCreateScrolledText(form_widget, "scrolled_text_w", args, n);
+
+    XtManageChild(scrolled_text_widget);
+
+    XtManageChild(form_widget);
+
+    return scrolled_text_widget;
 }
 
 void UpdateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code, int *numngh, int *nvp) {
@@ -301,6 +349,11 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     node_z_widget = create_labeled_textfield(&row_column, "Z:");
     node_code_widget = create_labeled_textfield(&row_column, "Code:");
 
+    char buf[80];
+    strcpy(buf, "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n");
+    adj_nodes_widget = create_scrolled_textfield(&row_column, "Adjacent Nodes", buf);
+
+
     index_str = int_to_str(*index, max_chars);
 //    puts("Created index string");
     XmTextFieldSetString(node_index_widget, index_str);
@@ -317,7 +370,6 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     z_str = real_to_str(*z, max_chars);
     XmTextFieldSetString(node_z_widget, z_str);
     free(z_str);
-
     code_str = int_to_str(*code, max_chars);
     XmTextFieldSetString(node_code_widget, code_str);
     free(code_str);

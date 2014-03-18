@@ -413,16 +413,13 @@ MenuItem nodeedit_menu[] = {
     { "AddBndNode", &xmPushButtonGadgetClass, 'A', NULL, NULL, AddBndNodeCB, (XtPointer) 501, (MenuItem *) NULL },
     { "Reverse", &xmPushButtonGadgetClass, 'R', NULL, NULL, ReverseBndCB, (XtPointer) 511, (MenuItem *) NULL },
     { "Join", &xmPushButtonGadgetClass, 'J', NULL, NULL, JoinBndCB, (XtPointer) 514, (MenuItem *) NULL },
+    { "Split", &xmPushButtonGadgetClass, 'J', NULL, NULL, JoinBndCB, (XtPointer) 514, (MenuItem *) NULL },
     { "Reselect", &xmPushButtonGadgetClass, 's', NULL, NULL, ReselectBndCB, (XtPointer) 512, (MenuItem *) NULL },
     { "AddBndLine",&xmPushButtonGadgetClass, 'L', NULL, NULL, AddBndLineCB, (XtPointer) 521, (MenuItem *) NULL },
     { "DeleteIsland",&xmPushButtonGadgetClass, 'I', NULL, NULL, DeleteIslCB, (XtPointer) 522, (MenuItem *) NULL },
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
     { "AddIntNode",&xmPushButtonGadgetClass, 'd', NULL, NULL, AddIntNodeCB, (XtPointer) 551, (MenuItem *) NULL },
     { "AddIntLine", &xmPushButtonGadgetClass, 'n', NULL, NULL, AddIntLineCB, (XtPointer) 557, (MenuItem *) NULL },
-    { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
-    { "PolyDeleteBnd", &xmPushButtonGadgetClass, 'B', NULL, NULL, PolyDelBndCB, (XtPointer) 801, (MenuItem *) NULL },
-    { "PolyDeleteInt", &xmPushButtonGadgetClass, 'I', NULL, NULL, PolyDelIntCB, (XtPointer) 802, (MenuItem *) NULL },
-    { "PolyDeleteAll", &xmPushButtonGadgetClass, 'A', NULL, NULL, PolyDelAllCB, (XtPointer) 803, (MenuItem *) NULL },
     { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -469,6 +466,9 @@ MenuItem groupedit_menu[] = {
 };
 
 MenuItem configure_menu[] = {
+    { "PolyDeleteBnd", &xmPushButtonGadgetClass, 'B', NULL, NULL, PolyDelBndCB, (XtPointer) 801, (MenuItem *) NULL },
+    { "PolyDeleteInt", &xmPushButtonGadgetClass, 'I', NULL, NULL, PolyDelIntCB, (XtPointer) 802, (MenuItem *) NULL },
+    { "PolyDeleteAll", &xmPushButtonGadgetClass, 'A', NULL, NULL, PolyDelAllCB, (XtPointer) 803, (MenuItem *) NULL },
     { "ConfigNode", &xmPushButtonGadgetClass, 'O', NULL, NULL, ConfigNodeCB, (XtPointer) 902, (MenuItem *) NULL },
     { "ConfigGrid", &xmPushButtonGadgetClass, 'D', NULL, NULL, ConfigGridCB, (XtPointer) 912, (MenuItem *) NULL },
     { "ConfigContr",&xmPushButtonGadgetClass, 'S', NULL, NULL, ConfigContourCB, (XtPointer) 922, (MenuItem *) NULL },

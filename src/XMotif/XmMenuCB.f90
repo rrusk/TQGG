@@ -87,11 +87,13 @@
       parameter (GridAddNode_MW=25,GridDelNode_MW=26) 
       parameter (GridAddLine_MW=27,GridDelLine_MW=28,GridMove_MW=29,GridMerge_MW=30)
 
-      integer NodeAddBnd_MW,NodeDelBnd_MW,NodeMoveBnd_MW,NodeRevBnd_MW,NodeJoinBnd_MW
+      integer NodeAddBnd_MW,NodeDelBnd_MW,NodeMoveBnd_MW,NodeRevBnd_MW
+      integer NodeSplitBnd_MW,NodeJoinBnd_MW
       integer NodeResBnd_MW, NodeStrBnd_MW, NodeDelIsl_MW
       integer NodeAddInt_MW,NodeDelInt_MW,NodeMoveInt_MW,NodeStrInt_MW
       parameter (NodeAddBnd_MW=31, NodeDelBnd_MW=32, NodeMoveBnd_MW=33, NodeRevBnd_MW=34)
-      parameter (NodeJoinBnd_MW=35, NodeResBnd_MW=36, NodeStrBnd_MW=37, NodeDelIsl_MW=38)
+      parameter (NodeSplitBnd_MW=39, NodeJoinBnd_MW=35)
+      parameter (NodeResBnd_MW=36, NodeStrBnd_MW=37, NodeDelIsl_MW=38)
       parameter (NodeAddInt_MW=41, NodeDelInt_MW=42, NodeMoveInt_MW=43, NodeStrInt_MW=45)
 
       integer PolyDef_MW
@@ -517,16 +519,16 @@
             call Sample( quit )
 !              IF (itot.gt.1000) outlineonly = .TRUE.
           endif
-          if(.not.quit) then
-            Active_MW = Sample_MW
-            sample_point=.true.
-            call MNU_GridAndNodeMenuDisable
-            call PigStatusMessage('Sample ACTIVE: Pick a point')
-          else
+!          if(.not.quit) then
+!            Active_MW = INACTIVE_MW
+!            sample_point=.true.
+!            call MNU_GridAndNodeMenuDisable
+!            call PigStatusMessage('Sample ACTIVE: Pick a point')
+!          else
             Active_MW = INACTIVE_MW
             sample_point=.false.
             call MNU_NodeMenuEnable
-          endif
+!          endif
           call MNU_MainMenuEnable
           return
         entry SaveInterimCB()
@@ -1064,6 +1066,13 @@
           call PigStatusMessage('Pick an EXISTING boundary')
 !          call ReverseBoundary
           return
+        entry SplitBndCB()
+          !Active_CW = INACTIVE_CW
+          Active_MW = NodeSplitBnd_MW
+          call PigStatusMessage('Pick an EXISTING boundary point')
+          FirstPoint=.true.
+          NextPoint=.false.
+!          call SplitBoundaries
         entry JoinBndCB()
           !Active_CW = INACTIVE_CW
           Active_MW = NodeJoinBnd_MW

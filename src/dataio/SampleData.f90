@@ -63,48 +63,26 @@
       logical quit,change
 
 !     - local variables
-      integer gridcode,index
-      character PigCursYesNo*1
-      CHARACTER*80 ans, cstr
+      integer gridcode
+!      character PigCursYesNo*1
+!      CHARACTER*80 ans, cstr
 
 ! *** start
 
-! *** read new file?
-      cstr= 'Read new file?:'
-      ans = PigCursYesNo (cstr)
-      if (ANS(1:1) .eq. 'Y') then
-
 ! *** open, parse, and read data file
-        call Sample_Input (gridcode,quit)
-        if(quit) return
+      call Sample_Input (gridcode,quit)
+      if(quit) return
 
-! *** join segments
-        if(gridcode.eq.1) call Join_Segments ()
-
-        If(TotCoords.gt.0) then
-          dispnodes = .true.
-          change = .false.
-          call DrwFig(change)
-        else
-          return
-        endif
-      
-      endif
-
-! *** define resolution
-      index = 0
-      call Set_Resolution (index, quit)  !initialize points 
-      cstr= 'Add points to set spacing ?:'
-      ans = PigCursYesNo (cstr)
-      if (ANS(1:1) .eq. 'Y') then
-        quit = .false.
+      If(TotCoords.gt.0) then
+        dispnodes = .true.
+        change = .false.
+        call DrwFig(change)
       else
-        quit = .true.
+        return
       endif
-!      call Set_Resolution ()
-
-! *** sample from points
-!      call Sample_Boundary ()
+      
+! *** define resolution
+!      call Set_Resolution ()  !initialize points 
 
       END subroutine
 
@@ -168,6 +146,10 @@
         read(firstline,*,iostat=stat) xlast,ylast,ztest,segtest  !xyz+segment file
         if(stat.eq.0) then ! ok format
 
+! NOTE: Only sample from XYZ files with lines x,y,z,segment; x,y,z; or x,y
+!       on each line.
+        
+        
 20        cstr= 'Enter minimum subsample spacing (0 = all data):'
           call PigPrompt( cstr, RetString )
           read(RetString,*,iostat=stat) dsmin
@@ -218,7 +200,9 @@
               xlast = xtest
               ylast = ytest
             else  !add to current boundary
-            ! test for closeness here
+
+! NOTE: Put test for closeness here, discard if too close.
+
               dx = xtest - xlast
               dy = ytest - ylast
               dl2 = dx*dx + dy*dy
@@ -295,72 +279,46 @@
 
 ! ********************************************************************
 
-      subroutine Join_Segments ()
-
-      implicit none
-
-!     - local variables
-
-! *** start
-
-      end subroutine
-
-! ********************************************************************
-
-      subroutine Set_Resolution (index,quit)
+      subroutine Set_Resolution ()  !NOT USED
 
       implicit none
 
 !     - passed variables
-      integer :: index
-      logical quit
+!      integer :: index
+!      logical quit
 
 !     - local variables
       integer,save :: nscale = 0, nscalepoint(100)
       integer :: stat
       real, save :: ds, dsscale(100)
-      character PigCursYesNo*1
-      CHARACTER*80 ans, cstr, retstring
+!      character PigCursYesNo*1
+      CHARACTER*80 cstr, retstring
 
 ! *** initialize
-      if(index.le.0) then
-        nscale = 0
-        nscalepoint = 0
-        dsscale = 0.
+      nscale = 0
+      nscalepoint = 0
+      dsscale = 0.
+
+      cstr= 'Enter minimum spacing for grid:'
+      call PigPrompt( cstr, RetString )
+      read(RetString,*,iostat=stat) ds
+      if(stat.ne.0) then
+        call PigMessageOK('Error reading real number:','Sample')
       else
-! *** add points
-        if(nscale+1.gt.100) then
-          cstr= 'Maximum exceeded - too many points. Continue(Y) or finish(N)?:'
-          ans = PigCursYesNo (cstr)
-        else
-          cstr= 'Enter spacing at this point:'
-          call PigPrompt( cstr, RetString )
-          read(RetString,*,iostat=stat) ds
-          if(stat.ne.0) then
-            call PigMessageOK('Error reading real number:','Sample')
-            ans = 'Y'
-          else
 ! *** store data point and spacing
-            nscale = nscale + 1
-            dsscale(nscale) = ds
-            cstr= 'Add points to set spacing ?:'
-            ans = PigCursYesNo (cstr)
-          endif
-        endif
-        if (ANS(1:1) .eq. 'Y') then
-          quit = .false.
-        else
-! *** interpolate and quit
-          call Sample_Boundary (nscale,nscalepoint,dsscale)
-          quit = .true.
-        endif
+        nscale = nscale + 1
+        dsscale(nscale) = ds
       endif
+
+! *** interpolate and quit
+      call Sample_Boundary (nscale,nscalepoint,dsscale)
+!      quit = .true.
       
       end subroutine
 
 ! ********************************************************************
 
-      subroutine Sample_Boundary (nscale,nscalepoint,dsscale)
+      subroutine Sample_Boundary (nscale,nscalepoint,dsscale)  !NOT USED
 
       use MainArrays
 
@@ -428,69 +386,3 @@
 
 ! ********************************************************************
 ! *********************************************************************
-
-      SUBROUTINE SELECT(M,X,Y,mind,NS,NPT,XS,YS,KIND)
-
-!****STILL TO HAVE DISTANCE TEST INCLUDED*********************** N.B.
-!       SUBROUTINE TO SELECT POINTS;   X(1)     ,Y(1)
-!                                     X(1+NS)  ,Y(1+NS)
-!                                     X(1+2*NS),Y(1+2*NS)
-!                                      ...     , ...
-!
-!       FROM INPUT ARRAYS X,Y.  THE FINAL POINT SELECTED IS DISCARDED IF IT
-!       LIES LESS THAN INT(NS/2) POINTS FROM THE FINAL ORIGINAL X,Y POINT,
-!       except in case of contours (KIND=6) where last data point in each
-!       is selected and the second last point is discarded if it is too 
-!       close to the last point
-!       -------------------------------------------------------------------
-
-      INTEGER M,NS,NPT,KIND
-      real X(*),Y(*),XS(*),YS(*),mind,distsq
-      INTEGER II,MM,JM
-!       SELECT FIRST POINT
-      NPT=1
-      XS(NPT)=X(1)
-      YS(NPT)=Y(1)
-!       NO. OF FURTHER POINTS TO SELECT
-      MM=(M-1)/NS
-!       SELECT THESE POINTS
-      DO 101 II=1,MM
-            JM=1+II*NS
-            NPT=NPT+1
-            XS(NPT)=X(JM)
-            YS(NPT)=Y(JM)
-101     CONTINUE
-!       In case of everything but contours, 
-!        1) discard last point selected if last point from data block
-!        2) discard second last point if too close to last data point
-      IF(KIND.ne.6) THEN
-       IF(M.eq.MM*NS+1)THEN
-         NPT=NPT-1
-       ENDIF
-!
-      IF(M-(1+MM*NS).ne.0.and.M-(1+MM*NS).LT.NS/2) NPT=NPT-1
-      ENDIF
-!       In case of contours (kind = 6), add last point (for ns.gt.1)
-      IF(KIND.eq.6) THEN
-       IF(NS.ne.1)THEN
-         NPT=NPT+1
-         XS(NPT)=X(M)
-         YS(NPT)=Y(M)
-!          and delete second last point if too close to last point,
-!          (only if more than total of 2 points selected)
-         if(NPT.GT.2.and.(M-JM).LT.(NS+1)/2) then
-           xs(npt-1)=xs(npt)
-           ys(npt-1)=ys(npt)
-           npt=npt-1
-         endif
-       ENDIF
-      ENDIF
-!       Discard last point of block if within minimum distance
-!       mindist of first point from same block - useful for
-!       islands and closed contours
-      distsq = (XS(1)-XS(NPT))**2 + (YS(1)-YS(NPT))**2        
-      IF(distsq.lt.mind**2) THEN
-        NPT= NPT - 1
-      ENDIF
-      END 
-! **********************************************************************

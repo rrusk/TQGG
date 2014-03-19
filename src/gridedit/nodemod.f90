@@ -1123,4 +1123,164 @@
       END
 
 !-----------------------------------------------------------------------*
+
+    SUBROUTINE SplitBoundaries ( islx, isly, FirstPoint, NextPoint )
+
+! PURPOSE: To split boundaries
+!   GIVEN: Interactive input from user.
+! RETURNS: In Common NODES; PtsThisBnd() =
+!                 updated to reflect splitting
+! EFFECTS: The specified island boundaries are joined.
+!*----------------------------------------------------------------------*
+
+      use MainArrays
+
+      implicit none
+
+! - LOCAL VARIABLES
+      integer ierr, islndx2
+      integer, save :: islndx
+      integer i2, icnt,rdflag
+      REAL islx, isly, islx1, isly1, islx2, isly2
+      real, save :: px(2), py(2)
+      CHARACTER*1 PigCursYesNo, ans
+      logical  FirstPoint, NextPoint  
+
+!*-------------------START ROUTINE-------------------------------------
+
+      i2 = 2
+
+      if(FirstPoint) then
+        ierr = 0
+        call CheckNode ( islx, isly, islndx, ierr, i2 )
+
+        IF ( ierr .eq. 1 ) THEN
+!           - valid node to move selected, put a marker at exact location
+          islx1 = dxray(islndx)
+          isly1 = dyray(islndx)
+          call PigDrawModifySymbol ( islx1, isly1 )
+          px(1) = islx1
+          py(1) = isly1
+          FirstPoint = .false.
+          NextPoint = .true.
+          return
+        else
+          FirstPoint = .true.
+          NextPoint = .false.
+          return
+        endif
+
+      elseif(NextPoint) then
+        ierr=0
+        call CheckNode ( islx, isly, islndx2, ierr, i2 )
+        IF ( ierr .eq. 1 ) THEN
+          islx2 = dxray(islndx2)
+          isly2 = dyray(islndx2)
+          call PigDrawModifySymbol ( islx2, isly2 )
+          rdflag = 1
+          icnt = 2
+          px(2) = islx2
+          py(2) = isly2
+          call PigDrawLine( icnt, px, py, rdflag )
+
+          ans = PigCursYesNo ('Split these boundaries ?:')
+          IF ( ans(1:1) .eq. 'Y' ) THEN
+!  *** go for it
+
+          endif
+        else
+          FirstPoint = .true.
+          NextPoint = .false.
+        ENDIF  !   - ( ierr = 1), for xmov, ymov in CheckNode
+      ENDIF  !  - nextpoint
+
+      RETURN
+      END
+
+!-----------------------------------------------------------------------*
+
+      SUBROUTINE ReSampleBndNodes(MouseX,MouseY,FirstPoint,NextPoint)
+
+! PURPOSE: Control routine for boundary node reselection routines.
+!   GIVEN: None.
+! RETURNS: None.
+! EFFECTS: Calls routines to perform reselection.
+!-----------------------------------------------------------------------*
+
+      use MainArrays
+
+! *** passed variables
+      real MouseX, MouseY
+      logical FirstPoint, NextPoint
+
+! - COMMON BLOCKS
+!       - STRADDLE stores 2 extra indices for boundary half that straddles
+!       - 1st & last nodes of non-contiguous boundary half.
+      integer straddidx(2)
+      COMMON /STRADDLE/ straddidx
+
+!       - AUTODPTH stores depths of two delimiting nodes of straight boundary
+!       -- line prior to StraightBnd operation
+      REAL dpth1, dpth2
+      COMMON /AUTODPTH/ dpth1, dpth2
+
+! - LOCAL VARIABLES
+      integer ierr, ndx, nodetype
+      integer, save :: indxs(2), bnd, contighalf
+      LOGICAL valid
+      character(80) :: cstr
+      character(1) :: ans
+
+!-----------------START ROUTINE----------------------------------------
+
+!       - get 2 delimiting nodes to mark section
+      if(FirstPoint) then
+        ierr = 0
+        call CheckNode ( MouseX, MouseY, ndx, ierr, nodetype )
+        IF ( ierr .eq. 1 ) THEN
+!               - valid node chosen, save it & put marker
+          indxs(1) = ndx
+          call PigDrawModifySymbol( MouseX, MouseY)
+          FirstPoint = .false.
+          NextPoint = .true.
+          return
+        else
+          return
+        endif
+      elseif(NextPoint) then
+        ierr = 0
+        call CheckNode ( MouseX, MouseY, ndx, ierr, nodetype )
+        IF ( (ierr .eq. 1).and.(ndx .ne. indxs(1)) ) THEN
+!               - valid node chosen, save it & put marker
+          indxs(2) = ndx
+          call PigDrawModifySymbol( MouseX, MouseY)
+          FirstPoint = .false.
+          NextPoint = .false.
+          call Check2Nodes( bnd, indxs, valid )
+          if(.not.valid) then
+            return
+          endif
+        else
+          return
+        endif
+      endif
+
+      IF ( indxs(1) .gt. indxs(2) ) THEN
+        ndx = indxs(1)
+        indxs(1) = indxs(2)
+        indxs(2) = ndx
+      ENDIF
+
+      dpth1 = depth ( indxs(1) )
+      dpth2 = depth ( indxs(2) )
+      call PickBndHalf ( bnd, indxs, contighalf )
+
+      cstr = 'Here we are in resample boundary nodes, continue?:'
+      call PigMessageYesNo (cstr, ans)
+
+
+      RETURN
+      END
+
+!-----------------------------------------------------------------------*
 !*--------------------END NODEMOD.FOR-----------------------------------*

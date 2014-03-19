@@ -1572,5 +1572,36 @@
       return
       end
 
+!-----------------------------------------------------------------------*
+
+      SUBROUTINE PolyReSampleNodes (  ) !polylist,TotCoords,Totbndys,&
+!                               TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
+      IMPLICIT NONE
+
+! PURPOSE: To resample all nodes in the current polygon against a
+!          specified distance.
+! GIVEN:   variables
+! RETURNS: resampled nodes.
+! EFFECTS: Specified nodes in active polygon are sampled, if confirmed.
+!----------------------------------------------------------------------*
+
+! - PASSED VARIABLES
+!      integer TotCoords,Totbndys,TotIntpts
+!      logical polylist(totcoords)
+!      integer PtsThisBnd(Totbndys),code(TotCoords)
+!      real dxray(TotCoords),dyray(TotCoords),depth(TotCoords)
+
+! - LOCAL VARIABLES
+      character(80) :: cstr
+      character(1) :: ans
+
+!----------------------START ROUTINE----------------------------------
+
+      cstr = 'Here we are in resample nodes, continue?:'
+      call PigMessageYesNo (cstr, ans)
+     
+      return
+      end
+
 ! ---------------------------------------------------------------------*
 !------------------END NODEPOLY.FOR-------------------------------------*

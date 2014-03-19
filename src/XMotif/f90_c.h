@@ -58,6 +58,8 @@
 #define  AddBndNodeCB  addbndnodecb_
 #define  ReverseBndCB  reversebndcb_
 #define  JoinBndCB  joinbndcb_
+#define  SplitBndCB  splitbndcb_
+#define  ReSampleBndCB  resamplebndcb_
 #define  ReselectBndCB  reselectbndcb_
 #define  AddBndLineCB  addbndlinecb_
 #define  DeleteIslCB  deleteislcb_
@@ -81,6 +83,7 @@
 #define  DeletePolyCB  deletepolycb_
 #define  ReadPolyCB  readpolycb_
 #define  WritePolyCB  writepolycb_
+#define  PolyReSampleCB  polyresamplecb_
 #define  PolyDelBndCB  polydelbndcb_
 #define  PolyDelIntCB  polydelintcb_
 #define  PolyDelAllCB  polydelallcb_
@@ -132,6 +135,8 @@
 #define  MNU_NodeMenuDisable mnu_nodemenudisable_
 #define  MNU_PolyMenuEnable mnu_polymenuenable_
 #define  MNU_PolyMenuDisable mnu_polymenudisable_
+#define  MNU_PolyNodeMenuEnable mnu_polynodemenuenable_
+#define  MNU_PolyNodeMenuDisable mnu_polynodemenudisable_
 #define  WPigNodeInfo wpignodeinfo_
 #define  GetNodeInfo getnodeinfo_
 #define  WPigElementInfo wpigelementinfo_

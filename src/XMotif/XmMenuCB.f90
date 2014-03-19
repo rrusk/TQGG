@@ -88,11 +88,11 @@
       parameter (GridAddLine_MW=27,GridDelLine_MW=28,GridMove_MW=29,GridMerge_MW=30)
 
       integer NodeAddBnd_MW,NodeDelBnd_MW,NodeMoveBnd_MW,NodeRevBnd_MW
-      integer NodeSplitBnd_MW,NodeJoinBnd_MW
+      integer NodeSplitBnd_MW,NodeJoinBnd_MW, NodeResample_MW
       integer NodeResBnd_MW, NodeStrBnd_MW, NodeDelIsl_MW
       integer NodeAddInt_MW,NodeDelInt_MW,NodeMoveInt_MW,NodeStrInt_MW
       parameter (NodeAddBnd_MW=31, NodeDelBnd_MW=32, NodeMoveBnd_MW=33, NodeRevBnd_MW=34)
-      parameter (NodeSplitBnd_MW=39, NodeJoinBnd_MW=35)
+      parameter (NodeSplitBnd_MW=39, NodeJoinBnd_MW=35, NodeResample_MW=40)
       parameter (NodeResBnd_MW=36, NodeStrBnd_MW=37, NodeDelIsl_MW=38)
       parameter (NodeAddInt_MW=41, NodeDelInt_MW=42, NodeMoveInt_MW=43, NodeStrInt_MW=45)
 
@@ -201,7 +201,7 @@
         call MNU_PolyMenuDisable
 
         Program_Name = 'TQGridGen'
-        Revision = '$Revision: 13.12 $'
+        Revision = '$Revision: 14.3 $'
         call About(Program_name, Revision )
 
         itot = 0
@@ -1073,6 +1073,7 @@
           FirstPoint=.true.
           NextPoint=.false.
 !          call SplitBoundaries
+          return
         entry JoinBndCB()
           !Active_CW = INACTIVE_CW
           Active_MW = NodeJoinBnd_MW
@@ -1080,6 +1081,14 @@
           FirstPoint=.true.
           NextPoint=.false.
 !          call JoinBoundaries
+          return
+        entry ReSampleBndCB()
+          !Active_CW = INACTIVE_CW
+          Active_MW = NodeResample_MW
+          call PigStatusMessage('Pick an EXISTING boundary point')
+          FirstPoint=.true.
+          NextPoint=.false.
+!          call ReSelBndNodes
           return
         entry ReselectBndCB()
           !Active_CW = INACTIVE_CW
@@ -1236,6 +1245,8 @@
           call WholePoly(Ok)
           if(.not.dispnodes) then
             call MNU_PolyMenuEnable
+          else
+            call MNU_PolyNodeMenuEnable
           endif               
           return
         entry CyclePolyCB()
@@ -1286,6 +1297,28 @@
           return
 
 !  node polygon operations
+        entry PolyReSampleCB()
+          IF (numpolys.eq.0) then
+            call PigPutMessage('Please define a polygon first.')
+          elseIF (actvpoly.le.0) then
+            call PigPutMessage('Please activate a polygon first.')
+          ELSE
+            PolyId = actvpoly
+            numvert = vertcnt(actvpoly)
+            vertx1 = 0.
+            verty1 = 0.
+            vertx1(1:numvert) = vertx(actvpoly,1:numvert)
+            verty1(1:numvert) = verty(actvpoly,1:numvert)
+
+            call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
+      
+            call PolyResampleNodes(polylist)
+ !           deltype = 'B'
+ !           call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
+ !                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
+            itot = Totcoords
+          endif
+          return
         entry PolyDelBndCB()
           IF (numpolys.eq.0) then
             call PigPutMessage('Please define a polygon first.')
@@ -1799,6 +1832,13 @@
         elseif(Active_MW.eq.NodeRevBnd_MW) then
           call ReverseBoundary (MouseX, MouseY)
           call PigStatusMessage('ReverseBnd ACTIVE: Pick a boundary')        
+        elseif(Active_MW.eq.NodeSplitBnd_MW) then
+          call SplitBoundaries (MouseX, MouseY, FirstPoint, NextPoint )
+          if(FirstPoint) then
+            call PigStatusMessage('SplitBnd ACTIVE: Pick first boundary point')
+          elseif(NextPoint) then            
+            call PigStatusMessage('SplitBnd ACTIVE: Pick second boundary point')
+          endif        
         elseif(Active_MW.eq.NodeJoinBnd_MW) then
           call JoinBoundaries (MouseX, MouseY, FirstPoint, NextPoint )
           if(FirstPoint) then
@@ -1806,6 +1846,14 @@
           elseif(NextPoint) then            
             call PigStatusMessage('JoinBnd ACTIVE: Pick second boundary point')
           endif        
+        elseif(Active_MW.eq.NodeReSample_MW) then
+          call ReSampleBndNodes(MouseX,MouseY,FirstPoint,NextPoint)       
+          if(.not.FirstPoint.and..not.NextPoint) then
+            Active_MW =INACTIVE_MW
+            call PigStatusMessage('Done')
+          else            
+            call PigStatusMessage('ResampleBndNodes ACTIVE: Pick a node')
+          endif
         elseif(Active_MW.eq.NodeResBnd_MW) then
           call ReSelBndNodes(MouseX,MouseY,FirstPoint,NextPoint)       
           if(.not.FirstPoint.and..not.NextPoint) then

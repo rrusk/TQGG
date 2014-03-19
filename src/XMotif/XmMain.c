@@ -381,6 +381,9 @@ MenuItem info_menu[] = {
     { "EraseLast",&xmPushButtonGadgetClass, 'L', NULL, NULL, PMDelLastCB, (XtPointer) 322, (MenuItem *) NULL },
     { "EraseAll",&xmPushButtonGadgetClass, 'A', NULL, NULL, PMDelAllCB, (XtPointer) 323, (MenuItem *) NULL },
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
+    { "ConfigContr",&xmPushButtonGadgetClass, 'S', NULL, NULL, ConfigContourCB, (XtPointer) 922, (MenuItem *) NULL },
+    { "ConfigData", &xmPushButtonGadgetClass, 'N', NULL, NULL, ConfigDataCB, (XtPointer) 932, (MenuItem *) NULL },
+    { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
     { "SetRange",&xmPushButtonGadgetClass, 'u', NULL, NULL, SetRangeCB, (XtPointer) 341, (MenuItem *) NULL },
     { "TooClose",&xmPushButtonGadgetClass, 'R', NULL, NULL, TooCloseCB, (XtPointer) 342, (MenuItem *) NULL },
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
@@ -413,7 +416,8 @@ MenuItem nodeedit_menu[] = {
     { "AddBndNode", &xmPushButtonGadgetClass, 'A', NULL, NULL, AddBndNodeCB, (XtPointer) 501, (MenuItem *) NULL },
     { "Reverse", &xmPushButtonGadgetClass, 'R', NULL, NULL, ReverseBndCB, (XtPointer) 511, (MenuItem *) NULL },
     { "Join", &xmPushButtonGadgetClass, 'J', NULL, NULL, JoinBndCB, (XtPointer) 514, (MenuItem *) NULL },
-    { "Split", &xmPushButtonGadgetClass, 'J', NULL, NULL, JoinBndCB, (XtPointer) 514, (MenuItem *) NULL },
+    { "Split", &xmPushButtonGadgetClass, 'J', NULL, NULL, SplitBndCB, (XtPointer) 515, (MenuItem *) NULL },
+    { "ReSample", &xmPushButtonGadgetClass, 's', NULL, NULL, ReSampleBndCB, (XtPointer) 512, (MenuItem *) NULL },
     { "Reselect", &xmPushButtonGadgetClass, 's', NULL, NULL, ReselectBndCB, (XtPointer) 512, (MenuItem *) NULL },
     { "AddBndLine",&xmPushButtonGadgetClass, 'L', NULL, NULL, AddBndLineCB, (XtPointer) 521, (MenuItem *) NULL },
     { "DeleteIsland",&xmPushButtonGadgetClass, 'I', NULL, NULL, DeleteIslCB, (XtPointer) 522, (MenuItem *) NULL },
@@ -451,6 +455,14 @@ MenuItem definegroup_menu[] = {
     { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
 };
 
+MenuItem groupnode_menu[] = {
+    { "ReSample", &xmPushButtonGadgetClass, 'B', NULL, NULL, PolyReSampleCB, (XtPointer) 905, (MenuItem *) NULL },
+    { "DeleteBnd", &xmPushButtonGadgetClass, 'B', NULL, NULL, PolyDelBndCB, (XtPointer) 901, (MenuItem *) NULL },
+    { "DeleteInt", &xmPushButtonGadgetClass, 'I', NULL, NULL, PolyDelIntCB, (XtPointer) 902, (MenuItem *) NULL },
+    { "DeleteAll", &xmPushButtonGadgetClass, 'A', NULL, NULL, PolyDelAllCB, (XtPointer) 903, (MenuItem *) NULL },
+    { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
+};
+
 MenuItem groupedit_menu[] = {
     { "NodeCode",&xmPushButtonGadgetClass, 'N', NULL, NULL, PolyNodeCodeCB, (XtPointer) 821, (MenuItem *) NULL },
     { "ElementCode", &xmPushButtonGadgetClass, 'E', NULL, NULL, PolyEleCodeCB, (XtPointer) 822, (MenuItem *) NULL },
@@ -462,17 +474,6 @@ MenuItem groupedit_menu[] = {
     { "CutOffGrid", &xmPushButtonGadgetClass, 'u', NULL, NULL, PolyCutGridCB, (XtPointer) 839, (MenuItem *) NULL },
     { "SetDepth", &xmPushButtonGadgetClass, 'a', NULL, NULL, PolySetDepthCB, (XtPointer) 851, (MenuItem *) NULL },
     { "ReDepth", &xmPushButtonGadgetClass, 'p', NULL, NULL, PolyReDepthCB, (XtPointer) 853, (MenuItem *) NULL },
-    { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
-};
-
-MenuItem configure_menu[] = {
-    { "PolyDeleteBnd", &xmPushButtonGadgetClass, 'B', NULL, NULL, PolyDelBndCB, (XtPointer) 801, (MenuItem *) NULL },
-    { "PolyDeleteInt", &xmPushButtonGadgetClass, 'I', NULL, NULL, PolyDelIntCB, (XtPointer) 802, (MenuItem *) NULL },
-    { "PolyDeleteAll", &xmPushButtonGadgetClass, 'A', NULL, NULL, PolyDelAllCB, (XtPointer) 803, (MenuItem *) NULL },
-    { "ConfigNode", &xmPushButtonGadgetClass, 'O', NULL, NULL, ConfigNodeCB, (XtPointer) 902, (MenuItem *) NULL },
-    { "ConfigGrid", &xmPushButtonGadgetClass, 'D', NULL, NULL, ConfigGridCB, (XtPointer) 912, (MenuItem *) NULL },
-    { "ConfigContr",&xmPushButtonGadgetClass, 'S', NULL, NULL, ConfigContourCB, (XtPointer) 922, (MenuItem *) NULL },
-    { "ConfigData", &xmPushButtonGadgetClass, 'N', NULL, NULL, ConfigDataCB, (XtPointer) 932, (MenuItem *) NULL },
     { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -520,8 +521,8 @@ int main (int argc, char *argv[])
     BuildMenu (menubar, XmMENU_PULLDOWN, "NodeEdit", 'N', False, nodeedit_menu);
     BuildMenu (menubar, XmMENU_PULLDOWN, "GridEdit", 'r', False, gridedit_menu);
     BuildMenu (menubar, XmMENU_PULLDOWN, "Polygons", 'P', False, definegroup_menu);
-    BuildMenu (menubar, XmMENU_PULLDOWN, "EditInPoly", 'E', False, groupedit_menu);
-    BuildMenu (menubar, XmMENU_PULLDOWN, "Configure", 'C', False, configure_menu);
+    BuildMenu (menubar, XmMENU_PULLDOWN, "NodeInPoly", 'C', False, groupnode_menu);
+    BuildMenu (menubar, XmMENU_PULLDOWN, "GridInPoly", 'E', False, groupedit_menu);
     help_w = BuildMenu (menubar, XmMENU_PULLDOWN, "Help", 'H', False, help_menu);
     XtVaSetValues (menubar, XmNmenuHelpWidget, help_w, NULL);
     XtManageChild (menubar);
@@ -650,7 +651,8 @@ int main (int argc, char *argv[])
     /* XtSetSensitive(GridGen1W, False);*/
     GridEditW = XtNameToWidget(menubar,"GridEdit");
     NodeEditW = XtNameToWidget(menubar,"NodeEdit");
-    GroupEditW = XtNameToWidget(menubar,"EditInPoly");
+    GroupNodeW = XtNameToWidget(menubar,"NodeInPoly");
+    GroupEditW = XtNameToWidget(menubar,"GridInPoly");
     TopMenuW = menubar;
 
     /* initialize menuloop */
@@ -751,6 +753,7 @@ void MNU_GridAndNodeMenuDisable ()
     XtSetSensitive(GroupEditW, False);
     XtSetSensitive(GridGenW, False);
     XtSetSensitive(NodeEditW, False);
+    XtSetSensitive(GroupNodeW, False);
 }
 
 
@@ -771,6 +774,7 @@ void MNU_GridMenuEnable ()
 void MNU_NodeMenuDisable ()
 {
     XtSetSensitive(NodeEditW, False);
+    XtSetSensitive(GroupNodeW, False);
 }
 
 void MNU_NodeMenuEnable ()
@@ -787,5 +791,15 @@ void MNU_PolyMenuDisable ()
 void MNU_PolyMenuEnable ()
 {
     XtSetSensitive(GroupEditW, True);
+}
+
+void MNU_PolyNodeMenuDisable ()
+{
+    XtSetSensitive(GroupNodeW, False);
+}
+
+void MNU_PolyNodeMenuEnable ()
+{
+    XtSetSensitive(GroupNodeW, True);
 }
 

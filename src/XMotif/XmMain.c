@@ -364,8 +364,7 @@ MenuItem view_menu[] = {
     { "Rotate", &xmPushButtonGadgetClass, 'R', NULL, NULL, RotateCB, (XtPointer) 673, (MenuItem *) NULL },
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
     { "PolarTransform", &xmPushButtonGadgetClass, 'P', NULL, NULL, SPXCB, (XtPointer) 233, (MenuItem *) NULL },
-    { "MercatorTransform", &xmPushButtonGadgetClass, 'M', NULL, NULL, MercXCB, (XtPointer) 235, (MenuItem *) NULL },
-    { "TMTransform", &xmPushButtonGadgetClass, 'T', NULL, NULL, TMXCB, (XtPointer) 237, (MenuItem *) NULL },
+    { "UTMTransform", &xmPushButtonGadgetClass, 'T', NULL, NULL, TMXCB, (XtPointer) 237, (MenuItem *) NULL },
     { NULL, NULL, ' ', NULL, NULL, NULL, NULL, NULL }
 };
 

@@ -1041,22 +1041,22 @@
               else
                 islndx2_next = islndx2 - 1
               endif
-              px(1) = dxray(islndx_next)
-              py(1) = dyray(islndx_next)
-              px(2) = dxray(islndx2_next)
-              py(2) = dyray(islndx2_next)
-              call PigDrawLine( icnt, px, py, rdflag )
-              rdflag = 2
-              px(1) = dxray(islndx)
-              py(1) = dyray(islndx)
-              px(2) = dxray(islndx_next)
-              py(2) = dyray(islndx_next)
-              call PigDrawLine( icnt, px, py, rdflag )
-              px(1) = dxray(islndx2)
-              py(1) = dyray(islndx2)
-              px(2) = dxray(islndx2_next)
-              py(2) = dyray(islndx2_next)
-              call PigDrawLine( icnt, px, py, rdflag )
+!              px(1) = dxray(islndx_next)
+!              py(1) = dyray(islndx_next)
+!              px(2) = dxray(islndx2_next)
+!              py(2) = dyray(islndx2_next)
+!              call PigDrawLine( icnt, px, py, rdflag )
+!              rdflag = 2
+!              px(1) = dxray(islndx)
+!              py(1) = dyray(islndx)
+!              px(2) = dxray(islndx_next)
+!              py(2) = dyray(islndx_next)
+!              call PigDrawLine( icnt, px, py, rdflag )
+!              px(1) = dxray(islndx2)
+!              py(1) = dyray(islndx2)
+!              px(2) = dxray(islndx2_next)
+!              py(2) = dyray(islndx2_next)
+!              call PigDrawLine( icnt, px, py, rdflag )
 
               ans = PigCursYesNo ('Join these boundaries ?:')
               IF ( ans(1:1) .eq. 'Y' ) THEN
@@ -1124,7 +1124,7 @@
 
 !-----------------------------------------------------------------------*
 
-    SUBROUTINE SplitBoundaries ( islx, isly, FirstPoint, NextPoint )
+    SUBROUTINE SplitBoundaries ( islx, isly, FirstPoint )
 
 ! PURPOSE: To split boundaries
 !   GIVEN: Interactive input from user.
@@ -1138,13 +1138,13 @@
       implicit none
 
 ! - LOCAL VARIABLES
-      integer ierr, islndx2
+      integer j, ierr, islndx2, idif1, idif2
       integer, save :: islndx
-      integer i2, icnt,rdflag
+      integer i2, icnt,iend,rdflag, ibnd
       REAL islx, isly, islx1, isly1, islx2, isly2
       real, save :: px(2), py(2)
       CHARACTER*1 PigCursYesNo, ans
-      logical  FirstPoint, NextPoint  
+      logical  FirstPoint,onlychoice  
 
 !*-------------------START ROUTINE-------------------------------------
 
@@ -1154,45 +1154,107 @@
         ierr = 0
         call CheckNode ( islx, isly, islndx, ierr, i2 )
 
-        IF ( ierr .eq. 1 ) THEN
-!           - valid node to move selected, put a marker at exact location
+        IF ( ierr .ne. 1 ) THEN
+          FirstPoint = .true.
+          return
+
+        else  !IF ( ierr .eq. 1 ) THEN
+!           - valid node, put a marker at exact location
           islx1 = dxray(islndx)
           isly1 = dyray(islndx)
           call PigDrawModifySymbol ( islx1, isly1 )
           px(1) = islx1
           py(1) = isly1
-          FirstPoint = .false.
-          NextPoint = .true.
-          return
-        else
-          FirstPoint = .true.
-          NextPoint = .false.
-          return
-        endif
 
-      elseif(NextPoint) then
-        ierr=0
-        call CheckNode ( islx, isly, islndx2, ierr, i2 )
-        IF ( ierr .eq. 1 ) THEN
-          islx2 = dxray(islndx2)
-          isly2 = dyray(islndx2)
-          call PigDrawModifySymbol ( islx2, isly2 )
+! need some error checks here to determine which adjacent segment to use
+! loop over boundaries to find node
+          icnt = 1
+          do j=1,TotBndys
+            iend = icnt+PtsThisBnd(j)-1
+            if(islndx.eq.icnt.or.islndx.eq.iend) then !endpoint
+              call PigMessageOK('Cannot split endpoint','SplitBnd')
+              call PigDrawBndSymbol( islx1, isly1 )
+              return
+            elseif(islndx.lt.iend) then !found node
+              idif1 = islndx - icnt
+              idif2 = iend - islndx
+              ibnd = j
+              exit
+            endif
+            icnt = iend + 1
+          enddo
+
+! first try
+          if(idif1.eq.1) then !near end 
+            islndx2 = islndx + 1
+            islx2 = dxray(islndx2)
+            isly2 = dyray(islndx2)
+            call PigDrawModifySymbol ( islx2, isly2 )
+            onlychoice = .true.
+          elseif(idif2.eq.1) then !near end 
+            islndx2 = islndx - 1
+            islx2 = dxray(islndx2)
+            isly2 = dyray(islndx2)
+            call PigDrawModifySymbol ( islx2, isly2 )
+            onlychoice = .true.
+          else
+            islndx2 = islndx + 1
+            islx2 = dxray(islndx2)
+            isly2 = dyray(islndx2)
+            call PigDrawModifySymbol ( islx2, isly2 )
+            onlychoice = .false.
+          endif
+          
           rdflag = 1
-          icnt = 2
           px(2) = islx2
           py(2) = isly2
-          call PigDrawLine( icnt, px, py, rdflag )
+          call PigDrawLine( i2, px, py, rdflag )
 
-          ans = PigCursYesNo ('Split these boundaries ?:')
+          ans = PigCursYesNo ('Split this boundary segment ?:')
           IF ( ans(1:1) .eq. 'Y' ) THEN
-!  *** go for it
-
+            do j=TotBndys,ibnd+1,-1
+              PtsThisBnd(j+1) = PtsThisBnd(j)
+            enddo
+            TotBndys = TotBndys + 1
+            PtsThisBnd(ibnd) = max(islndx,islndx2) - icnt
+            PtsThisBnd(ibnd+1) = iend - min(islndx,islndx2)
+          else
+            call PigDrawBndSymbol( islx2, isly2 )
+            rdflag = 4
+            call PigDrawLine( i2, px, py, rdflag )
+            
+            if(onlychoice) then
+              call PigDrawBndSymbol( islx1, isly1 )
+              return
+            endif
+! second try
+            islndx2 = islndx - 1
+            islx2 = dxray(islndx2)
+            isly2 = dyray(islndx2)
+            call PigDrawModifySymbol ( islx2, isly2 )
+            rdflag = 1
+            px(2) = islx2
+            py(2) = isly2
+            call PigDrawLine( i2, px, py, rdflag )
+            
+            ans = PigCursYesNo ('Split THIS boundary segment ?:')
+            IF ( ans(1:1) .eq. 'Y' ) THEN
+              do j=TotBndys,ibnd+1,-1
+                PtsThisBnd(j+1) = PtsThisBnd(j)
+              enddo
+              TotBndys = TotBndys + 1
+              PtsThisBnd(ibnd) = max(islndx,islndx2) - icnt
+              PtsThisBnd(ibnd+1) = iend - min(islndx,islndx2)
+            else  !no split
+              call PigDrawBndSymbol( islx1, isly1 )
+              call PigDrawBndSymbol( islx2, isly2 )
+              rdflag = 4
+              call PigDrawLine( i2, px, py, rdflag )          
+            endif
           endif
-        else
-          FirstPoint = .true.
-          NextPoint = .false.
         ENDIF  !   - ( ierr = 1), for xmov, ymov in CheckNode
       ENDIF  !  - nextpoint
+      FirstPoint = .true.
 
       RETURN
       END

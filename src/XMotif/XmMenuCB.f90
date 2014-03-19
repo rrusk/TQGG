@@ -700,30 +700,30 @@
             IF (Redrw) call DrwFig(CHANGE)
           endif
           return
-        entry MercXCB()
-          FlagMerc = .not.FlagMerc
+!        entry MercXCB()
+!          FlagMerc = .not.FlagMerc
 ! *** check for existing transform
-          if(FlagPolar) then
-            cstr ='SP Polar transform in effect.'//char(13)//&
-                   'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'Mercator Transform')
-            FlagMerc = .false.
-          elseif(FlagUTM) then
-            cstr ='Transverse Mercator transform in effect.'//char(13)//&
-                  'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'Mercator Transform')
-            FlagMerc = .false.
-          else
-            if(FlagMerc) then
-              call MercTransform
-            else
-              call InverseMercTransform
-            endif
-!            call SetMercChkFlags(FlagMerc)
-            Redrw = .TRUE.
-            IF (Redrw) call DrwFig(CHANGE)
-          endif
-          return
+!          if(FlagPolar) then
+!            cstr ='SP Polar transform in effect.'//char(13)//&
+!                   'Perform inverse transform first'//char(0)
+!            call PigMessageOK(cstr, 'Mercator Transform')
+!            FlagMerc = .false.
+!          elseif(FlagUTM) then
+!            cstr ='Transverse Mercator transform in effect.'//char(13)//&
+!                  'Perform inverse transform first'//char(0)
+!            call PigMessageOK(cstr, 'Mercator Transform')
+!            FlagMerc = .false.
+!          else
+!            if(FlagMerc) then
+!              call MercTransform
+!            else
+!              call InverseMercTransform
+!            endif
+!!            call SetMercChkFlags(FlagMerc)
+!            Redrw = .TRUE.
+!            IF (Redrw) call DrwFig(CHANGE)
+!          endif
+!          return
         entry TMXCB()
           FlagUTM = .not.FlagUTM
 ! *** check for existing transform
@@ -1081,7 +1081,6 @@
           Active_MW = NodeSplitBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
-          NextPoint=.false.
 !          call SplitBoundaries
           return
         entry JoinBndCB()
@@ -1850,11 +1849,9 @@
           call ReverseBoundary (MouseX, MouseY)
           call PigStatusMessage('ReverseBnd ACTIVE: Pick a boundary')        
         elseif(Active_MW.eq.NodeSplitBnd_MW) then
-          call SplitBoundaries (MouseX, MouseY, FirstPoint, NextPoint )
+          call SplitBoundaries (MouseX, MouseY, FirstPoint )
           if(FirstPoint) then
-            call PigStatusMessage('SplitBnd ACTIVE: Pick first boundary point')
-          elseif(NextPoint) then            
-            call PigStatusMessage('SplitBnd ACTIVE: Pick second boundary point')
+            call PigStatusMessage('SplitBnd ACTIVE: Pick boundary point')
           endif        
         elseif(Active_MW.eq.NodeJoinBnd_MW) then
           call JoinBoundaries (MouseX, MouseY, FirstPoint, NextPoint )

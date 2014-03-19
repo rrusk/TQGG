@@ -253,7 +253,9 @@
                 call fullsize(xmin,ymin,xmax,ymax)
                 exit
               endif
-            ! test for closeness here
+
+! NOTE: Put test for closeness here, discard if too close.
+
               dx = xtest - xlast
               dy = ytest - ylast
               dl2 = dx*dx + dy*dy

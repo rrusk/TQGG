@@ -375,6 +375,9 @@
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
           call MNU_NodeMenuEnable
+          if(numpolys.gt.0) then
+            call MNU_PolyNodeMenuEnable
+          endif
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry AddNodeFileCB()
@@ -424,6 +427,9 @@
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
           call MNU_NodeMenuEnable
+          if(numpolys.gt.0) then
+            call MNU_PolyNodeMenuEnable
+          endif
           !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry XSectionCB()
@@ -466,7 +472,7 @@
               call MNU_GridMenuDisable
               call MNU_NodeMenuEnable
               if(numpolys.gt.0) then
-                call MNU_PolyMenuEnable
+                call MNU_PolyNodeMenuEnable
               endif
             else
               FlagG = .true.
@@ -525,11 +531,15 @@
 !            call MNU_GridAndNodeMenuDisable
 !            call PigStatusMessage('Sample ACTIVE: Pick a point')
 !          else
-            Active_MW = INACTIVE_MW
-            sample_point=.false.
-            call MNU_NodeMenuEnable
-!          endif
+          Active_MW = INACTIVE_MW
+          sample_point=.false.
           call MNU_MainMenuEnable
+          call MNU_GridMenuDisable
+          call MNU_NodeMenuEnable
+          if(numpolys.gt.0) then
+            call MNU_PolyNodeMenuEnable
+          endif
+!          endif
           return
         entry SaveInterimCB()
           if(itot.gt.0) then
@@ -1263,8 +1273,11 @@
             call DeletePoly
             IF (actvpoly.gt.0.and..not.dispnodes) then
               call MNU_PolyMenuEnable
+            elseif (actvpoly.gt.0.and.dispnodes) then
+              call MNU_PolyNodeMenuEnable
             else
               call MNU_PolyMenuDisable
+              call MNU_PolyNodeMenuDisable
             endif
           endif
           return
@@ -1291,8 +1304,11 @@
           ENDIF
           IF (actvpoly.gt.0.and..not.dispnodes) then
             call MNU_PolyMenuEnable
+          elseif (actvpoly.gt.0.and.dispnodes) then
+            call MNU_PolyNodeMenuEnable
           else
             call MNU_PolyMenuDisable
+            call MNU_PolyNodeMenuDisable
           endif
           return
 
@@ -1780,7 +1796,8 @@
           if ( ierr .eq. 1 ) then
             call PigMessageOK('ERROR - Invalid point.','NodeInfo')
           else
-            call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
+!            call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
+            call PutNodeMarker(index)
             call WPigNodeInfo(index)  !hook for dialog
           endif
           call PigStatusMessage('Info ACTIVE: Pick a point')        

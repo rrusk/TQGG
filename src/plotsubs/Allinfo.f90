@@ -105,6 +105,27 @@
 
 !---------------------------------------------------------------------------*
 
+      SUBROUTINE PutNodeMarker(index)
+
+      use MainArrays
+      
+      implicit none
+
+      integer, intent(in) :: index
+
+      INCLUDE '../includes/graf.def'
+
+      real xcent, ycent
+
+      xcent = dxray(index)
+      ycent = dyray(index)
+            
+      call PutMarker( xcent, ycent, 4, yellow )
+      
+      end
+
+!---------------------------------------------------------------------------*
+
       SUBROUTINE PutTriMarker(index)
 
       use MainArrays

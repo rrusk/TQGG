@@ -56,7 +56,7 @@
       fle = 'NONE'
 
       if(.not.PigOpenFileCD(nunit,'Open Grid File', fle,&
-     &     'Grid Files (*.[xn][ygc]*),*.ngh;All Files (*.*),*.*;')) then  !bail out
+     &     'Grid Files (*.[ng][cgr]*),*.ngh;All Files (*.*),*.*;')) then  !bail out
         Quit = .TRUE.
         GridRName =  'NONE'
         return
@@ -742,7 +742,7 @@
       nunit = 3
 
       if(.not.PigOpenFileCD(nunit,'Open Node File', FName,&
-             'Node Files (*.[nx][oy][dz]),*.nod;All Files (*.*),*.*;')) then
+             'Node Files (*.nod),*.nod;All Files (*.*),*.*;')) then
         quit = .true.
         NodeRName = 'NONE'
       else

@@ -111,7 +111,7 @@
       nunit = 3
 
       if(.not.PigOpenFileCD(nunit,'Open Sample File', fle, &
-          'XYZ Files (*.[xn][yo][zd]),*.xy*;NOD Files (*.nod),*.nod;All Files (*.*),*.*;')) then
+          'XYZ Files (*.xy*),*.xy*;All Files (*.*),*.*;')) then
         fnlen = len_trim(fle)
         call PigMessageOK('Error opening file '//fle(:fnlen),'OpenGrid')
         GridRName =  'NONE'

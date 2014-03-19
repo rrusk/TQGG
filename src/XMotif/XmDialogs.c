@@ -36,6 +36,7 @@ extern void setnodeinfo_(int *, int *, double *);
 extern void getelementinfo_(int *, double *, double *, double *, int *, int * );
 extern void setelementinfo_(int *, int *);
 extern void locateelement_(double *, double *, int *, int *);
+extern void putnodemarker_(int *);
 extern void puttrimarker_(int *);
 extern void putpermmarker_( double *, double *, int *);
 extern void elementcheck_(int *num, int *mode);
@@ -255,6 +256,7 @@ void update_callback(Widget widget, XtPointer client_data, XtPointer call_data) 
 
     index_str = XmTextFieldGetString (node_index_widget);
     index = atoi(index_str);
+    putnodemarker_(&index);
     XtFree(index_str);
 //    printf("index: %d\n", index);
     if(index == Lastnode) {

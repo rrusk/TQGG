@@ -1266,7 +1266,9 @@
 ! PURPOSE: Control routine for boundary node reselection routines.
 !   GIVEN: None.
 ! RETURNS: None.
-! EFFECTS: Calls routines to perform reselection.
+! EFFECTS: The chosen boundary segment is resamples to have increasing/decreasing
+!          resolution based on the resolution at the ends. The boundary is first
+!          resampled to 1m resolution before beeing resampled again.
 !-----------------------------------------------------------------------*
 
       use MainArrays
@@ -1275,23 +1277,19 @@
       real MouseX, MouseY
       logical FirstPoint, NextPoint
 
-! - COMMON BLOCKS
-!       - STRADDLE stores 2 extra indices for boundary half that straddles
-!       - 1st & last nodes of non-contiguous boundary half.
-      integer straddidx(2)
-      COMMON /STRADDLE/ straddidx
-
-!       - AUTODPTH stores depths of two delimiting nodes of straight boundary
-!       -- line prior to StraightBnd operation
-      REAL dpth1, dpth2
-      COMMON /AUTODPTH/ dpth1, dpth2
-
 ! - LOCAL VARIABLES
-      integer ierr, ndx, nodetype
+      integer ierr, ndx, nodetype,i,j,k,nnew,nspc,newbind(10000)
       integer, save :: indxs(2), bnd, contighalf
       LOGICAL valid
-      character(80) :: cstr
-      character(1) :: ans
+      real :: newbx(1000000), newby(1000000), newbd(1000000), dist,dist1,dist2
+
+!     nexb* - stores the new boundary (1 m resampled at first, then the one with increasing space)
+!     newbind - for indexing the nodes that should be in the final bnd segment
+!     indxs - the chosen end nodes
+!     i,j,k - used for looping and temp storage of integers
+!     dist* - for distance between nodes and also increasing distance in the final segment
+!     nnew - number of new nodes (both in 1m resampling and in the final segment)
+!     nspc - number of spaces/lines (in the new segment)
 
 !-----------------START ROUTINE----------------------------------------
 
@@ -1333,13 +1331,127 @@
         indxs(2) = ndx
       ENDIF
 
-      dpth1 = depth ( indxs(1) )
-      dpth2 = depth ( indxs(2) )
+
       call PickBndHalf ( bnd, indxs, contighalf )
 
-      cstr = 'Here we are in resample boundary nodes, continue?:'
-      call PigMessageYesNo (cstr, ans)
+!     IF spacing is less that 1, assume polar coordinates, and try again
 
+      IF ( sqrt((dxray(indxs(1)+1)-dxray(indxs(1)))**2 + (dyray(indxs(1)+1)-dyray(indxs(1)))**2) .lt. 1 ) THEN
+        call PigMessageOK('Are you in polar coordinates? Please convert to meter-based coordinates and try again.','polar')
+        return       
+      END IF
+
+!     Move end nodes one 'in' on the boundary, to keep initial end spacing
+      indxs(1) = indxs(1)+1
+      indxs(2) = indxs(2)-1
+
+!     Create a 1m spaced bnd in newbnd
+
+      i = 1
+      DO j=indxs(1),indxs(2)-1
+!       Get distance between the point and the next
+        dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+        nnew = floor(dist)-1
+
+        newbx(i) = dxray(j)
+        newby(i) = dyray(j)
+        newbd(i) = depth(j)
+
+        DO k=1,nnew
+          newbx(i+k) = dxray(j) + k * ((dxray(j+1)-dxray(j)) / (nnew + 1))
+          newby(i+k) = dyray(j) + k * ((dyray(j+1)-dyray(j)) / (nnew + 1))
+          newbd(i+k) = depth(j) + k * ((depth(j+1)-depth(j)) / (nnew + 1))
+        END DO
+
+        i = i + nnew + 1
+
+!     If i exceeds limit of 1000000 nodes, error and return
+        IF ( i .gt. 1000000 ) THEN
+          call PigMessageOK('The boundary segment is to long','ReSample')
+          return
+        END IF
+      END DO
+
+!     Put the last node in the array
+      newbx(i) = dxray(indxs(2))
+      newby(i) = dyray(indxs(2))
+      newbd(i) = depth(indxs(2))
+
+!     Calculate spacing at start and end of segment
+      dist1 = sqrt((dxray(indxs(1)-1)-dxray(indxs(1)))**2 + (dyray(indxs(1)-1)-dyray(indxs(1)))**2)
+      dist2 = sqrt((dxray(indxs(2))-dxray(indxs(2)+1))**2 + (dyray(indxs(2))-dyray(indxs(2)+1))**2)
+
+!     Pick out the indexes to use in the increasing spacing
+!     And the increase
+
+      nspc = floor((i-1) / ((dist1+dist2)/2)) ! Number of spacings between the two nodes
+      dist = (dist2-dist1) / (nspc) ! Increase of distance between each node
+      newbind(1) = 1
+      k=1 ! Stores the amount of increments to add
+      newbind(nspc+1) = i
+
+      IF (dist2.gt.dist1 ) THEN ! The distance is increasing - go from the start
+        DO j=2,nspc-1
+          newbind(j)=floor(dist1*(j-1)+dist*k)
+          k = k + j
+        END DO
+        newbind(nspc) = floor(( newbind(nspc-1)+newbind(nspc+1) )/2.0)
+
+      ELSE ! The distance is decreasing - start from the end of the segment
+        DO j=2,nspc-1
+          newbind(nspc+2-j)=i-floor(dist2*(j-1)-dist*k)
+          k = k + j
+        END DO
+        newbind(2) = floor(( newbind(1)+newbind(3) )/2.0)
+      END IF
+      
+
+!     Reassign the new bnd
+      DO i=1,nspc+1
+        newbx(i) = newbx(newbind(i))
+        newby(i) = newby(newbind(i))
+        newbd(i) = newbd(newbind(i))
+      END DO
+
+      i = nspc+1
+
+!     Assign number of added nodes to nnew
+      nnew = i - (indxs(2)-indxs(1)) - 1
+
+!     Add the number of added nodes to the bnd segment, ITOTs and TotCoords
+      PtsThisBnd(bnd) = PtsThisBnd(bnd)+nnew
+      ITOT = ITOT + nnew
+      TotCoords = TotCoords + nnew
+
+!     Move the array to make room for the new array
+      IF (nnew.lt.0) THEN ! Less nodes
+        DO j=indxs(2)+1,ITOT
+          dxray(j+nnew) = dxray(j)
+          dyray(j+nnew) = dyray(j)
+          depth(j+nnew) = depth(j)
+          code(j+nnew) = code(j)
+        END DO
+      ELSE IF (nnew.gt.0) THEN ! More nodes
+        DO j=ITOT,indxs(2)+1,-1
+          dxray(j+nnew) = dxray(j)
+          dyray(j+nnew) = dyray(j)
+          depth(j+nnew) = depth(j)
+          code(j+nnew) = code(j)
+        END DO
+      END IF
+
+
+!     Input new array
+      dxray(indxs(1):indxs(1)+i-1)=newbx(1:i)
+      dyray(indxs(1):indxs(1)+i-1)=newby(1:i)
+      depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
+      code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
+
+!     Draw the new lines and symbols
+      call PigDrawBndSymbols( i , newbx, newby )
+      call PigDrawLine( i , newbx, newby, 3 )
+      call PigDrawClrSymbol(dxray(indxs(1)-1), dyray(indxs(1)-1), 'B')
+      call PigDrawClrSymbol(dxray(indxs(1)+i), dyray(indxs(1)+i), 'B')
 
       RETURN
       END

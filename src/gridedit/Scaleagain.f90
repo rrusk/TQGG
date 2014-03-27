@@ -37,6 +37,8 @@
 !                 = 5 - shift depths
 
       use MainArrays
+      
+      implicit none
 
       INCLUDE '../includes/graf.def'
       INCLUDE '../includes/edpolys.inc'
@@ -56,40 +58,43 @@
       integer CONTROL
 
 ! *** LOCAL VARIABLES ***
-      REAL XSHIFT, YSHIFT
-      REAL XSCF, YSCF
+      REAL XSHIFT, YSHIFT, xcent, ycent, dxc, dyc
+      REAL XSCF, YSCF, scf
       REAL DSCF, DSHIFT
       REAL THETA, STH, CTH, xx, xmid, ymid
-      integer JJ, kk
-      LOGICAL SUCCESS
+      integer JJ, kk, istat
       character*(80)    ans
       character*(80)    msg
 
       IF (CONTROL .EQ. 1) THEN
 !     Scaling coordinates
 
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter scale factor for x coordinates :',ans)
-        call PigReadReal(ans, xscf, Success)
-        if(xscf.eq.0.) xscf = 1.
+        read(ans,*,iostat=istat) xscf
+        if(istat.eq.0) then
+          if(xscf.eq.0.) xscf = 1.
+          exit
+        endif
       end do
 
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter scale factor for y coordinates :',ans)
-        call PigReadReal(ans, yscf, Success)
-        if(yscf.eq.0.) yscf = 1.
-      enddo
+        read(ans,*,iostat=istat) yscf
+        if(istat.eq.0) then
+          if(yscf.eq.0.) yscf = 1.
+          exit
+        endif
+      end do
 
-      success = .false.
-         do while(.not.success)
-           call PigPrompt('Enter scale factor for depths : ',ans)
-           call PigReadReal(ans, dscf, Success)
-!          if(dscf.eq.0.) dscf = 1.
-         end do
-         write(msg,'(a,3f8.3)') 'Working. xscf,yscf,dscf:',xscf,yscf,dscf
-         call PigPutMessage(msg)
+      do
+        call PigPrompt('Enter scale factor for depths :',ans)
+        read(ans,*,iostat=istat) dscf
+        if(istat.eq.0) exit
+      end do
+
+      write(msg,'(a,3f8.3)') 'Working. xscf,yscf,dscf:',xscf,yscf,dscf
+      call PigPutMessage(msg)
 
       DO JJ = 1, ITOT
         DXRAY(JJ) = DXRAY(JJ) * xscf
@@ -126,26 +131,27 @@
 
       ELSEIF (CONTROL .EQ. 2) THEN
 !     Shifting coordinates   
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter amount to add to x coordinates :',ans)
-        call PigReadReal(ans, xshift, Success)
+        read(ans,*,iostat=istat) xshift
+        if(istat.eq.0) exit
       enddo
 
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter amount to add to y coordinates :',ans)
-        call PigReadReal(ans, yshift, Success)
+        read(ans,*,iostat=istat) yshift
+        if(istat.eq.0) exit
       enddo
 
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter amount to add to depths : ',ans)
-        call PigReadReal(ans, dshift, Success)
+        read(ans,*,iostat=istat) dshift
+        if(istat.eq.0) exit
       end do
 
       write(msg,'(a,3f8.3)') 'Working.. xs,ys,ds:',xshift,yshift,dshift
       call PigPutMessage(msg)
+      
       DO JJ = 1, ITOT
         DXRAY(JJ) = DXRAY(JJ) + xshift
         DYRAY(JJ) = DYRAY(JJ) + yshift
@@ -175,13 +181,16 @@
 
       ELSEIF (CONTROL .EQ. 3) THEN
 !     Rotating coordinates   
-      success = .false.
-      do while(.not.success)
+
+      do
         call PigPrompt('How many degrees to rotate grid (c/w) : ',ans)
-        call PigReadReal(ans, theta, Success)
+        read(ans,*,iostat=istat) theta
+        if(istat.eq.0) exit
       enddo
+      
       write(msg,'(a,3f8.3)') 'Working... theta:',theta
       call PigPutMessage(msg)
+      
       sth = sin(-theta*3.14159265/180.)
       cth = cos(-theta*3.14159265/180.)
 ! *** rotate about mid-point of window to avoid grid rotating out of sight
@@ -192,8 +201,8 @@
 ! the exact transformation. So, for now, rotate about 0,0. Later could add
 ! ability for user to select rotation point by cursor or by coordinate.
 ! but not for now...
-     xmid = 0.0
-     ymid = 0.0
+      xmid = 0.0
+      ymid = 0.0
 
       DO JJ = 1, ITOT
        xx = DXRAY(JJ)
@@ -214,25 +223,32 @@
 
       ELSEIF (CONTROL .EQ. 4) THEN
 !     scaling depths
-      success = .false.
-      do while(.not.success)
+
+      do
         call PigPrompt('Enter scale factor for depths : ',ans)
-        call PigReadReal(ans, dscf, Success)
+        read(ans,*,iostat=istat) dscf
+        if(istat.eq.0) exit
       enddo
+      
       write(msg,'(a,3f8.3)') 'Working... dscf:',dscf
       call PigPutMessage(msg)
+      
       DO JJ = 1, ITOT
         DEPTH(JJ) = DEPTH(JJ) * dscf
       enddo
+      
       ELSEIF (CONTROL .EQ. 5) THEN
 ! *** shifting depths
-      success = .false.
-      do while(.not.success)
+
+      do
         call PigPrompt('Enter amount to add to depths : ',ans)
-        call PigReadReal(ans, dshift, Success)
+        read(ans,*,iostat=istat) dshift
+        if(istat.eq.0) exit
       enddo
+      
       write(msg,'(a,3f8.3)') 'Working... dshift:',dshift
       call PigPutMessage(msg)
+      
       DO JJ = 1, ITOT
         DEPTH(JJ) = DEPTH(JJ) + dshift
       enddo
@@ -249,6 +265,8 @@
 !     Purpose : To transform coordinateds to polar from xy
 
       use MainArrays
+      
+      implicit none
 
       integer LIMWIN
       PARAMETER( LIMWIN = 10 )
@@ -257,7 +275,9 @@
       COMMON /WLIMIT/ WXL, WXH, WYL, WYH, LEVEL
       REAL    XMAX, YMAX, XMIN, YMIN
       COMMON  /MAXRG/ XMAX,YMAX,XMIN,YMIN
-
+      
+      integer jj
+      real :: xscf, d2r
       character(80) text
 
       d2r = acos(-1.)/180.
@@ -309,6 +329,8 @@
 !     Purpose : To transform coordinateds to polar from xy
 
       use MainArrays
+      
+      implicit none
 
       integer LIMWIN
       PARAMETER( LIMWIN = 10 )
@@ -317,6 +339,9 @@
       COMMON /WLIMIT/ WXL, WXH, WYL, WYH, LEVEL
       REAL    XMAX, YMAX, XMIN, YMIN
       COMMON  /MAXRG/ XMAX,YMAX,XMIN,YMIN
+      
+      integer :: jj
+      real :: d2r, xlongold, xscf
 
       xlongold = xlong0
       d2r = acos(-1.)/180.
@@ -349,6 +374,8 @@
 !     Purpose : To transform coordinates from polar to xy
 
       use MainArrays
+      
+      implicit none
 
       integer LIMWIN
       PARAMETER( LIMWIN = 10 )
@@ -357,6 +384,9 @@
       COMMON /WLIMIT/ WXL, WXH, WYL, WYH, LEVEL
       REAL    XMAX, YMAX, XMIN, YMIN
       COMMON  /MAXRG/ XMAX,YMAX,XMIN,YMIN
+
+      integer :: jj
+      real :: d2r, xscf
 
       d2r = acos(-1.)/180.
 
@@ -381,88 +411,13 @@
 
 !***************************************************************
 
-      SUBROUTINE MercTransform
-
-!     Purpose : To transform coordinateds to UTM from polar(lin)
-
-      use MainArrays
-
-      integer LIMWIN
-      PARAMETER( LIMWIN = 10 )
-      REAL   WXL(LIMWIN), WXH(LIMWIN), WYL(LIMWIN), WYH(LIMWIN)
-      integer LEVEL
-      COMMON /WLIMIT/ WXL, WXH, WYL, WYH, LEVEL
-      REAL    XMAX, YMAX, XMIN, YMIN
-      COMMON  /MAXRG/ XMAX,YMAX,XMIN,YMIN
-
-      real, parameter ::    PI = 3.1415926536
-      real, save :: R, d2r, yref
-
-      character(80) text
-
-      R = 1.
-      d2r = acos(-1.)/180.
-
-! *** check data for proper limits
-      DO JJ = 1, ITOT
-        If((DXRAY(JJ).lt.-180.).or.(DXRAY(JJ).gt.180.)) then
-          text='Longitude out of range -180<long<100'
-          call PigMessageOK(Text,'Longitude Limits')
-          return
-        endif
-      enddo
-
-      DO JJ = 1, ITOT
-        If((DYRAY(JJ)+y0off.lt.-89.).or.(DYRAY(JJ)+y0off.gt.89.)) then
-          text='Latitude out of range -89<lat<89'
-          call PigMessageOK(Text,'Latitude Limits')
-          return
-        endif
-      enddo
-
-
-      DO JJ = 1, ITOT
-        DXRAY(JJ) = R*DXRAY(JJ)
-        yref = y0off
-        DYRAY(JJ) = R*alog(tan(0.25*PI + 0.5*d2r*(DYRAY(JJ)+yref)))/d2r
-!       scalek = sec(dyday(jj))
-      enddo
-
-      yref = y0off
-      yref = R*alog(tan(0.25*PI + 0.5*d2r*yref))/d2r
-      if (level.eq.0) then
-        ymin = ymin + yref
-        ymax = ymax + yref
-      else
-        WYL(LEVEL) = WYL(LEVEL) + yref
-        WYH(LEVEL) = WYH(LEVEL) + yref
-      endif
-      return
-
-      Entry InverseMercTransform
-
-      if (level.eq.0) then
-        ymin = ymin - yref
-        ymax = ymax - yref
-      else
-        WYL(LEVEL) = WYL(LEVEL) - yref
-        WYH(LEVEL) = WYH(LEVEL) - yref
-      endif
-
-      DO JJ = 1, ITOT
-        DXRAY(JJ) = DXRAY(JJ)/R
-        DYRAY(JJ) = atan(sinh(d2r*DYRAY(JJ)/R))/d2r - y0off
-      enddo
-
-      END
-
-!***************************************************************
-
       SUBROUTINE TMTransform
 
 !     Purpose : To transform coordinateds to UTM from lat/lon
 
       use MainArrays
+      
+      implicit none
 
       integer LIMWIN
       PARAMETER( LIMWIN = 10 )
@@ -476,9 +431,8 @@
       character(2) zonestr
       character(80) ans,text
       real :: tmpx, tmpy, gxmax, gxmin, gxc
-      integer :: tmpint,cmp,zone
-
-      logical success
+      integer :: tmpint,cmp,zone,jj,istat
+      real to_degrees, to_radians
 
 
 ! *** check data for proper limits
@@ -517,21 +471,18 @@
       write(cmpstr,'(I4)') cmp
 
 !     Prompt user for central meridan or UTM zone number
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter UTM central meridan ('//cmpstr &
             //'?) or zone number in format Z** (Z'//zonestr//'?): ',ans)
 
         IF (ans(:1).eq.'Z') then ! Zone input - calculate central meridan
-          read(ans(2:3),*)tmpint
-
-          cmp = nint(tmpint*6.0-3) - 180
-          success = .true.
+          read(ans(2:),*,iostat=istat)tmpint
+          if(istat.eq.0) cmp = nint(tmpint*6.0-3) - 180
         ELSE ! Not ZONE input
-          call PigReadReal(ans, tmpx, Success)
-          cmp = nint(tmpx)
+          read(ans,*,iostat=istat)tmpx
+          if(istat.eq.0) cmp = nint(tmpx)
         ENDIF
-
+        if(istat.eq.0) exit
       enddo
 
 
@@ -552,25 +503,21 @@
       RETURN
 
 
-
       Entry InverseTMTransform
 
-!
 !     Inverse transformation
-!
 
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter UTM central meridan or zone number in format Z**: ',ans)
 
-        IF (ans(:1).eq.'Z') then
-          read(ans(2:3),*)tmpint
-          cmp = nint(tmpint*6.0-3) - 180
-          success = .true.
-        ELSE
-          call PigReadReal(ans, tmpx, Success)
-          cmp = nint(tmpx)
+        IF (ans(:1).eq.'Z') then ! Zone input - calculate central meridan
+          read(ans(2:),*,iostat=istat)tmpint
+          if(istat.eq.0) cmp = nint(tmpint*6.0-3) - 180
+        ELSE ! Not ZONE input
+          read(ans,*,iostat=istat)tmpx
+          if(istat.eq.0) cmp = nint(tmpx)
         ENDIF
+        if(istat.eq.0) exit
       enddo
 
 
@@ -592,8 +539,6 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
       END
-
-
 
 !***************************************************************
 
@@ -663,7 +608,8 @@
 
 
 !***************************************************************
-
+      
+      implicit none
 
 !agd01 IMPLICIT READ (A-Z)
 !agd01 INTEGER ZONE,ICM,IMIN
@@ -804,8 +750,10 @@
 !
 !      WRITTEN BY KALMAN CZOTTER SEPTEMBER 1978
 !
-!agd 6 Nov 97 - added explicit typing
-      IMPLICIT REAL (A-Z)
+      
+      implicit none
+
+      !IMPLICIT REAL (A-Z)
       INTEGER ZONE
       REAL LAT, LONGP, CMP, NORTH, EAST
       REAL CM, SMALL, M0, M03, M05, M07, EC2, EC4, EC6, E, E2, E3
@@ -821,7 +769,7 @@
 !cagd01-end
 
 
-      SMALL=1D-11
+      SMALL=1.E-11
 
       M0=.9996
       M03=M0**3
@@ -902,24 +850,30 @@
 
 !***************************************************************
 
-      FUNCTION to_radians(deg)
+      REAL FUNCTION to_radians(deg)
 !
 !       Convert from degrees to radians
 !
+        implicit none
+        
         REAL deg
         REAL :: pi
+        
         pi = 3.1415926536
         to_radians = deg*pi/180.0
       END FUNCTION to_radians
 
 !***************************************************************
 
-      FUNCTION to_degrees(rad)
+      REAL FUNCTION to_degrees(rad)
 !
 !       Convert from radians to degrees
 !
+        implicit none
+        
         REAL rad
         REAL :: pi
+        
         pi = 3.1415926536
         to_degrees = (rad*180.0)/pi
       END FUNCTION to_degrees
@@ -930,17 +884,17 @@
       SUBROUTINE RADDMS (RAD,DEG,MIN,SEC)
 
 !     Copied from TriGrid code to be used with UTMGEO/GEOUTM
+!     RADIANS ARE CONVERTED TO DEGREES, MINUTES, SECONDS
+
+        implicit none
 
         REAL RAD
         INTEGER DEG,MIN
         REAL SEC
-!
-!	RADIANS ARE CONVERTED TO DEGREES, MINUTES, SECONDS
-!
-        REAL SMALL
+        REAL  :: SMALL=1.E-8
         REAL FRC
-        DATA SMALL/1D-8/
-!
+!        DATA SMALL/1D-8/
+
         FRC=RAD*57.295779513082321
         FRC=FRC+360.0
         DEG=INT(FRC+SMALL)

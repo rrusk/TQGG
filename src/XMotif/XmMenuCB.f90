@@ -1496,8 +1496,8 @@
             if(ans(1:1).eq.'Y') then
             !enter zlimit
               call PigPrompt( 'Enter zlimit (cutoff>zlimit):',ans)
-              call PigReadReal(ans,zlimit,success)
-              if(.not.success) then
+              read(ans,*,iostat=ierr) zlimit
+              if(ierr.ne.0) then
                 call PigPutMessage('Error reading zlimit')
                 return
               endif
@@ -1538,15 +1538,15 @@
 
             !enter zlimit
             call PigPrompt( 'Enter zlimit (cutoff>zlimit):',ans)
-            call PigReadReal(ans,zlimit,success)
-            if(.not.success) then
+            read(ans,*,iostat=ierr) zlimit
+            if(ierr.ne.0) then
               call PigPutMessage('Error reading zlimit')
               return
             endif
 
             call PigPrompt( 'Enter zlow limit (cutoff<zlow):',ans)
-            call PigReadReal(ans,zlow,success)
-            if(.not.success) then
+            read(ans,*,iostat=ierr) zlow
+            if(ierr.ne.0) then
               call PigPutMessage('Error reading zlow')
               return
             endif
@@ -1583,16 +1583,16 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
 
-            success = .false.
-            do while(.not.success)
+            do
               call PigPrompt('Enter scale factor for depths : ',ans)
-              call PigReadReal(ans, zscale, Success)
+              read(ans,*,iostat=ierr) zscale
+              if(ierr.eq.0) exit
             enddo
 
-            success = .false.
-            do while(.not.success)
+            do
               call PigPrompt('Enter amount to add to depths : ',ans)
-              call PigReadReal(ans, zlimit, Success)
+              read(ans,*,iostat=ierr) zlimit
+              if(ierr.eq.0) exit
             enddo
 
             call SetDepth2 (itot,zscale,zlimit,depth,polylist)

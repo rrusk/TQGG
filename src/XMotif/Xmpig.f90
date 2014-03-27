@@ -567,24 +567,24 @@
 
       implicit none
 
-
       INCLUDE '../includes/graf.def'
 
       REAL RANGE
 
+      integer istat
       CHARACTER*80 ans
       CHARACTER*13 Oldr
       REAL temp
-      LOGICAL Success
 
-10    continue
       oldr = '             '
       write(oldr,'(F12.5)') RANGE
 
-      call PigPrompt('RANGE (' //oldr// ') Enter new Range:',ans )
+      do
+        call PigPrompt('RANGE (' //oldr// ') Enter new Range:',ans )
+        read(ans,*,iostat=istat) temp
+        if(istat.eq.0) exit
+      enddo
 
-      call PigReadReal( ans, temp, Success )
-      if ( .not. Success ) goto 10
       if ( temp .gt. 0.0 ) then
         RANGE = temp
       endif
@@ -618,9 +618,8 @@
       INCLUDE '../includes/cntcfg.inc'
 
 ! - LOCAL VARIABLES
-!      integer :: i, j
+      integer :: istat
       real rval
-      logical success
       character*1 ans
       character*80 retstring
 
@@ -647,41 +646,32 @@
         NumCntValues(1) = 10
         FlagC = .true.
       else
-        call PigPrompt( 'Enter upper limit:',retstring)
-        call PigReadReal(retstring,rval,success)
-        if(success) then
-          SMaxVal(1) = rval                   
-        else
-          do while (.not.success)
-            call PigPrompt( 'Error reading number- try again:',retstring)
-            call PigReadReal(retstring,rval,success)
-          enddo
-          SMaxVal(1) = rval
-        endif
+        do
+          call PigPrompt( 'Enter upper limit:',retstring)
+          read(retstring,*,iostat=istat) rval
+          if(istat.eq.0) then
+            SMaxVal(1) = rval
+            exit
+          endif
+        enddo
 
-        call PigPrompt( 'Enter lower limit:',retstring)
-        call PigReadReal(retstring,rval,success)
-        if(success) then
-          SMinVal(1) = rval                   
-        else
-          do while (.not.success)
-            call PigPrompt( 'Error reading number- try again:',retstring)
-            call PigReadReal(retstring,rval,success)
-          enddo
-          SMinVal(1) = rval
-        endif
+        do
+          call PigPrompt( 'Enter lower limit:',retstring)
+          read(retstring,*,iostat=istat) rval
+          if(istat.eq.0) then
+            SMinVal(1) = rval
+            exit
+          endif
+        enddo
             
-        call PigPrompt( 'Enter number of levels:',retstring)
-        call PigReadReal(retstring,rval,success)
-        if(success) then
-          NumCntValues(1) = nint(rval)                   
-        else
-          do while (.not.success)
-            call PigPrompt( 'Error reading integer- try again:',retstring)
-            call PigReadReal(retstring,rval,success)
-          enddo
-          NumCntValues(1) = nint(rval)
-        endif
+        do
+          call PigPrompt( 'Enter number of levels:',retstring)
+          read(retstring,*,iostat=istat) rval
+          if(istat.eq.0) then
+            NumCntValues(1) = nint(rval)                   
+            exit
+          endif
+        enddo
        
         FlagC = .true.      
       endif

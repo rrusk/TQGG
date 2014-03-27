@@ -245,7 +245,7 @@
           Quit = .TRUE.
           return
         endif
-        igridtype = 0
+        igridtype = -9999
      
       endif
                   
@@ -374,6 +374,7 @@
       enddo
  
       itot = numrec
+      igridtype = -9999
 
 !  parse first line to find format      
       READ(nunit,'(a)',IOSTAT=istat ) Firstline
@@ -899,6 +900,7 @@
           Quit = .TRUE.
           return
         endif
+        igridtype = -9999
       endif
 
       IF ( TotBndys .gt. Maxnnb ) THEN
@@ -1225,6 +1227,7 @@
               Quit = .TRUE.
               return
             endif
+!XXX     !NOTE check if grid is of the same type
             exit
           endif
         enddo
@@ -1543,6 +1546,7 @@
       PtsThisBnd = 0
       TotIntPts = TotCoords
       DispNodes = .true.
+      igridtype = -9999
 
       if(int(ScaleY).eq.-999) then
         xlongmin = minval(dxray(1:itot))

@@ -170,6 +170,7 @@
         elseif(EType.eq.2) then
           call GenerateQuads( Quit, nx, ny )
         endif
+        igridtype = -9999
         quit = .true.
       ELSE IF ( .NOT. filein ) THEN
         cstr = 'Please Specify a File Name.'

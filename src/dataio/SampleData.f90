@@ -217,6 +217,7 @@
               endif
             endif
           enddo
+          igridtype = -9999
         else
           read(firstline,*,iostat=stat) xlast,ylast,ztest  !xyz file, one boundary
           if(stat.eq.0) then
@@ -269,6 +270,7 @@
                 ylast = ytest
               endif
             enddo
+            igridtype = -9999
           else
             call PigMessageOK('Unsupported file format ','Sample')
             quit = .true.

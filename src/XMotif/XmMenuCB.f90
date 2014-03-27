@@ -117,6 +117,7 @@
       real    MouseX, MouseY
       character*(80)  Message
       character*(20), save :: Program_name, Revision
+      character(256),save :: cstrgrid
       integer, parameter :: BDOWN = 1, BUP = 2
       real, save :: xPan1, yPan1, xZoom1, yZoom1
       logical, save :: FirstPan=.false., LastPan=.false.
@@ -130,6 +131,11 @@
         Active_MW =INACTIVE_MW
 
         newline = char(10)
+        cstrgrid = 'Enter grid type:'//newline//&
+                   ' 0 = latitude/longitude (degrees)'//newline//&
+                   ' 1 = UTM coordinates (meters)'//newline//&
+                   ' 2 = Cartesian coordinates (meters)'//newline//&
+                   ' 3 = unspecified units'//newline//char(0)
         
 !        AutoGenFlag = 0
 !        newfile = .false.
@@ -230,7 +236,7 @@
           if(.not.Quit) then
             if(igridtype.eq.-9999) then !ask for grid type
               do
-                call PigPrompt('Enter grid type:', ans )
+                call PigPrompt(cstrgrid, ans )
                 READ( ans, *, iostat=ierr ) igridtype
                 if(ierr.eq.0) exit
               enddo
@@ -239,7 +245,7 @@
               call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
               if(ans(1:1).eq.'N') then
                 do
-                  call PigPrompt('Enter grid type:', ans )
+                  call PigPrompt(cstrgrid, ans )
                   READ( ans, *, iostat=ierr ) igridtype
                   if(ierr.eq.0) exit
                 enddo
@@ -316,7 +322,7 @@
           if(.not.Quit) then
             if(igridtype.eq.-9999) then !ask for grid type
               do
-                call PigPrompt('Enter grid type:', ans )
+                call PigPrompt(cstrgrid, ans )
                 READ( ans, *, iostat=ierr ) igridtype
                 if(ierr.eq.0) exit
               enddo
@@ -325,7 +331,7 @@
               call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
               if(ans(1:1).eq.'N') then
                 do
-                  call PigPrompt('Enter grid type:', ans )
+                  call PigPrompt(cstrgrid, ans )
                   READ( ans, *, iostat=ierr ) igridtype
                   if(ierr.eq.0) exit
                 enddo
@@ -401,7 +407,7 @@
           if(.not.quit) then
             if(igridtype.eq.-9999) then !ask for grid type
               do
-                call PigPrompt('Enter grid type:', ans )
+                call PigPrompt(cstrgrid, ans )
                 READ( ans, *, iostat=ierr ) igridtype
                 if(ierr.eq.0) exit
               enddo
@@ -410,7 +416,7 @@
               call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
               if(ans(1:1).eq.'N') then
                 do
-                  call PigPrompt('Enter grid type:', ans )
+                  call PigPrompt(cstrgrid, ans )
                   READ( ans, *, iostat=ierr ) igridtype
                   if(ierr.eq.0) exit
                 enddo
@@ -464,7 +470,7 @@
           if(.not.quit) then
             if(igridtype.eq.-9999) then !ask for grid type
               do
-                call PigPrompt('Enter grid type:', ans )
+                call PigPrompt(cstrgrid, ans )
                 READ( ans, *, iostat=ierr ) igridtype
                 if(ierr.eq.0) exit
               enddo
@@ -473,7 +479,7 @@
               call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
               if(ans(1:1).eq.'N') then
                 do
-                  call PigPrompt('Enter grid type:', ans )
+                  call PigPrompt(cstrgrid, ans )
                   READ( ans, *, iostat=ierr ) igridtype
                   if(ierr.eq.0) exit
                 enddo

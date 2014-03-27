@@ -170,7 +170,8 @@ void WPigGetString(char *prompt, int *anslen, char *retstring )
     /*printf ("int WPigGetString(%s)\n", prompt);*/
     /*printf ("int WPigGetString(%d)\n", *anslen);*/
 
-    prompt_string = XmStringCreateSimple(prompt);
+//    prompt_string = XmStringCreateSimple(prompt);
+    prompt_string = XmStringCreateLocalized(prompt);
 
     n =  0;
     XtSetArg(args[n], XmNselectionLabelString, prompt_string); n++;

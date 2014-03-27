@@ -55,9 +55,6 @@
       common /stepval/ currstep, firststep
 
       logical, save :: FlagPolar
-      logical, save :: FlagLin
-      logical, save :: FlagMerc
-      logical, save :: FlagUTM
       logical FlagN
       logical FlagG
       logical FlagD
@@ -111,7 +108,7 @@
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
       logical, save ::  newfile=.false., sample_point=.false.
       logical IN_BOX
-      character cstr*80, ans*10, PigCursYesNo*1, deltype*1
+      character cstr*256, ans*10, PigCursYesNo*1, deltype*1
       INTEGER PolyId, numvert
       real vertx1(maxvert+1),verty1(maxvert+1)
 
@@ -120,6 +117,7 @@
       real    MouseX, MouseY
       character*(80)  Message
       character*(20), save :: Program_name, Revision
+      character(256),save :: cstrgrid
       integer, parameter :: BDOWN = 1, BUP = 2
       real, save :: xPan1, yPan1, xZoom1, yZoom1
       logical, save :: FirstPan=.false., LastPan=.false.
@@ -133,6 +131,11 @@
         Active_MW =INACTIVE_MW
 
         newline = char(10)
+        cstrgrid = 'Enter grid type:'//newline//&
+                   ' 0 = latitude/longitude (degrees)'//newline//&
+                   ' 1 = UTM coordinates (meters)'//newline//&
+                   ' 2 = Cartesian coordinates (meters)'//newline//&
+                   ' 3 = unspecified units'//newline//char(0)
         
 !        AutoGenFlag = 0
 !        newfile = .false.
@@ -188,10 +191,7 @@
         call PigSetWorldCoordinates(0.0,1.0,0.0,1.0)
         call fullsize(0.0,1.0,0.0,1.0)
         call InitContVect
-        FlagLin=.false.
         FlagPolar=.false.
-        FlagMerc=.false.
-        FlagUTM=.false.
         FlagN=.false.
         FlagG=.false.
         FlagD=.false.
@@ -222,20 +222,10 @@
           sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
-              IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                  if(DispNodes) then
-                    call SaveNFinal(Quit)
-                  else
-                    call SaveFinal( change,Quit)
-                  endif
-                endif
-              else 
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
+              if(DispNodes) then
+                call SaveNFinal(Quit)
+              else
+                call SaveFinal( change,Quit)
               endif
             endif
           endif
@@ -244,6 +234,23 @@
           call OpenGridFile(Quit)
           call PigEraseMessage
           if(.not.Quit) then
+            if(igridtype.eq.-9999) then !ask for grid type
+              do
+                call PigPrompt(cstrgrid, ans )
+                READ( ans, *, iostat=ierr ) igridtype
+                if(ierr.eq.0) exit
+              enddo
+            else  !verify grid type
+              write(cstr,'(I2)') igridtype
+              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+              if(ans(1:1).eq.'N') then
+                do
+                  call PigPrompt(cstrgrid, ans )
+                  READ( ans, *, iostat=ierr ) igridtype
+                  if(ierr.eq.0) exit
+                enddo
+              endif
+            endif
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else
@@ -257,19 +264,10 @@
             endif
             FlagG = .true.
             FlagN = .false.
-            FlagLin=.false.
-            if(int(ScaleY).eq.-999) then
-              FlagPolar=.true.
-            else
-              FlagPolar=.false.
-            endif
-            FlagMerc=.false.
-            FlagUTM=.false.
-!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
             call DrwFig(change)
 !            Finished = .FALSE.
           endif
-          !Active_CW = INACTIVE_CW
+
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_NodeMenuDisable
@@ -277,45 +275,26 @@
           if(numpolys.gt.0) then
             call MNU_PolyMenuEnable
           endif
-          !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry AddGridFileCB() !add grid
           call MNU_MainMenuDisable
           sample_point=.false.
-          IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-            IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
-              Quit = .false.
-              FlagG = .false.
-              call OpenGridFile(Quit)
-              call PigEraseMessage
-              if(.not.Quit) then
-                call Merge_Grid()
-                IF (itot.gt.1000) outlineonly = .TRUE.
-                call InitVertexMarkers
-                CHANGE  = .TRUE.
-                FlagG = .true.
-                FlagN = .false.
-                call DrwFig(change)
-              endif
+          Quit = .false.
+!          FlagG = .false.
+          call OpenGridFile(Quit)
+          call PigEraseMessage
+          if(.not.Quit) then
+            call Merge_Grid()
+            IF (itot.gt.1000) then
+              outlineonly = .TRUE.
+            else
+              outlineonly = .FALSE.
             endif
-          else
-            Quit = .false.
-!            FlagG = .false.
-            call OpenGridFile(Quit)
-            call PigEraseMessage
-            if(.not.Quit) then
-              call Merge_Grid()
-              IF (itot.gt.1000) then
-                outlineonly = .TRUE.
-              else
-                outlineonly = .FALSE.
-              endif
-              call InitVertexMarkers
-              CHANGE  = .TRUE.
-              FlagG = .true.
-              FlagN = .false.
-              call DrwFig(change)
-            endif
+            call InitVertexMarkers
+            CHANGE  = .TRUE.
+            FlagG = .true.
+            FlagN = .false.
+            call DrwFig(change)
           endif
           !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
@@ -325,33 +304,39 @@
           if(numpolys.gt.0) then
             call MNU_PolyMenuEnable
           endif
-          !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry OpenNodeFileCB()
           call MNU_MainMenuDisable
           sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
-              IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                  if(DispNodes) then
-                    call SaveNFinal(Quit)
-                  else
-                    call SaveFinal( change,Quit)
-                  endif
-                endif
-              else 
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
+              if(DispNodes) then
+                call SaveNFinal(Quit)
+              else
+                call SaveFinal( change,Quit)
               endif
             endif
           endif
           FlagN = .false.
           call OpenNodeFile( Quit)
           if(.not.Quit) then
+            if(igridtype.eq.-9999) then !ask for grid type
+              do
+                call PigPrompt(cstrgrid, ans )
+                READ( ans, *, iostat=ierr ) igridtype
+                if(ierr.eq.0) exit
+              enddo
+            else  !verify grid type
+              write(cstr,'(I2)') igridtype
+              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+              if(ans(1:1).eq.'N') then
+                do
+                  call PigPrompt(cstrgrid, ans )
+                  READ( ans, *, iostat=ierr ) igridtype
+                  if(ierr.eq.0) exit
+                enddo
+              endif
+            endif
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else
@@ -361,11 +346,6 @@
             CHANGE  = .FALSE.
             FlagN = .true.
             FlagG = .false.
-            FlagLin=.false.
-            FlagPolar=.false.
-            FlagMerc=.false.
-            FlagUTM=.false.
-!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
             call DrwFig(change)
             tottr = 0
             newfile = .true.
@@ -378,7 +358,6 @@
           if(numpolys.gt.0) then
             call MNU_PolyNodeMenuEnable
           endif
-          !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry AddNodeFileCB()
           if(.not.FlagN) then
@@ -387,40 +366,21 @@
           endif
           call MNU_MainMenuDisable
           sample_point=.false.
-          IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-            IF(PigCursYesNo('Transformed coords-Continue?').EQ.'Y') THEN
-              FlagN = .true.
-              call AddNodeFile( Quit)
-              if(.not.Quit) then
-                IF (itot.gt.1000) then
-                  outlineonly = .TRUE.
-                else
-                  outlineonly = .FALSE.
-                endif
-                firststep = .TRUE.
-                CHANGE  = .FALSE.
-                FlagN = .true.
-                FlagG = .false.
-              endif
-              call DrwFig(change)
+          FlagN = .true.
+          call AddNodeFile( Quit)
+          if(.not.Quit) then
+            IF (itot.gt.1000) then
+              outlineonly = .TRUE.
+            else
+              outlineonly = .FALSE.
             endif
-          else
+            firststep = .TRUE.
+            CHANGE  = .FALSE.
             FlagN = .true.
-            call AddNodeFile( Quit)
-            if(.not.Quit) then
-              IF (itot.gt.1000) then
-                outlineonly = .TRUE.
-              else
-                outlineonly = .FALSE.
-              endif
-              firststep = .TRUE.
-              CHANGE  = .FALSE.
-              FlagN = .true.
-              FlagG = .false.
-              call DrwFig(change)
-              newfile = .true.
-              tottr = 0
-            endif
+            FlagG = .false.
+            call DrwFig(change)
+            newfile = .true.
+            tottr = 0
           endif
           !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
@@ -430,41 +390,43 @@
           if(numpolys.gt.0) then
             call MNU_PolyNodeMenuEnable
           endif
-          !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
           return
         entry XSectionCB()
           call MNU_MainMenuDisable
-          if(itot.gt.0) then
           sample_point=.false.
+          if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
-              IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                  if(DispNodes) then
-                    call SaveNFinal(Quit)
-                  else
-                    call SaveFinal( change,Quit)
-                  endif
-                endif
-              else 
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
+              if(DispNodes) then
+                call SaveNFinal(Quit)
+              else
+                call SaveFinal( change,Quit)
               endif
             endif
           endif
           call XSection( ncode1, Quit )
           if(.not.quit) then
+            if(igridtype.eq.-9999) then !ask for grid type
+              do
+                call PigPrompt(cstrgrid, ans )
+                READ( ans, *, iostat=ierr ) igridtype
+                if(ierr.eq.0) exit
+              enddo
+            else  !verify grid type
+              write(cstr,'(I2)') igridtype
+              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+              if(ans(1:1).eq.'N') then
+                do
+                  call PigPrompt(cstrgrid, ans )
+                  READ( ans, *, iostat=ierr ) igridtype
+                  if(ierr.eq.0) exit
+                enddo
+              endif
+            endif
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else
               outlineonly = .FALSE.
             endif
-            FlagLin=.false.
-            FlagPolar=.false.
-            FlagMerc=.false.
-            FlagUTM=.false.
             if(ncode1.eq.0) then
               FlagG = .false.
               FlagN = .true.
@@ -485,7 +447,6 @@
               endif
             endif
             call InitVertexMarkers
-!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
             change = .true.
             call DrwFig(change)
           endif
@@ -494,43 +455,48 @@
           call MNU_MainMenuEnable
           return
         entry SampleCB()
-          if(sample_point) then
-            quit = .false.
-          else
-            call MNU_MainMenuDisable
-            if(itot.gt.0) then
-              IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
-                IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                  IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                    if(DispNodes) then
-                      call SaveNFinal(Quit)
-                    else
-                      call SaveFinal( change,Quit)
-                    endif
-                  endif
-                else 
-                  if(DispNodes) then
-                    call SaveNFinal(Quit)
-                  else
-                    call SaveFinal( change,Quit)
-                  endif
-                endif
+          call MNU_MainMenuDisable
+          if(itot.gt.0) then
+            IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
+              if(DispNodes) then
+                call SaveNFinal(Quit)
+              else
+                call SaveFinal( change,Quit)
               endif
             endif
-            FlagLin=.false.
-            FlagPolar=.false.
-            FlagMerc=.false.
-            FlagUTM=.false.
-!            call SetTransChkFlags(FlagLin,FlagPolar,FlagMerc,FlagUTM)
-            call Sample( quit )
-!              IF (itot.gt.1000) outlineonly = .TRUE.
           endif
-!          if(.not.quit) then
-!            Active_MW = INACTIVE_MW
-!            sample_point=.true.
-!            call MNU_GridAndNodeMenuDisable
-!            call PigStatusMessage('Sample ACTIVE: Pick a point')
-!          else
+
+          call Sample( quit )
+          if(.not.quit) then
+            if(igridtype.eq.-9999) then !ask for grid type
+              do
+                call PigPrompt(cstrgrid, ans )
+                READ( ans, *, iostat=ierr ) igridtype
+                if(ierr.eq.0) exit
+              enddo
+            else  !verify grid type
+              write(cstr,'(I2)') igridtype
+              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+              if(ans(1:1).eq.'N') then
+                do
+                  call PigPrompt(cstrgrid, ans )
+                  READ( ans, *, iostat=ierr ) igridtype
+                  if(ierr.eq.0) exit
+                enddo
+              endif
+            endif
+            IF (itot.gt.1000) then
+              outlineonly = .TRUE.
+            else
+              outlineonly = .FALSE.
+            endif
+            CHANGE  = .FALSE.
+            FlagN = .true.
+            FlagG = .false.
+            call DrwFig(change)
+            tottr = 0
+            newfile = .true.
+          endif
           Active_MW = INACTIVE_MW
           sample_point=.false.
           call MNU_MainMenuEnable
@@ -539,7 +505,6 @@
           if(numpolys.gt.0) then
             call MNU_PolyNodeMenuEnable
           endif
-!          endif
           return
         entry SaveInterimCB()
           if(itot.gt.0) then
@@ -555,20 +520,10 @@
         entry SaveFinalCB()
           call MNU_MainMenuDisable
           if(itot.gt.0) then
-            IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-              IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
-              endif
-            else 
-              if(DispNodes) then
-                call SaveNFinal(Quit)
-              else
-                call SaveFinal( change,Quit)
-              endif
+            if(DispNodes) then
+              call SaveNFinal(Quit)
+            else
+              call SaveFinal( change,Quit)
             endif
           else
             call PigPutMessage('There are no nodes to save')
@@ -580,20 +535,10 @@
         entry QuitCB()
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE file before quitting?').EQ.'Y') THEN
-              IF(FlagPolar.or.FlagMerc.or.FlagUTM) then
-                IF(PigCursYesNo('Transformed-Save anyway?').EQ.'Y') THEN
-                  if(DispNodes) then
-                    call SaveNFinal(Quit)
-                  else
-                    call SaveFinal( change,Quit)
-                  endif
-                endif
-              else 
-                if(DispNodes) then
-                  call SaveNFinal(Quit)
-                else
-                  call SaveFinal( change,Quit)
-                endif
+              if(DispNodes) then
+                call SaveNFinal(Quit)
+              else
+                call SaveFinal( change,Quit)
               endif
             endif
           endif
@@ -676,77 +621,45 @@
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
+          
        entry SPXCB()
-          FlagPolar = .not.FlagPolar
-! *** check for existing transform
-          if(FlagUTM) then
-            cstr = 'Transverse Mercator transform in effect.'//char(13)//&
-                    'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'Polar Transform')
+! *** check grid type
+          if(igridtype.eq.0) then
+            call PolarTransform
+            FlagPolar = .true.
+            igridtype = -1
+            call PigMessageOK('Transform to local plane', 'Polar Transform')
+          elseif(igridtype.eq.-1) then
+            call XYTransform
             FlagPolar = .false.
-          elseif(FlagMerc) then
-            cstr ='Mercator transform in effect.'//char(13)//&
-                   'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'Polar Transform')
-            FlagPolar = .false.
+            igridtype = 0
+            call PigMessageOK('Transform to longitude/latitude (degrees)', 'Polar Transform')
           else
-            if(FlagPolar) then
-              call PolarTransform
-            else
-              call XYTransform
-            endif
-!            call SetPolarChkFlags(FlagPolar)
-            Redrw = .TRUE.
-            IF (Redrw) call DrwFig(CHANGE)
+            cstr = 'Cannot transform this grid type'//newline//&
+                   'Not a latitue/longitude grid'//char(0)
+            call PigMessageOK(cstr, 'Polar Transform')
           endif
+          Redrw = .TRUE.
+          IF (Redrw) call DrwFig(CHANGE)
           return
-!        entry MercXCB()
-!          FlagMerc = .not.FlagMerc
-! *** check for existing transform
-!          if(FlagPolar) then
-!            cstr ='SP Polar transform in effect.'//char(13)//&
-!                   'Perform inverse transform first'//char(0)
-!            call PigMessageOK(cstr, 'Mercator Transform')
-!            FlagMerc = .false.
-!          elseif(FlagUTM) then
-!            cstr ='Transverse Mercator transform in effect.'//char(13)//&
-!                  'Perform inverse transform first'//char(0)
-!            call PigMessageOK(cstr, 'Mercator Transform')
-!            FlagMerc = .false.
-!          else
-!            if(FlagMerc) then
-!              call MercTransform
-!            else
-!              call InverseMercTransform
-!            endif
-!!            call SetMercChkFlags(FlagMerc)
-!            Redrw = .TRUE.
-!            IF (Redrw) call DrwFig(CHANGE)
-!          endif
-!          return
+          
         entry TMXCB()
-          FlagUTM = .not.FlagUTM
-! *** check for existing transform
-        if(FlagPolar) then
-            cstr ='SP Polar transform in effect.'//char(13)//&
-                  'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'TM Transform')
-            FlagUTM = .false.
-          elseif(FlagMerc) then
-            cstr ='Mercator transform in effect.'//char(13)//&
-                  'Perform inverse transform first'//char(0)
-            call PigMessageOK(cstr, 'TM Transform')
-            FlagUTM = .false.
+! *** check grid type
+          if(igridtype.eq.0) then
+            call TMTransform
+            igridtype = 1
+            call PigMessageOK('Transform to UTM (meters)', 'UTM Transform')
+          elseif(igridtype.eq.1) then
+            call InverseTMTransform
+            igridtype = 0
+            call PigMessageOK('Transform to longitude/latitude (degrees)', 'UTM Transform')
           else
-            if(FlagUTM) then
-              call TMTransform
-            else
-              call InverseTMTransform
-            endif
-!            call SetTMChkFlags(FlagUTM)
-            Redrw = .TRUE.
-            IF (Redrw) call DrwFig(CHANGE)
+            cstr = 'Cannot transform this grid type'//newline//&
+                   'Not a latitue/longitude or UTM grid'//char(0)
+            call PigMessageOK(cstr, 'UTM Transform')
           endif
+          Redrw = .TRUE.
+          IF (Redrw) call DrwFig(CHANGE)
           return
 
 ! Info menu
@@ -768,15 +681,12 @@
           return
         entry NodeCheckCB()
           call FlagsVertices()
-!          Active_MW = INACTIVE_MW
           return
         entry EleCheckCB()
           call FlagsTriangles_Init()
-!          Active_MW = INACTIVE_MW
+
           return
         entry EraseCheckCB()
-!          call FlagsEraseAll
-!          call THiOff
           TrHiOff=.true.
           call VMarkOff
           call ErasePermMarkers
@@ -876,7 +786,6 @@
               call InitVertexMarkers
               call DrwFig(.FALSE.)
 !              call Expand(nrec)
-              !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
             endif
           else
             call PigPutMessage('Cannot generate front')
@@ -910,7 +819,6 @@
               if(numpolys.gt.0) then
                 call MNU_PolyMenuEnable
               endif
-              !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
             endif
           else
             call PigPutMessage('Cannot generate without boundary nodes')
@@ -954,7 +862,6 @@
               if(numpolys.gt.0) then
                 call MNU_PolyMenuEnable
               endif
-              !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
             endif
           else
             call PigPutMessage('Cannot generate front')
@@ -1043,7 +950,6 @@
               if(numpolys.gt.0) then
                 call MNU_PolyMenuEnable
               endif
-              !call SetMenuChkFlags(FlagN, FlagG,FlagC,FlagD)
             endif
           else
             call PigPutMessage('Cannot triangulate without nodes')
@@ -1596,8 +1502,8 @@
             if(ans(1:1).eq.'Y') then
             !enter zlimit
               call PigPrompt( 'Enter zlimit (cutoff>zlimit):',ans)
-              call PigReadReal(ans,zlimit,success)
-              if(.not.success) then
+              read(ans,*,iostat=ierr) zlimit
+              if(ierr.ne.0) then
                 call PigPutMessage('Error reading zlimit')
                 return
               endif
@@ -1638,15 +1544,15 @@
 
             !enter zlimit
             call PigPrompt( 'Enter zlimit (cutoff>zlimit):',ans)
-            call PigReadReal(ans,zlimit,success)
-            if(.not.success) then
+            read(ans,*,iostat=ierr) zlimit
+            if(ierr.ne.0) then
               call PigPutMessage('Error reading zlimit')
               return
             endif
 
             call PigPrompt( 'Enter zlow limit (cutoff<zlow):',ans)
-            call PigReadReal(ans,zlow,success)
-            if(.not.success) then
+            read(ans,*,iostat=ierr) zlow
+            if(ierr.ne.0) then
               call PigPutMessage('Error reading zlow')
               return
             endif
@@ -1683,16 +1589,16 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
 
-            success = .false.
-            do while(.not.success)
+            do
               call PigPrompt('Enter scale factor for depths : ',ans)
-              call PigReadReal(ans, zscale, Success)
+              read(ans,*,iostat=ierr) zscale
+              if(ierr.eq.0) exit
             enddo
 
-            success = .false.
-            do while(.not.success)
+            do
               call PigPrompt('Enter amount to add to depths : ',ans)
-              call PigReadReal(ans, zlimit, Success)
+              read(ans,*,iostat=ierr) zlimit
+              if(ierr.eq.0) exit
             enddo
 
             call SetDepth2 (itot,zscale,zlimit,depth,polylist)

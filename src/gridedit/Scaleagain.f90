@@ -416,8 +416,6 @@
 !     Purpose : To transform coordinateds to UTM from lat/lon
 
       use MainArrays
-      
-      implicit none
 
       integer LIMWIN
       PARAMETER( LIMWIN = 10 )
@@ -427,12 +425,13 @@
       REAL    XMAX, YMAX, XMIN, YMIN
       COMMON  /MAXRG/ XMAX,YMAX,XMIN,YMIN
 
-      character(4) cmpstr
       character(2) zonestr
+      character(20) utmchars
       character(80) ans,text
       real :: tmpx, tmpy, gxmax, gxmin, gxc
-      integer :: tmpint,cmp,zone,jj,istat
-      real to_degrees, to_radians
+      integer grid_zone(2)
+      logical success
+      real (kind=8) lambda0
 
 
 ! *** check data for proper limits
@@ -458,39 +457,51 @@
       gxmax = MAXVAL(dxray(1:ITOT))
       gxmin = MINVAL(dxray(1:ITOT))
       gxc = (gxmax + gxmin) / 2 ! Center
+      gymax = MAXVAL(dyray(1:ITOT))
+      gymin = MINVAL(dyray(1:ITOT))
+      gyc = (gymax + gymin) / 2 ! Center
 
-!     Find zone
-      zone = FLOOR(gxc / 6) + 1
-      IF( zone.lt.1 ) then
-        zone = FLOOR((gxc + 180) / 6) + 1
-      ENDIF
-      write(zonestr,'(I0.2)') zone
+!     Figure out the UTM zone, as well as lambda0
+      utmchars = "CDEFGHJKLMNPQRSTUVWX"
 
-!     Find central meridan
-      cmp = (FLOOR(gxc / 6) * 6) + 3
-      write(cmpstr,'(I4)') cmp
+      call get_grid_zone (gxc, gyc, grid_zone, lambda0)
+      write(zonestr,'(I0.2)') grid_zone(1)
 
-!     Prompt user for central meridan or UTM zone number
-      do
-        call PigPrompt('Enter UTM central meridan ('//cmpstr &
-            //'?) or zone number in format Z** (Z'//zonestr//'?): ',ans)
+!     Prompt user for UTM zone
+      success = .false.
+      do while(.not.success)
+        call PigPrompt('Enter UTM zone number ('//zonestr//utmchars(grid_zone(2):grid_zone(2)) &
+            //'?): ',ans)
 
-        IF (ans(:1).eq.'Z') then ! Zone input - calculate central meridan
-          read(ans(2:),*,iostat=istat)tmpint
-          if(istat.eq.0) cmp = nint(tmpint*6.0-3) - 180
-        ELSE ! Not ZONE input
-          read(ans,*,iostat=istat)tmpx
-          if(istat.eq.0) cmp = nint(tmpx)
-        ENDIF
-        if(istat.eq.0) exit
+          call PigReadReal(ans(1:2), tmpx, Success)
+          grid_zone(1) = nint(tmpx)
+
+!         Check for grid lat zone
+          DO JJ = 1,20
+            IF(ans(3:3).eq.utmchars(JJ:JJ)) then
+              grid_zone(2) = JJ
+            END IF
+          END DO
+
       enddo
+
+!     Get new central meridan (lambda0) and validate.
+      call get_lambda0 (grid_zone, lambda0, ierr)
+      if (ierr .NE. 0) then
+        write (*,*) 'Unable to translate UTM to LL'
+        return
+      endif
+
 
 
 !     Loop through all nodes and transform from lat/lon to UTM
+      write(*,*)grid_zone(1),grid_zone(2)
       DO JJ = 1, ITOT
-        CALL GEOUTM(to_radians(dyray(jj)),to_radians(dxray(jj)),to_radians(real(cmp)),tmpy,tmpx,tmpint)
+
+        CALL ll2utm (dxray(jj), dyray(jj), tmpx, tmpy, lambda0, 3)
         dyray(jj) = tmpy
         dxray(jj) = tmpx
+
       enddo
 
 !     Redraw fullsize
@@ -501,33 +512,44 @@
       call fullsize(xmin,ymin,xmax,ymax)
 
       RETURN
+
 
 
       Entry InverseTMTransform
 
-!     Inverse transformation
+!
+!!     Inverse transformation
+!
 
-      do
-        call PigPrompt('Enter UTM central meridan or zone number in format Z**: ',ans)
+!     Prompt user for UTM zone
+      success = .false.
+      grid_zone(2) = 0
+      utmchars = "CDEFGHJKLMNPQRSTUVWX"
+      do while(.not.success)
+        call PigPrompt('Enter UTM zone number (##S): ',ans)
 
-        IF (ans(:1).eq.'Z') then ! Zone input - calculate central meridan
-          read(ans(2:),*,iostat=istat)tmpint
-          if(istat.eq.0) cmp = nint(tmpint*6.0-3) - 180
-        ELSE ! Not ZONE input
-          read(ans,*,iostat=istat)tmpx
-          if(istat.eq.0) cmp = nint(tmpx)
-        ENDIF
-        if(istat.eq.0) exit
+          call PigReadReal(ans(1:2), tmpx, Success)
+          grid_zone(1) = nint(tmpx)
+
+!         Check for grid lat zone
+          DO JJ = 1,20
+            IF(ans(3:3).eq.utmchars(JJ:JJ)) then
+              grid_zone(2) = JJ
+            END IF
+          END DO
+
+          IF(grid_zone(2).eq.0) then
+            success = .false.
+          END IF
       enddo
 
-
 !     Loop through all nodes and transform from UTM to lat/lon
-
+      write(*,*)grid_zone(1),grid_zone(2)
       DO JJ = 1, ITOT
 
-        CALL UTMGEO(tmpy,tmpx,to_radians(real(cmp)),dyray(jj),dxray(jj),tmpint)
-        dyray(jj) = to_degrees(tmpy)
-        dxray(jj) = to_degrees(tmpx)
+        CALL utm2ll(dxray(jj),dyray(jj),tmpx,tmpy,grid_zone,3)
+        dyray(jj) = tmpy
+        dxray(jj) = tmpx
         
       enddo
 
@@ -540,366 +562,558 @@
 
       END
 
-!***************************************************************
-
-      SUBROUTINE GEOUTM(LAT,LONGP,CMP,NORTH,EAST,ZONE)
-
+!*************************************************************************
+!/*
+! * Peter Daly
+! * MIT Ocean Acoustics
+! * pmd@mit.edu
+! * 25-MAY-1998
+! * 
+! Revisions:
+!   Jan. 25, 1999 DHG  Port to Fortran 90
+!   Mar. 23, 1999 DHG  To add Lewis Dozier's fix to "rr1" calculation 
+!   Mar. 26, 2014 KLO  Edited ll2utm so that lambda0 is an input rather than output
+! * 
+! Description:
+! * 
+! * These routines convert UTM to Lat/Longitude and vice-versa,
+! * using the WGS-84 (GPS standard) or Clarke 1866 Datums.
+! * 
+! * The formulae for these routines were originally taken from
+! * Chapter 10 of "GPS: Theory and Practice," by B. Hofmann-Wellenhof,
+! * H. Lictenegger, and J. Collins. (3rd ed) ISBN: 3-211-82591-6,
+! * however, several errors were present in the text which
+! * made their formulae incorrect.
+! *
+! * Instead, the formulae for these routines was taken from
+! * "Map Projections: A Working Manual," by John P. Snyder
+! * (US Geological Survey Professional Paper 1395)
+! *
+! * Copyright (C) 1998 Massachusetts Institute of Technology
+! *               All Rights Reserved
+! *
+! * RCS ID: $Id: convert_datum.c,v 1.2 1998/06/04 20:50:47 pmd Exp pmd $
+! */
 !
-!    COPYRIGHT 1991, DEPARTMENT OF FISHERIES AND OCEANS,
-!            GOVERNMENT OF CANADA.
-!    INSTITUTE OF OCEAN SCIENCES, SIDNEY, B.C.
+!*************************************************************************
 !
-!    SOFTWARE PRODUCED OR MODIFIED UNDER CONTRACT BY 
-!            CHANNEL CONSULTING, 2167 GUERNSEY ST., 
-!            VICTORIA, B.C., CANADA.
-!            (604) 598-9500
-!
-!    AUTHOR          :    ADRIAN DOLLING, but see below.
-!    PROJECT         :    fractals
-!    SCIENTIFIC AUTH :    Rick Thomson
-!    DATE CREATED    :    25 June 1991
-!    MODULE NAME     :    geoutm
-!    PURPOSE         :    Convert geographic coordinates to UTM coordinates.
-!   No changes here, just adding documentation to
-!   routine inherited from Sherman Oraas (CHS)
-!   ONE CHANGE INTRODUCED:  Original routine had sign
-!   convention localized for W.Coast N. Am.  The longitude
-!   increased in value going to the west.  Normal convention
-!   is to increase to the east.  The change here leaves the
-!   following convention:
-!       latitude  : N is +ve, S is -ve
-!       longitude : E is +ve, W is -ve.
-!    CAUTIONS      :  This routine uses the central meridian as supplied.
-!   the utm grid has a set of standard zones, which are at
-!   6 degree intervals.  The returned zone is the zone number
-!   Zone 1 is centered on -177 deg and covers -180 to -174 
-!   deg.  Zone numbers increase by 1 for each 6 degree zone
-!   to the east.
-!    METHODS         :
-!    EXTERNAL REFS.  :  US Army technical manual TM 5-241-8.  
-!   Universal Transverse Mercator Grid.  1958.
-!
-!modification history:
-!code    date        author        purpose
-!agd01   25 june 91  agd     remove implicit typing
-!agd02   28June 91   agd     Modify sign convention as above
-!agd03   ?       agd     Diagnostic printing (normally commented out)
-!agd04   ?       agd     Modified calculation of zone number. Reason
-!         unknown, but related to precision/rounding.
-!         (agd 93/oct/18)
-!
-!
-!
-! GEOGRAPHI ! TO TRANSVERSE MERCATOR POSITIONS
-!    
-! FORMULAS FROM GEODESY, THIRD EDITION, BY G.BOMFORD
-!
-! WRITTEN BY KALMAN CZOTTER JULY 1978
-!
+subroutine get_grid_zone (longitude, latitude, grid_zone, lambda0)
 
-!***************************************************************
+IMPLICIT NONE
 
-!   Changes by Kristoffer Lorentsen,
-!   Cascadia Coast Research
-!   March 2014
+real (kind=8) longitude, latitude
+integer       grid_zone(2)
+real (kind=8) lambda0
 
-!   Changes:
-!      Removed input parameters for a nd f 
+   integer  zone_long, zone_lat
 
+   real (kind=8) M_PI
+!!!   parameter (M_PI = 3.141592654)
 
-!***************************************************************
-      
-      implicit none
+!-------------------------------------------------------------------------
 
-!agd01 IMPLICIT READ (A-Z)
-!agd01 INTEGER ZONE,ICM,IMIN
-      INTEGER ZONE !output - UTM zone
-!agd01 - start added definitions
-      REAL lat !radians north of equator - input
-      REAL longp !radians east of Greenwich - input
-      REAL long !radians west of Greenwich - internal
-      REAL cmp !radians - input central meridian 
-   !(longitude) east of Greenwich
-      REAL cm !radians - internal central meridian 
-   !(longitude) west of Greenwich
-      REAL north !?? - output northing
-      REAL east !?? - output easting
-      REAL :: a = 6378137.000 !metres - ellipse semi-major axis - input - use 6378137.000
-      REAL :: f = 0.003352810681 !flatenning ... input - use 0.003352810681 - is the same
-   !as (1-eccentricity)
-!
-!to obtain ellipse and flatenning parameters, run the program
-!ccs$hydrog:[oraas1.microvax_dua0.prod]convert.exe
-!and select the NAD83 geoid.
-!
-!agd01 - end of input/output parameters
-      REAL M0 !
-      REAL EC2 !
-      REAL EC4 !
-      REAL EC6 !
-      REAL EP !
-      REAL V !
-      REAL VP !
-      REAL VP2 !
-      REAL A0 !
-      REAL A2 !
-      REAL A4 !
-      REAL A6 !
-      REAL M !
-      REAL W !
-      REAL W2 !
-      REAL W3 !
-      REAL W4 !
-      REAL W5 !
-      REAL W6 !
-      REAL W7 !
-      REAL W8 !
-      REAL T !
-      REAL T2 !
-      REAL T4 !
-      REAL T6 !
-      REAL VSIN     !
-      REAL NORTH1     !
-      REAL NORTH2     !
-      REAL NORTH3     !
-      REAL NORTH4     !
-      REAL EAST1     !
-      REAL EAST2     !
-      REAL EAST3     !
-      REAL sec !seconds - internal - UTM zone central meridian ?
-! REAL rad_to_deg
-!agd01 - end added definitions
-      INTEGER ICM !degrees - internal - UTM zone central meridian ?
-      INTEGER IMIN !minutes - internal - UTM zone central meridian ?
-!
-! integer nint
-!agd02 start
- !change coordinate system from +ve E to +ve W.
-      cm = - cmp
-      long = -longp
-!agd02 end
+  m_pi = ACOS (-1.0)
 
-      M0=.9996
-      EC2=F*(2-F)
-      EC4=EC2**2
-      EC6=EC2**3
-      EP=EC2/(1-EC2)
-      V=A*(1+.5*EC2*SIN(LAT)**2+3/8*EC4*SIN(LAT)**4 &
-        +5/16*EC6*SIN(LAT)**6)
-      VP=1+EP*COS(LAT)**2
-      VP2=VP*VP
-      A0=1-1/4*EC2-3/64*EC4-5/256*EC6
-      A2=3/8*(EC2+1/4*EC4+15/128*EC6)
-      A4=15/256*(EC4+3/4*EC6)
-      A6=35/3072*EC6
-      M=A*(A0*LAT-A2*SIN(2*LAT)+A4*SIN(4*LAT) &
-        -A6*SIN(6*LAT))
-      W=CM-LONG
-      W2=W*W
-      W3=W2*W
-      W4=W3*W
-      W5=W4*W
-      W6=W5*W
-      W7=W6*W
-      W8=W7*W
-      T=SIN(LAT)/COS(LAT)
-      T2=T*T
-      T4=T2**2
-      T6=T2**3
-      VSIN=V*SIN(LAT)
-      NORTH1=VSIN*W2/2*COS(LAT)
-      NORTH2=VSIN*W4/24*COS(LAT)**3*(4*VP2+VP-T2)
-      NORTH3=VSIN*W6/720*COS(LAT)**5*(8*VP**4*(11-24*T2) &
-        -28*VP**3*(1-6*T2)+VP2*(1-32*T2)-VP*(2*T2)+T4)
-      NORTH4=VSIN*W8/40320*COS(LAT)**7*( &
-        1385-3111*T2+543*T4-T6)
-      NORTH=M0*(M+NORTH1+NORTH2+NORTH3+NORTH4)
-      EAST1=V*W*COS(LAT)+V*W**3/6*COS(LAT)**3*(VP-T2)
-      EAST2=V*W**5/120*COS(LAT)**5*(4*VP**3*(1-6*T2) &
-        +VP2*(1+8*T2)-VP*(2*T2)+T4)
-      EAST3=V*W7/5040*COS(LAT)**7*(61-479*T2+179*T4-T6)
-      EAST=M0*(EAST1+EAST2+EAST3)
-      EAST=500000+EAST
-      CALL RADDMS(CM,ICM,IMIN,SEC)
-! ZONE=(183-ICM)/6.
-      ZONE=ifix(float(183-ICM)/6.) !agd04
-!agd03
-! rad_to_deg = 57.295779513082321D0
-! print  *,cmp*rad_to_deg,zone,cm*rad_to_deg,icm,imin,sec
-! if  (nint(cmp*rad_to_deg).ne.(-183+6*zone))
-!    1   print *,'Warning: central meridian not a standard meridian',
-!    1   nint(cmp*rad_to_deg),' should use cm=',-183+6*zone
-!agd03
-      RETURN
-      END
+!  /* Solve for the grid zone, returns the central meridian */
+
+  zone_long = INT ((longitude + 180.0) / 6.0) + 1
+  zone_lat = NINT ((latitude + 80.0) / 8.0)
+  grid_zone(1) = zone_long
+  grid_zone(2) = zone_lat
+
+!  /* First, let's take care of the polar regions */
+
+  if ((latitude < -80.0) .OR. (latitude > 84.0)) then
+     lambda0 = 0.0 * M_PI / 180.0
+     return
+  endif
+
+!  /* Now the special "X" grid */
+
+  if (latitude .GT. 72.0 .AND. &
+      longitude .GT. 0.0 .AND. longitude .LT. 42.0) then
+     if (longitude .LT. 9.0) then
+        lambda0 = 4.5 * M_PI / 180.0
+     elseif (longitude .LT. 21.0) then
+        lambda0 = 15.0 * M_PI / 180.0
+     elseif (longitude .LT. 33.0) then
+        lambda0 = 27.0 * M_PI / 180.0
+     elseif (longitude .LT. 42.0) then
+        lambda0 = 37.5 * M_PI / 180.0
+     endif
+     return
+  endif
+
+!  /* Handle the special "V" grid */
+
+  if (latitude .GT. 56.0 .AND. latitude .LT. 64.0 .AND. &
+      longitude .GT. 0.0 .AND. longitude .LT. 12.0) then
+     if (longitude .LT. 3.0) then
+        lambda0 = 1.5 * M_PI / 180.0
+     elseif (longitude .LT. 12.0) then
+        lambda0 = 7.5 * M_PI / 180.0
+     endif
+     return
+  endif
+
+!  /* The remainder of the grids follow the standard rule */
+
+  lambda0 = (FLOAT (zone_long - 1) * 6.0 + (-180.0) + 3.0) * M_PI / 180.0
+  
+  return
+  end
+
+!*************************************************************************
+
+subroutine get_lambda0 (grid_zone, lambda0, ierr)
+
+IMPLICIT NONE
+
+integer       grid_zone(2)
+real (kind=8) lambda0
+integer       ierr
+
+   integer zone_long
+   integer zone_lat
+   real (kind=8) latitude, longitude
+
+   real (kind=8) M_PI
+!!!   parameter (M_PI = 3.141592654)
+ 
+!---------------------------------------------------------------------------
 
 
-!***************************************************************
+  m_pi = ACOS (-1.0)
+
+  !/* Given the grid zone, then set the central meridian, lambda0 */
+
+  !/* Check the grid zone format */
+
+  zone_long = grid_zone(1)
+  zone_lat = grid_zone(2)
+  if ((zone_long .LT. 1) .OR. (zone_long .GT. 61)) then
+    write (*,*) 'Invalid grid zone format: ', zone_long, zone_lat
+    ierr = -1
+    return 
+  endif
+
+  longitude = (FLOAT (zone_long - 1) * 6.0) - 180.0
+  latitude = (FLOAT (zone_lat) * 8.0) - 80.0
+
+  !/* Take care of special cases */
+
+  if ((latitude .LT. -80.0) .OR. (latitude .GT. 84.0)) then
+    lambda0 = 0.0
+    ierr = 0
+    return 
+  endif
+
+  if (latitude .GT. 56.0 .AND. latitude .LT. 64.0 .AND. &
+      longitude .GT. 0.0 .AND. longitude .LT. 12.0) then
+     if (longitude .LT. 3.0) then
+        lambda0 = 1.5 * M_PI / 180.0
+     elseif (longitude .LT. 12) then
+        lambda0 = 7.5 * M_PI / 180.0
+     endif
+     ierr = 0
+     return
+  endif
+  
+  if (latitude .GT. 72.0 .AND. &
+      longitude .GT. 0.0 .AND. longitude < 42.0) then
+     if (longitude .LT. 9.0) then
+        lambda0 = 4.5 * M_PI / 180.0
+     elseif (longitude .LT. 21.0) then
+        lambda0 = 15.0 * M_PI / 180.0
+     elseif (longitude .LT. 33.0) then
+        lambda0 = 27.0 * M_PI / 180.0
+     elseif (longitude .LT. 42.0) then
+        lambda0 = 37.5 * M_PI / 180.0
+     endif
+     ierr = 0
+     return
+  endif
+
+  !/* Now handle standard cases */
+
+  lambda0 = (FLOAT (zone_long - 1) * 6.0 + (-180.0) + 3.0) * M_PI / 180.0
+
+  !/* All done */
+
+  ierr = 0
+  return
+  end
+
+!*************************************************************************
+subroutine ll2utm (longitude, latitude, utm_x, utm_y, lambda0, datum)
+
+IMPLICIT NONE
+
+real (kind=8) latitude, longitude
+real (kind=8) utm_x, utm_y
+integer       datum
+
+   real (kind=8)  a, b, f, e, e2, e4, e6
+   real (kind=8)  phi, lambda, lambda0, phi0, k0
+   real (kind=8)  t, rho, x, y, mm, mm0
+   real (kind=8)  aa, aa2, aa3, aa4, aa5, aa6
+   real (kind=8)  ep2, nn, tt, cc
+
+   real (kind=8) M_PI
+!!!   parameter (M_PI = 3.141592654)
+
+   integer CLARKE_1866_DATUM
+   parameter (CLARKE_1866_DATUM = 1)
+   integer GRS_80_DATUM
+   parameter (GRS_80_DATUM = 2)
+   integer WGS_84_DATUM
+   parameter (WGS_84_DATUM = 3)
+
+!---------------------------------------------------------------------------
 
 
-      SUBROUTINE UTMGEO(LAT,LONGp,CMp,NORTH,EAST,ZONE)
-!      Purose: convert from UTM to GEO
-!      For information, look at GEOUT description above.
-!
-!      Copied from TriGrid Code March 2014 by Kristoffer Lorentsen,
-!      Cascadia Coast Research Ltd
-!
-!      TRANSVERSE MERCATOR TO GEOGRAPHIC POSITIONS
-!      
-!      FORMULAS FROM GEODESY, THIRD EDITION, BY G.BOMFORD
-!
-!      WRITTEN BY KALMAN CZOTTER SEPTEMBER 1978
-!
-      
-      implicit none
+  m_pi = ACOS (-1.0)
 
-      !IMPLICIT REAL (A-Z)
-      INTEGER ZONE
-      REAL LAT, LONGP, CMP, NORTH, EAST
-      REAL CM, SMALL, M0, M03, M05, M07, EC2, EC4, EC6, E, E2, E3
-      REAL E4, E5, E6, A0, A2, A4, A6, M, LAT0, V, V3, V5
-      REAL W, W2, W3, W4, T, T2, T4, T6
-      REAL SLAT, TM0P, LAT1, LAT2, LAT3, LAT4, LONG1, LONG2, LONG3
-      REAL LONG, LATP, P
-      REAL :: a = 6378137.000 !metres - ellipse semi-major axis - input - use 6378137.000
-      REAL :: f = 0.003352810681 !flatenning ... input - use 0.003352810681 - is the same
+  !/* Converts lat/long to UTM, using the specified datum */
 
-!cagd01-start
-      cm = -cmp
-!cagd01-end
+  if (datum == CLARKE_1866_DATUM) then      ! CLARKE_1866_DATUM:
+    a = 6378206.4
+    b = 6356583.8
+  elseif (datum == GRS_80_DATUM) then      ! GRS_80_DATUM:
+    a = 6378137
+    b = 6356752.3
+  elseif (datum == WGS_84_DATUM) then      ! WGS_84_DATUM:
+    a = 6378137.0           !/* semimajor axis of ellipsoid (meters) */
+    b = 6356752.31425       !/* semiminor axis of ellipsoid (meters) */
+  else
+    write (*,*) 'Unknown datum: ', datum
+    return
+  endif
+
+  !/* Calculate flatness and eccentricity */
+
+  f = 1 - (b / a)
+  e2 = 2 * f - f * f
+  e = sqrt (e2)
+  e4 = e2 * e2
+  e6 = e4 * e2
+
+  !/* Convert latitude/longitude to radians */
+  
+  phi = latitude * M_PI / 180.0
+  lambda = longitude * M_PI / 180.0
+
+  phi0 = 0.0
+
+  !/* See if this will use UTM or UPS */
+
+  if (latitude .GT. 84.0) then
+
+    !/* use Universal Polar Stereographic Projection (north polar aspect) */
+
+    k0 = 0.994
+
+    t = sqrt ( ((1 - sin (phi)) / (1 + sin (phi))) * &
+           (((1 + e * sin (phi)) / (1 - e * sin (phi))) ** e) )
+    rho = 2.0 * a * k0 * t / sqrt ( ((1.0 + e) ** (1.0 + e)) * ((1.0 - e) ** (1.0 - e)) )
+    !!! Not needed (dhg) m = cos (phi) / sqrt (1.0 - e2 * sin (phi) * sin (phi))
+
+    x = rho * sin (lambda - lambda0)
+    y = -rho * cos (lambda - lambda0)
+    !!! Not needed (dhg) k = rho * a * m
+
+    !/* Apply false easting/northing */
+
+    x = x + 2000000.0
+    y = y + 2000000.0
+
+  elseif (latitude .LT. -80.0) then
+
+    !/* use Universal Polar Stereographic Projection (south polar aspect) */
+
+    phi = -phi
+    lambda = -lambda
+    lambda0 = -lambda0
+
+    k0 = 0.994
+
+    t = sqrt (((1.0 - sin (phi)) / (1.0 + sin (phi))) * &
+         ( ( (1.0 + e * sin (phi)) / (1.0 - e * sin (phi)) ** e) ) )
+    rho = 2.0 * a * k0 * t / sqrt ( ((1+e) ** (1+e)) * ((1-e) ** (1-e)) )
+    !!! Not needed (dhg) m = cos (phi) / sqrt (1.0 - e2 * sin (phi) * sin (phi))
+
+    x = rho * sin (lambda - lambda0)
+    y = -rho * cos (lambda - lambda0)
+    !!! Not needed (dhg) k = rho * a * m
+
+    x = -x
+    y = -y
+
+    !/* Apply false easting/northing */
+
+    x = x + 2000000.0
+    y = y + 2000000.0
+
+  else
+
+    !/* Use UTM */
+
+    !/* set scale on central median (0.9996 for UTM) */
+    
+    k0 = 0.9996
+
+    mm = a * ((1.0-e2/4.0 - 3.0*e4/64.0 - 5.0*e6/256.0) * phi - &
+          (3.0*e2/8.0 + 3.0*e4/32.0 + 45.0*e6/1024.0) * sin (2.0*phi) + &
+          (15.0*e4/256.0 + 45.0*e6/1024.0) * sin (4.0*phi) - &
+          (35.0*e6/3072.0) * sin (6.0*phi))
+
+    mm0 = a * ((1.0-e2/4.0 - 3.0*e4/64.0 - 5.0*e6/256.0) * phi0 - &
+           (3.0*e2/8.0 + 3.0*e4/32.0 + 45.0*e6/1024.0) * sin (2.0*phi0) + &
+           (15.0*e4/256.0 + 45.0*e6/1024.0) * sin (4.0*phi0) - &
+           (35.0*e6/3072.0) * sin (6.0*phi0))
+
+    aa = (lambda - lambda0) * cos(phi)
+    aa2 = aa * aa
+    aa3 = aa2 * aa
+    aa4 = aa2 * aa2
+    aa5 = aa4 * aa
+    aa6 = aa3 * aa3
+
+    ep2 = e2 / (1.0 - e2)
+    nn = a / sqrt (1.0 - e2 * sin (phi) * sin (phi))
+    tt = tan (phi) * tan (phi)
+    cc = ep2 * cos (phi) * cos (phi)
+
+    !!! Not needed (dhg) k = k0 * (1 + (1+cc)*aa2/2 + (5-4*tt+42*cc+13*cc*cc-28*ep2) * aa4 / 24.0 + &
+    !!! Not needed (dhg)          (61-148*tt+16*tt*tt) * aa6 / 720.0)
+    x = k0 * nn * (aa + (1-tt+cc) * aa3 / 6 + &
+              (5-18*tt+tt*tt+72*cc-58*ep2) * aa5 / 120.0)
+    y = k0 * (mm - mm0 + nn * tan (phi) * &
+             (aa2 / 2 + (5-tt+9*cc+4*cc*cc) * aa4 / 24.0 + &
+         (61 - 58*tt + tt*tt + 600*cc - 330*ep2) * aa6 / 720))
+
+    !/* Apply false easting and northing */
+
+    x = x + 500000.0
+    if (y .LT. 0.0) then
+       y = y + 10000000.0
+    endif
+  endif
+
+  !/* Set entries in UTM structure */
+
+  utm_x = x
+  utm_y = y
+
+  !/* done */
+
+  return
+  end
+
+!*************************************************************************
+subroutine utm2ll (utm_x, utm_y, longitude, latitude, grid_zone, datum)
+
+IMPLICIT NONE
+
+real (kind=8) utm_x, utm_y
+real (kind=8) latitude, longitude
+integer       grid_zone(2)
+integer       datum
+
+  integer ierr
+  real (kind=8)  a, b, f, e, e2, e4, e6, e8
+  real (kind=8)  lambda0, x, y, k0, rho, t, chi, phi, phi1, phit
+  real (kind=8)  lambda, phi0, e1, e12, e13, e14
+  real (kind=8)  mm, mm0, mu, ep2, cc1, tt1, nn1, rr1
+  real (kind=8)  dd, dd2, dd3, dd4, dd5, dd6
+
+   real (kind=8) M_PI
+!!!   parameter (M_PI = 3.141592654)
+   real (kind=8) LOWER_EPS_LIMIT
+   parameter (LOWER_EPS_LIMIT = 1.0e-14)
+   real (kind=8) M_PI_2
+
+   integer CLARKE_1866_DATUM
+   parameter (CLARKE_1866_DATUM = 1)
+   integer GRS_80_DATUM
+   parameter (GRS_80_DATUM = 2)
+   integer WGS_84_DATUM
+   parameter (WGS_84_DATUM = 3)
+
+!---------------------------------------------------------------------------
 
 
-      SMALL=1.E-11
+   m_pi = ACOS (-1.0)
 
-      M0=.9996
-      M03=M0**3
-      M05=M0**5
-      M07=M0**7
-      EC2=F*(2-F)
-      EC4=EC2**2
-      EC6=EC2**3
-      E=EAST-5E5
-      E2=E*E
-      E3=E**3
-      E4=E**4
-      E5=E**5
-      E6=E**6
-      A0=1-1/4*EC2-3/64*EC4-5/256*EC6
-      A2=3/8*(EC2+1/4*EC4+15/128*EC6)
-      A4=15/256*(EC4+3/4*EC6)
-      A6=35/3072*EC6
-      LATP=0
-      M=NORTH/M0
+   M_PI_2 = M_PI * 2.0
 
-!      ITERATION TO CALCULATE LATITUDE PRIME
+  !/* Converts UTM to lat/long, using the specified datum */
 
-99      LAT0=LATP
-      LATP=(M/A+A2*SIN(2*LAT0)-A4*SIN(4*LAT0) &
-         +A6*SIN(6*LAT0))/A0
-      IF(ABS(LATP-LAT0).GT.SMALL) GO TO 99
-!      
-!      CALCULATES CONSTANTS FOR PRIME LATITUDE
+  if (datum == CLARKE_1866_DATUM) then      ! CLARKE_1866_DATUM:
+    a = 6378206.4
+    b = 6356583.8
+  elseif (datum == GRS_80_DATUM) then       ! GRS_80_DATUM:
+    a = 6378137
+    b = 6356752.3
+  elseif (datum == WGS_84_DATUM) then       ! WGS_84_DATUM:
+    a = 6378137.0             !/* semimajor axis of ellipsoid (meters) */
+    b = 6356752.31425         !/* semiminor axis of ellipsoid (meters) */
+  else
+    write (*,*) 'Unknown datum: ', datum
+    return
+  endif
 
-      V=A*(1+.5*EC2*SIN(LATP)**2+3/8*EC4* &
-         SIN(LATP)**4+5/16*EC6*SIN(LATP)**6)
-      V3=V**3
-      V5=V**5
-      P=A*(1-EC2)*(1+3/2*EC2*SIN(LATP)**2+ &
-         15/8*EC4*SIN(LATP)**4+35/16*EC6*SIN(LATP)**6)
-      W=V/P
-      W2=W*W
-      W3=W**3
-      W4=W2*W2
-      T=SIN(LATP)/COS(LATP)
-      T2=T**2
-      T4=T**4
-      T6=T**6
-      SLAT=1/COS(LATP)
-      TM0P=T/(M0*P)
+  !/* Calculate flatness and eccentricity */
 
-!      CALCULATE LATITUDE
+  f = 1.0 - (b / a)
+  e2 = (2.0 * f) - (f * f)
+  e = sqrt (e2)
+  e4 = e2 * e2
+  e6 = e4 * e2
+  e8 = e4 * e4
 
-      LAT1=TM0P*E2/(2*M0*V)
-      LAT2=TM0P*E4/(24*M03*V3)*(-4*W2+9*W* &
-         (1-T2)+12*T2)
-      LAT3=TM0P*E6/(720*M05*V5)*(8*W4*(11-24*T2)- &
-         12*W3*(21-71*T2)+15*W2*(15-98*T2+15*T4)+ &
-         180*W*(5*T2-3*T4)+360*T4)
-      LAT4=TM0P*(E/V)**7*E/(40320*M07)* &
-         (1385+3633*T2+4095*T4+1575*T6)
-      LAT=LATP-LAT1+LAT2-LAT3+LAT4
+  !/* Given the UTM grid zone, generate a baseline lambda0 */
 
-!      CALCULATES LONGITUDE
+  call get_lambda0 (grid_zone, lambda0, ierr)
+  if (ierr .NE. 0) then
+    write (*,*) 'Unable to translate UTM to LL'
+    return
+  endif
 
-      LONG1=SLAT*E/(M0*V)-SLAT*E3/(6*M03*V3)*(W+2*T2)
-      LONG2=SLAT*E5/(120*M05*V5)*(-4*W3*(1-6*T2)+ &
-         W2*(9-68*T2)+72*W*T2+24*T4)
-      LONG3=SLAT*(E/V)**7/(5040*M07)*(61+662*T2+1320*T4+720*T6)
-      LONG=CM-(LONG1+LONG2-LONG3)
+  latitude = (FLOAT (grid_zone(2)) * 8.0) - 80.0
 
-!      CALCULATES ZONE
+  !/* Take care of the polar regions first. */
 
-!cagd01-start
-      longp = -long
-!cagd01-end
-      ZONE=INT((183-CM*57.29577951)/6)
-      RETURN
-      END
+  if (latitude .GT. 84.0) then !/* north polar aspect */
 
+    !/* Subtract the false easting/northing */
 
+    x = utm_x - 2000000.0
+    y = utm_y - 2000000.0
 
-!***************************************************************
+    !/* Solve for inverse equations */
 
-      REAL FUNCTION to_radians(deg)
-!
-!       Convert from degrees to radians
-!
-        implicit none
-        
-        REAL deg
-        REAL :: pi
-        
-        pi = 3.1415926536
-        to_radians = deg*pi/180.0
-      END FUNCTION to_radians
+    k0 = 0.994
+    rho = sqrt (x*x + y*y)
+    t = rho * sqrt ( ((1+e) ** (1+e)) * ((1-e) ** (1-e)) ) / (2*a*k0)
 
-!***************************************************************
+    !/* Solve for latitude and longitude */
 
-      REAL FUNCTION to_degrees(rad)
-!
-!       Convert from radians to degrees
-!
-        implicit none
-        
-        REAL rad
-        REAL :: pi
-        
-        pi = 3.1415926536
-        to_degrees = (rad*180.0)/pi
-      END FUNCTION to_degrees
+    chi = M_PI_2 - 2 * atan (t)
+    phit = chi + (e2/2 + 5*e4/24 + e6/12 + 13*e8/360) * sin(2*chi) + &
+                 (7*e4/48 + 29*e6/240 + 811*e8/11520) * sin(4*chi) + &
+                 (7*e6/120 + 81*e8/1120) * sin(6*chi) + &
+                 (4279*e8/161280) * sin(8*chi)
 
+    do while (ABS (phi-phit) .GT. LOWER_EPS_LIMIT)
+      phi = phit
+      phit = M_PI_2 - 2 * atan ( t * (((1 - e * sin (phi)) / (1 + e * sin (phi))) ** (e / 2)) )
+    enddo
 
-!***************************************************************
+    lambda = lambda0 + atan2 (x, -y)
 
-      SUBROUTINE RADDMS (RAD,DEG,MIN,SEC)
+  elseif (latitude .LT. -80.0) then !/* south polar aspect */
 
-!     Copied from TriGrid code to be used with UTMGEO/GEOUTM
-!     RADIANS ARE CONVERTED TO DEGREES, MINUTES, SECONDS
+    !/* Subtract the false easting/northing */
 
-        implicit none
+    x = -(utm_x - 2000000)
+    y = -(utm_y - 2000000)
 
-        REAL RAD
-        INTEGER DEG,MIN
-        REAL SEC
-        REAL  :: SMALL=1.E-8
-        REAL FRC
-!        DATA SMALL/1D-8/
+    !/* Solve for inverse equations */
 
-        FRC=RAD*57.295779513082321
-        FRC=FRC+360.0
-        DEG=INT(FRC+SMALL)
-        FRC=(FRC-DEG)*60.0+SMALL
-        MIN=INT(FRC)
-        SEC=(FRC-MIN)*60.0
-        DEG=MOD(DEG,360)
-      END
+    k0 = 0.994
+    rho = sqrt (x*x + y*y)
+    t = rho * sqrt ( ((1+e) ** (1+e)) * ((1-e) ** (1-e)) ) / (2*a*k0)
+
+    !/* Solve for latitude and longitude */
+
+    chi = M_PI_2 - 2 * atan (t)
+    phit = chi + (e2/2 + 5*e4/24 + e6/12 + 13*e8/360) * sin (2*chi) + &
+           (7*e4/48 + 29*e6/240 + 811*e8/11520) * sin (4*chi) + &
+           (7*e6/120 + 81*e8/1120) * sin (6*chi) + &
+           (4279*e8/161280) * sin (8*chi)
+
+    do while (ABS (phi-phit) .GT. LOWER_EPS_LIMIT)
+      phi = phit;
+      phit = M_PI_2 - 2 * atan (t * ( ((1-e*sin(phi)) / (1+e*sin(phi)) ) ** (e/2)))
+    enddo
+
+    phi = -phi
+    lambda = -(-lambda0 + atan2 (x , -y))
+
+  else
+
+    !/* Now take care of the UTM locations */
+
+    k0 = 0.9996
+
+    !/* Remove false eastings/northings */
+
+    x = utm_x - 500000.0
+    y = utm_y
+
+    if (latitude .LT. 0.0) then  !/* southern hemisphere */
+      y = y - 10000000.0
+    endif
+
+    !/* Calculate the footpoint latitude */
+
+    phi0 = 0.0
+    e1 = (1.0 - sqrt (1.0-e2)) / (1.0 + sqrt (1.0-e2))
+    e12 = e1 * e1
+    e13 = e1 * e12
+    e14 = e12 * e12
+
+    mm0 = a * ((1.0-e2/4.0 - 3.0*e4/64.0 - 5.0*e6/256.0) * phi0 - &
+           (3.0*e2/8.0 + 3.0*e4/32.0 + 45.0*e6/1024.0) * sin (2.0*phi0) + &
+           (15.0*e4/256.0 + 45.0*e6/1024.0) * sin (4.0*phi0) - &
+           (35.0*e6/3072.0) * sin (6.0*phi0))
+    mm = mm0 + y/k0;
+    mu = mm / (a * (1.0-e2/4.0-3.0*e4/64.0-5.0*e6/256.0))
+
+    phi1 = mu + (3.0*e1/2.0 - 27.0*e13/32.0) * sin (2.0*mu) + &
+           (21.0*e12/16.0 - 55.0*e14/32.0) * sin (4.0*mu) + &
+           (151.0*e13/96.0) * sin (6.0*mu) + &
+           (1097.0*e14/512.0) * sin (8.0*mu)
+
+    !/* Now calculate lambda and phi */
+
+    ep2 = e2 / (1.0 - e2)
+    cc1 = ep2 * cos (phi1) * cos (phi1)
+    tt1 = tan (phi1) * tan (phi1)
+    nn1 = a / sqrt (1.0 - e2 * sin (phi1) * sin (phi1))
+    !!!DHG Old Code rr1 = a * (1.0 - e2) / ((1.0 - e2 * sin (phi) * sin (phi)) ** 1.5)
+    !!!DHG L.Dozier's fix is next
+    rr1 = a * (1.0 - e2) / ((1.0 - e2 * sin (phi1) * sin (phi1)) ** 1.5)
+    dd = x / (nn1 * k0)
+
+    dd2 = dd * dd
+    dd3 = dd * dd2
+    dd4 = dd2 * dd2
+    dd5 = dd3 * dd2
+    dd6 = dd4 * dd2
+
+    phi = phi1 - (nn1 * tan (phi1) / rr1) * &
+          (dd2/2.0 - (5.0+3.0*tt1+10.0*cc1-4.0*cc1*cc1-9.0*ep2) * dd4 / 24.0 + &
+          (61.0+90.0*tt1+298.0*cc1+45.0*tt1*tt1-252.0*ep2-3.0*cc1*cc1) * dd6 / 720.0)
+    lambda = lambda0 + &
+             (dd - (1.0+2.0*tt1+cc1) * dd3 / 6.0 + &
+             (5.0-2.0*cc1+28.0*tt1-3.0*cc1*cc1+8.0*ep2+24.0*tt1*tt1) * dd5 / 120.0) / cos (phi1)
+  endif
+
+  !/* Convert phi/lambda to degrees */
+  
+  latitude = phi * 180.0 / M_PI
+  longitude = lambda * 180.0 / M_PI
+  
+  !/* All done */
+
+  return
+  end
+
+!*************************************************************************
+!/* END OF CODE
+! * Peter Daly
+! * MIT Ocean Acoustics
+! */
+! *************************************************************************

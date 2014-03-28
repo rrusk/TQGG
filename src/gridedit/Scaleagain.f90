@@ -473,6 +473,7 @@
 
         read(ans(1:2),*,iostat=istat) tmpx
         if(istat.ne.0) cycle
+        if((tmpx.lt.1).or.(tmpx.gt.60)) cycle
         grid_zone(1) = nint(tmpx)
 
 !       Check for grid lat zone
@@ -537,6 +538,8 @@
 
         read(ans(1:2),*,iostat=istat) tmpx
         if(istat.ne.0) cycle
+        if((tmpx.lt.1).or.(tmpx.gt.60)) cycle
+
         grid_zone(1) = nint(tmpx)
 
 !         Check for grid lat zone

@@ -67,7 +67,7 @@ void WPigCursYesNo( char *reply, char *question, const int dummy_len1, const int
     Cardinal        n;   
 
     /*printf ("void WPigCursYesNo(%s)\n", question);*/ 
-    yesno_question_string = XmStringCreateSimple(question);
+    yesno_question_string = XmStringCreateLocalized(question);
     n =  0;
     XtSetArg(args[n], XmNmessageString, yesno_question_string); n++;
     XtSetValues(messageyesno_dialog, args, n);
@@ -93,7 +93,7 @@ void WPigCursYesNoCancel( char *reply, char *question, const int dummy_len1, con
     Cardinal        n;   
 
     /*printf ("void WPigCursYesNo(%s)\n", question);*/ 
-    yesno_question_string = XmStringCreateSimple(question);
+    yesno_question_string = XmStringCreateLocalized(question);
     n =  0;
     XtSetArg(args[n], XmNmessageString, yesno_question_string); n++;
     XtSetValues(messageyesnocancel_dialog, args, n);
@@ -175,8 +175,14 @@ void WPigGetString(char *prompt, int *anslen, char *retstring )
 
     n =  0;
     XtSetArg(args[n], XmNselectionLabelString, prompt_string); n++;
-    XtSetValues(prompt_dialog, args, n);
-    XmStringFree(prompt_string);
+//    XtSetArg (args[n], XmNautoUnmanage, False); n++;
+    prompt_dialog = XmCreatePromptDialog (toplevel, "prompt", args, n);
+    XmStringFree (prompt_string);
+    XtSetSensitive (XtNameToWidget (prompt_dialog, "Help"), False);
+    XtAddCallback (prompt_dialog, XmNcancelCallback, promptcancel_cb, &mycall_data);
+    XtAddCallback (prompt_dialog, XmNokCallback, promptok_cb, &mycall_data);
+//    XtSetValues(prompt_dialog, args, n);
+//    XmStringFree(prompt_string);
 
     XtManageChild(prompt_dialog);
 
@@ -184,7 +190,9 @@ void WPigGetString(char *prompt, int *anslen, char *retstring )
     while (mycall_data.reason == XmCR_NO_MATCH)
         XtAppProcessEvent (app, XtIMAll);
 
-    XtUnmanageChild(prompt_dialog);
+    XtDestroyWidget (XtParent(prompt_dialog));
+
+//    XtUnmanageChild(prompt_dialog);
 
     switch (mycall_data.reason) {
     case XmCR_OK:
@@ -600,15 +608,15 @@ int main (int argc, char *argv[])
 
     /* Create a simple Motif 2.1 PromptDialog */
     
-    n = 0;
-    xms = XmStringCreateLocalized ("initializing prompt");
-    XtSetArg (args[n], XmNselectionLabelString, xms); n++;
-    XtSetArg (args[n], XmNautoUnmanage, False); n++;
-    prompt_dialog = XmCreatePromptDialog (toplevel, "prompt", args, n);
-    XmStringFree (xms);
-    XtSetSensitive (XtNameToWidget (prompt_dialog, "Help"), False);
-    XtAddCallback (prompt_dialog, XmNcancelCallback, promptcancel_cb, &mycall_data);
-    XtAddCallback (prompt_dialog, XmNokCallback, promptok_cb, &mycall_data);
+//    n = 0;
+//    xms = XmStringCreateLocalized ("initializing prompt");
+//    XtSetArg (args[n], XmNselectionLabelString, xms); n++;
+//    XtSetArg (args[n], XmNautoUnmanage, False); n++;
+//    prompt_dialog = XmCreatePromptDialog (toplevel, "prompt", args, n);
+//    XmStringFree (xms);
+//    XtSetSensitive (XtNameToWidget (prompt_dialog, "Help"), False);
+//    XtAddCallback (prompt_dialog, XmNcancelCallback, promptcancel_cb, &mycall_data);
+//    XtAddCallback (prompt_dialog, XmNokCallback, promptok_cb, &mycall_data);
     
     /*XtManageChild (prompt_dialog);*/
    

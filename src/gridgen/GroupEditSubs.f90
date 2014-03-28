@@ -1574,8 +1574,8 @@
 
 !-----------------------------------------------------------------------*
 
-      SUBROUTINE PolyReSampleNodes (  ) !polylist,TotCoords,Totbndys,&
-!                               TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
+      SUBROUTINE PolyReSampleNodes ( polylist,TotCoords,Totbndys,&
+                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
       IMPLICIT NONE
 
 ! PURPOSE: To resample all nodes in the current polygon against a
@@ -1586,22 +1586,189 @@
 !----------------------------------------------------------------------*
 
 ! - PASSED VARIABLES
-!      integer TotCoords,Totbndys,TotIntpts
-!      logical polylist(totcoords)
-!      integer PtsThisBnd(Totbndys),code(TotCoords)
-!      real dxray(TotCoords),dyray(TotCoords),depth(TotCoords)
+      integer TotCoords,Totbndys,TotIntpts
+      logical polylist(totcoords)
+      integer PtsThisBnd(Totbndys),code(TotCoords),igridtype
+      real dxray(TotCoords),dyray(TotCoords),depth(TotCoords)
 
 ! - LOCAL VARIABLES
-      character(80) :: cstr
+      character(80) :: cstr,answ
       character(1) :: ans
+      integer :: j,jj,k,i,bndSum,indxs(2),istat
+      real :: xmark,ymark,res,newbx(1000000), newby(1000000), newbd(1000000), dist
+      integer :: bndstart(10000), bndend(10000),bnd(10000), numBndSeg,nnew
+      logical :: segFlag
+
+      integer :: curNod
 
 !----------------------START ROUTINE----------------------------------
 
-      cstr = 'Here we are in resample nodes, continue?:'
+!     Check for correct igridtype
+      IF (igridtype.ne.1)then
+        call PigMessageOK('Nodes are not in UTM projection','UTM')
+        return
+      END IF
+
+!     Single out bnd nodes     
+      polylist(TotCoords-TotIntPts+1: TotCoords) = .false.
+      
+!     Single out all bnd segments
+      numBndSeg = 1
+      bndSum = 1
+      DO j = 1, Totbndys
+
+        segFlag = .false.
+        DO k = bndSum,bndSum+PtsThisBnd(j)-1
+          if ( polylist(k).and..not.segFlag ) then
+            segFlag = .true.
+            bndstart(numBndSeg) = k
+            bnd(numBndSeg) = j
+          endif
+          if( (( .not.polylist(k) ).or.( k.eq.(bndSum+PtsThisBnd(j))-1 )).and.segFlag ) then
+            segFlag = .false.
+            bndend(numBndSeg) = k - 1
+            if( k.eq.(bndSum+PtsThisBnd(j))-1 ) then
+              bndend(numBndSeg) = k
+            end if
+            numBndSeg = numBndSeg + 1
+          endif
+        END DO
+
+        bndSum = bndSum + PtsThisBnd(j)
+
+      END DO
+
+!     Correct number of bnd segments selected
+      numBndSeg = numBndSeg - 1
+
+!     Show the bnd nodes
+      DO j = 1, numBndSeg
+        DO k = bndstart(j),bndend(j)
+          xmark = dxray (k)
+          ymark = dyray (k)
+          call PigDrawModifySymbol ( xmark, ymark )
+        END DO
+      END DO
+
+
+!     Prompt user to continue
+      cstr = 'Resample these boundary segments?:'
       call PigMessageYesNo (cstr, ans)
-     
+      if (ans .ne. 'Y') then
+        return
+      endif
+
+
+!     Prompt user for resample distance
+
+      call PigPrompt('Enter boundary resolution : ',answ)
+      read(answ,*,iostat=istat)res
+      if(istat.ne.0) return
+
+
+
+
+!     Resample from the back to the front      
+      DO jj = numBndSeg,1,-1
+
+!       Set bnd indexes
+        indxs(1) = bndStart(jj)
+        indxs(2) = bndEnd(jj)
+
+!       Create a 1m spaced bnd in newbnd
+
+        i = 1
+        DO j=indxs(1),indxs(2)-1
+!         Get distance between the point and the next
+          dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+          nnew = floor(dist)-1
+
+          newbx(i) = dxray(j)
+          newby(i) = dyray(j)
+          newbd(i) = depth(j)
+
+          DO k=1,nnew
+            newbx(i+k) = dxray(j) + k * ((dxray(j+1)-dxray(j)) / (nnew + 1))
+            newby(i+k) = dyray(j) + k * ((dyray(j+1)-dyray(j)) / (nnew + 1))
+            newbd(i+k) = depth(j) + k * ((depth(j+1)-depth(j)) / (nnew + 1))
+          END DO
+
+          i = i + nnew + 1
+
+!       If i exceeds limit of 1000000 nodes, error and return
+          IF ( i .gt. 1000000 ) THEN
+            call PigMessageOK('The boundary segment is to long','ReSample')
+            return
+          END IF
+        END DO
+
+!       Put the last node in the array
+        newbx(i) = dxray(indxs(2))
+        newby(i) = dyray(indxs(2))
+        newbd(i) = depth(indxs(2))
+
+!       Second resample - resample to specified resolution (res)
+        curNod = 1
+        k = 2
+       
+        DO j = 2,i
+          dist = sqrt((newbx(j)-newbx(curNod))**2 + (newby(j)-newby(curNod))**2)
+          IF (dist >= res) then
+            newbx(k) = newbx(j)
+            newby(k) = newby(j)
+            newbd(k) = newbd(j)
+            curNod = j
+            k = k + 1
+          END IF
+
+        END DO
+
+!       Add last node
+        newbx(k) = newbx(i)
+        newby(k) = newby(i)
+        newbd(k) = newbd(i)       
+
+!       Set i (number of nodes in new array) eq k
+        i = k
+
+
+!       Assign number of added nodes to nnew
+        nnew = i - (indxs(2)-indxs(1)) - 1
+
+!       Add the number of added nodes to the bnd segment, ITOTs and TotCoords
+        PtsThisBnd(bnd(jj)) = PtsThisBnd(bnd(jj))+nnew
+        TotCoords = TotCoords + nnew
+
+!       Move the array to make room for the new array
+        IF (nnew.lt.0) THEN ! Less nodes
+          DO j=indxs(2)+1,TotCoords
+            dxray(j+nnew) = dxray(j)
+            dyray(j+nnew) = dyray(j)
+            depth(j+nnew) = depth(j)
+            code(j+nnew) = code(j)
+          END DO
+        ELSE IF (nnew.gt.0) THEN ! More nodes
+          DO j=TotCoords,indxs(2)+1,-1
+            dxray(j+nnew) = dxray(j)
+            dyray(j+nnew) = dyray(j)
+            depth(j+nnew) = depth(j)
+            code(j+nnew) = code(j)
+          END DO
+        END IF
+
+
+!       Input new array
+        dxray(indxs(1):indxs(1)+i-1)=newbx(1:i)
+        dyray(indxs(1):indxs(1)+i-1)=newby(1:i)
+        depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
+        code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
+
+
+      END DO ! End of loop over bnd segs
+
+
       return
       end
-
+     
 ! ---------------------------------------------------------------------*
 !------------------END NODEPOLY.FOR-------------------------------------*

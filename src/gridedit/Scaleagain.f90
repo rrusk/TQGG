@@ -429,8 +429,7 @@
       character(20) utmchars
       character(80) ans,text
       real :: tmpx, tmpy, gxmax, gxmin, gxc
-      integer grid_zone(2)
-      logical success
+      integer istat, grid_zone2, grid_zone(2)
       real (kind=8) lambda0
 
 
@@ -468,21 +467,30 @@
       write(zonestr,'(I0.2)') grid_zone(1)
 
 !     Prompt user for UTM zone
-      success = .false.
-      do while(.not.success)
+      do
         call PigPrompt('Enter UTM zone number ('//zonestr//utmchars(grid_zone(2):grid_zone(2)) &
             //'?): ',ans)
 
-          call PigReadReal(ans(1:2), tmpx, Success)
-          grid_zone(1) = nint(tmpx)
+        read(ans(1:2),*,iostat=istat) tmpx
+        if(istat.ne.0) cycle
+        grid_zone(1) = nint(tmpx)
 
-!         Check for grid lat zone
-          DO JJ = 1,20
-            IF(ans(3:3).eq.utmchars(JJ:JJ)) then
-              grid_zone(2) = JJ
-            END IF
-          END DO
-
+!       Check for grid lat zone
+        grid_zone2 = 0
+        DO JJ = 1,20
+          IF(ans(3:3).eq.utmchars(JJ:JJ)) then
+            grid_zone2 = JJ
+            exit
+          END IF
+        END DO
+        
+        IF(grid_zone2.eq.0) then
+          cycle
+        else
+          grid_zone(2) = grid_zone2
+          exit
+        endif
+      
       enddo
 
 !     Get new central meridan (lambda0) and validate.
@@ -522,25 +530,28 @@
 !
 
 !     Prompt user for UTM zone
-      success = .false.
       grid_zone(2) = 0
-      utmchars = "CDEFGHJKLMNPQRSTUVWX"
-      do while(.not.success)
+      utmchars = 'CDEFGHJKLMNPQRSTUVWX'
+      do
         call PigPrompt('Enter UTM zone number (##S): ',ans)
 
-          call PigReadReal(ans(1:2), tmpx, Success)
-          grid_zone(1) = nint(tmpx)
+        read(ans(1:2),*,iostat=istat) tmpx
+        if(istat.ne.0) cycle
+        grid_zone(1) = nint(tmpx)
 
 !         Check for grid lat zone
-          DO JJ = 1,20
-            IF(ans(3:3).eq.utmchars(JJ:JJ)) then
-              grid_zone(2) = JJ
-            END IF
-          END DO
-
-          IF(grid_zone(2).eq.0) then
-            success = .false.
+        DO JJ = 1,20
+          IF(ans(3:3).eq.utmchars(JJ:JJ)) then
+            grid_zone(2) = JJ
           END IF
+        END DO
+
+        IF(grid_zone(2).eq.0) then
+          cycle
+        else
+          exit
+        endif
+
       enddo
 
 !     Loop through all nodes and transform from UTM to lat/lon

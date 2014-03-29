@@ -53,7 +53,7 @@
       EXTERNAL ShiftCB
       EXTERNAL RotateCB
       EXTERNAL SPXCB
-      EXTERNAL MercXCB
+!      EXTERNAL MercXCB
       EXTERNAL TMXCB
       EXTERNAL NodeInfoCB
       EXTERNAL EleInfoCB
@@ -81,11 +81,14 @@
       EXTERNAL AddBndNodeCB
       EXTERNAL ReverseBndCB
       EXTERNAL JoinBndCB
+      EXTERNAL SplitBndCB
+      EXTERNAL ResampleBndCB
       EXTERNAL ReselectBndCB
       EXTERNAL AddBndLineCB
       EXTERNAL DeleteIslCB
       EXTERNAL AddIntNodeCB
       EXTERNAL AddIntLineCB
+      EXTERNAL PolyReSampleCB
       EXTERNAL PolyDelBndCB
       EXTERNAL PolyDelIntCB
       EXTERNAL PolyDelAllCB
@@ -141,9 +144,9 @@
       result = APPENDMENUQQ(1,$MENUENABLED,'OpenNode'C,OpenNodeFileCB )
       result = APPENDMENUQQ(1,$MENUENABLED,'AddNode'C,AddNodeFileCB )
       result = APPENDMENUQQ(1,$MENUSEPARATOR,' 'C,NUL )
-      result = APPENDMENUQQ(1,$MENUENABLED,'CrossSection'C,XSectionCB )
-      result = APPENDMENUQQ(1,$MENUSEPARATOR,' 'C,NUL )
       result = APPENDMENUQQ(1,$MENUENABLED,'Sample'C,SampleCB )
+      result = APPENDMENUQQ(1,$MENUSEPARATOR,' 'C,NUL )
+      result = APPENDMENUQQ(1,$MENUENABLED,'CrossSection'C,XSectionCB )
       result = APPENDMENUQQ(1,$MENUSEPARATOR,' 'C,NUL )
       result = APPENDMENUQQ(1,$MENUENABLED,'InterimSave'C,SaveInterimCB )
       result = APPENDMENUQQ(1,$MENUENABLED,'SaveAs'C,SaveFinalCB )
@@ -166,7 +169,6 @@
       result = APPENDMENUQQ(2,$MENUENABLED,'Rotate'C,RotateCB )
       result = APPENDMENUQQ(2,$MENUSEPARATOR,' 'C,NUL )
       result = APPENDMENUQQ(2,$MENUENABLED,'SP Polar Trans'C,SPXCB)
-      result = APPENDMENUQQ(2,$MENUENABLED,'Mercator Trans'C,MercXCB)
       result = APPENDMENUQQ(2,$MENUENABLED,'TM Transform'C,TMXCB )
 
       result = APPENDMENUQQ(3,$MENUENABLED,'Info'C,NUL )
@@ -180,6 +182,9 @@
       result = APPENDMENUQQ(3,$MENUENABLED,'PMarkers'C,PMarkCB )
       result = APPENDMENUQQ(3,$MENUENABLED,'EraseLast'C,PMDelLastCB )
       result = APPENDMENUQQ(3,$MENUENABLED,'EraseAll'C,PMDelAllCB )
+      result = APPENDMENUQQ(3,$MENUSEPARATOR,' 'C,NUL )
+      result = APPENDMENUQQ(3,$MENUENABLED,'ConfigContour'C,ConfigContourCB)
+      result = APPENDMENUQQ(3,$MENUENABLED,'ConfigData'C,ConfigDataCB )
       result = APPENDMENUQQ(3,$MENUSEPARATOR,' 'C,NUL )
       result = APPENDMENUQQ(3,$MENUENABLED,'SetRange'C,SetRangeCB )
       result = APPENDMENUQQ(3,$MENUENABLED,'TooClose'C,TooCloseCB )
@@ -208,6 +213,8 @@
       result = APPENDMENUQQ(5,$MENUENABLED,'AddBndNode'C,AddBndNodeCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'ReverseBnd'C,ReverseBndCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'JoinBnd'C,JoinBndCB )
+      result = APPENDMENUQQ(5,$MENUENABLED,'SplitBnd'C,SplitBndCB )
+      result = APPENDMENUQQ(5,$MENUENABLED,'ReSample'C,ResampleBndCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'ReSelectBnd'C,ReselectBndCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'BndLine'C,AddBndLineCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'DeleteIsland'C,DeleteIslCB )
@@ -215,9 +222,6 @@
       result = APPENDMENUQQ(5,$MENUENABLED,'AddIntNode'C,AddIntNodeCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'IntLine'C,AddIntLineCB )
       result = APPENDMENUQQ(5,$MENUSEPARATOR,' 'C,NUL )
-      result = APPENDMENUQQ(5,$MENUENABLED,'PolyDeleteBnd'C,PolyDelBndCB )
-      result = APPENDMENUQQ(5,$MENUENABLED,'PolyDeleteInt'C,PolyDelIntCB )
-      result = APPENDMENUQQ(5,$MENUENABLED,'PolyDeleteAll'C,PolyDelAllCB )
 
       result = APPENDMENUQQ(6,$MENUENABLED,'EditGrid'C,NUL )
       result = APPENDMENUQQ(6,$MENUENABLED,'AddLine'C,AddGridEdgeCB )
@@ -243,34 +247,40 @@
       result = APPENDMENUQQ(7,$MENUENABLED,'Read'C,ReadPolyCB )
       result = APPENDMENUQQ(7,$MENUENABLED,'Write'C,WritePolyCB )
 
-      result = APPENDMENUQQ(8,$MENUENABLED,'EditGroup'C,NUL )
-      result = APPENDMENUQQ(8,$MENUENABLED,'NodeCode'C,PolyNodeCodeCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'ElementCode'C,PolyEleCodeCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'DeKite'C,PolyDekiteCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'ReShape'C,PolyReshapeCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'DeleteGrid'C,PolyDelGridCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'SplitGrid'C,PolySplitGridCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'RefineGrid'C,PolyRefineGridCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'CutoffGrid'C,PolyCutGridCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'ScaleDepths'C,PolySetDepthCB )
-      result = APPENDMENUQQ(8,$MENUENABLED,'ReDepth'C,PolyReDepthCB )
+      result = APPENDMENUQQ(8,$MENUENABLED,'NodeinPoly'C,NUL )
+      result = APPENDMENUQQ(8,$MENUENABLED,'ReSample'C,PolyReSampleCB )
+      result = APPENDMENUQQ(8,$MENUENABLED,'DeleteBnd'C,PolyDelBndCB )
+      result = APPENDMENUQQ(8,$MENUENABLED,'DeleteInt'C,PolyDelIntCB )
+      result = APPENDMENUQQ(8,$MENUENABLED,'DeleteAll'C,PolyDelAllCB )
 
-      result = APPENDMENUQQ(9,$MENUENABLED,'Config'C,NUL )
+      result = APPENDMENUQQ(9,$MENUENABLED,'GridinPoly'C,NUL )
+      result = APPENDMENUQQ(9,$MENUENABLED,'NodeCode'C,PolyNodeCodeCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'ElementCode'C,PolyEleCodeCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'DeKite'C,PolyDekiteCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'ReShape'C,PolyReshapeCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'DeleteGrid'C,PolyDelGridCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'SplitGrid'C,PolySplitGridCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'RefineGrid'C,PolyRefineGridCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'CutoffGrid'C,PolyCutGridCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'ScaleDepths'C,PolySetDepthCB )
+      result = APPENDMENUQQ(9,$MENUENABLED,'ReDepth'C,PolyReDepthCB )
+
+      result = APPENDMENUQQ(10,$MENUENABLED,'Config'C,NUL )
       !result = APPENDMENUQQ(9,$MENUENABLED,'DrawNode'C,PlotNodeCB )
-      result = APPENDMENUQQ(9,$MENUENABLED,'ConfigNode'C,ConfigNodeCB )
+      result = APPENDMENUQQ(10,$MENUENABLED,'ConfigNode'C,ConfigNodeCB )
       !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
       !result = APPENDMENUQQ(9,$MENUENABLED,'DrawGrid'C,PlotGridCB )
-      result = APPENDMENUQQ(9,$MENUENABLED,'ConfigGrid'C,ConfigGridCB )
+      result = APPENDMENUQQ(10,$MENUENABLED,'ConfigGrid'C,ConfigGridCB )
       !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
       !result = APPENDMENUQQ(9,$MENUENABLED,'DrawContour'C,PlotContourCB )
-      result = APPENDMENUQQ(9,$MENUENABLED,'ConfigContour'C,ConfigContourCB)
+      result = APPENDMENUQQ(10,$MENUENABLED,'ConfigContour'C,ConfigContourCB)
       !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
       !result = APPENDMENUQQ(9,$MENUENABLED,'DrawData'C,PlotDataCB )
-      result = APPENDMENUQQ(9,$MENUENABLED,'ConfigData'C,ConfigDataCB )
+      result = APPENDMENUQQ(10,$MENUENABLED,'ConfigData'C,ConfigDataCB )
 
-      result = APPENDMENUQQ(10,$MENUENABLED,'Help'C,NUL )
-      result = APPENDMENUQQ(10,$MENUENABLED,'TQGG Help'C,HelpCB )
-      result = APPENDMENUQQ(10,$MENUENABLED,'About TQGG'C,WINABOUT )
+      result = APPENDMENUQQ(11,$MENUENABLED,'Help'C,NUL )
+      result = APPENDMENUQQ(11,$MENUENABLED,'TQGG Help'C,HelpCB )
+      result = APPENDMENUQQ(11,$MENUENABLED,'About TQGG'C,WINABOUT )
 
       INITIALSETTINGS = .true.
       End function INITIALSETTINGS
@@ -293,7 +303,7 @@
 	result = modifymenuflagsqq(8,0,$MENUGRAYED)
 	result = modifymenuflagsqq(9,0,$MENUGRAYED)
 	result = modifymenuflagsqq(10,0,$MENUGRAYED)
-!	result = modifymenuflagsqq(11,0,$MENUGRAYED)
+	result = modifymenuflagsqq(11,0,$MENUGRAYED)
 
 	return
 	end
@@ -316,7 +326,7 @@
 	result = modifymenuflagsqq(8,0,$MENUENABLED)
 	result = modifymenuflagsqq(9,0,$MENUENABLED)
 	result = modifymenuflagsqq(10,0,$MENUENABLED)
-!	result = modifymenuflagsqq(11,0,$MENUENABLED)
+	result = modifymenuflagsqq(11,0,$MENUENABLED)
 
 	return
 	end
@@ -372,13 +382,14 @@
 
 	logical result
 
-!	result = modifymenuflagsqq(4,1,$MENUGRAYED)
-!	result = modifymenuflagsqq(4,3,$MENUGRAYED)
-!	result = modifymenuflagsqq(4,4,$MENUGRAYED)
-!	result = modifymenuflagsqq(4,6,$MENUGRAYED)
-!	result = modifymenuflagsqq(4,7,$MENUGRAYED)
+	result = modifymenuflagsqq(4,1,$MENUGRAYED)
+	result = modifymenuflagsqq(4,2,$MENUGRAYED)
+	result = modifymenuflagsqq(4,3,$MENUGRAYED)
+	result = modifymenuflagsqq(4,5,$MENUGRAYED)
+	result = modifymenuflagsqq(4,6,$MENUGRAYED)
 	result = modifymenuflagsqq(4,12,$MENUGRAYED)
 	result = modifymenuflagsqq(5,0,$MENUGRAYED)
+	result = modifymenuflagsqq(8,0,$MENUGRAYED)
 
 	return
 	end
@@ -391,13 +402,52 @@
 
 	logical result
 
+	result = modifymenuflagsqq(4,1,$MENUENABLED)
+	result = modifymenuflagsqq(4,2,$MENUENABLED)
+	result = modifymenuflagsqq(4,3,$MENUENABLED)
+	result = modifymenuflagsqq(4,5,$MENUENABLED)
+	result = modifymenuflagsqq(4,6,$MENUENABLED)
+	result = modifymenuflagsqq(4,12,$MENUENABLED)
+	result = modifymenuflagsqq(5,0,$MENUENABLED)
+	result = modifymenuflagsqq(8,0,$MENUENABLED)
+
+	return
+	end
+
+!**********************************************************************
+
+	Subroutine MNU_PolyNodeMenuEnable
+
+	USE DFLIB
+
+	logical result
+
 !	result = modifymenuflagsqq(4,1,$MENUENABLED)
 !	result = modifymenuflagsqq(4,3,$MENUENABLED)
 !	result = modifymenuflagsqq(4,4,$MENUENABLED)
 !	result = modifymenuflagsqq(4,6,$MENUENABLED)
 !	result = modifymenuflagsqq(4,7,$MENUENABLED)
-	result = modifymenuflagsqq(4,12,$MENUENABLED)
-	result = modifymenuflagsqq(5,0,$MENUENABLED)
+!!	result = modifymenuflagsqq(4,12,$MENUENABLED)
+	result = modifymenuflagsqq(8,0,$MENUENABLED)
+
+	return
+	end
+
+!**********************************************************************
+
+	Subroutine MNU_PolyNodeMenuDisable
+
+	USE DFLIB
+
+	logical result
+
+!	result = modifymenuflagsqq(4,1,$MENUENABLED)
+!	result = modifymenuflagsqq(4,3,$MENUENABLED)
+!	result = modifymenuflagsqq(4,4,$MENUENABLED)
+!	result = modifymenuflagsqq(4,6,$MENUENABLED)
+!	result = modifymenuflagsqq(4,7,$MENUENABLED)
+!!	result = modifymenuflagsqq(4,12,$MENUENABLED)
+	result = modifymenuflagsqq(8,0,$MENUENABLED)
 
 	return
 	end
@@ -416,7 +466,7 @@
 	result = modifymenuflagsqq(4,9,$MENUGRAYED)
 	result = modifymenuflagsqq(4,10,$MENUGRAYED)
 	result = modifymenuflagsqq(6,0,$MENUGRAYED)
-	result = modifymenuflagsqq(8,0,$MENUGRAYED)
+	result = modifymenuflagsqq(9,0,$MENUGRAYED)
 
 	return
 	end
@@ -435,7 +485,7 @@
 	result = modifymenuflagsqq(4,9,$MENUENABLED)
 	result = modifymenuflagsqq(4,10,$MENUENABLED)
 	result = modifymenuflagsqq(6,0,$MENUENABLED)
-	result = modifymenuflagsqq(8,0,$MENUENABLED)
+	result = modifymenuflagsqq(9,0,$MENUENABLED)
 
 	return
 	end

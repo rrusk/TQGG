@@ -1715,7 +1715,12 @@
             Active_MW = INACTIVE_MW
             IF (actvpoly.gt.0.and..not.dispnodes) then
               call MNU_PolyMenuEnable
+              call MNU_PolyNodeMenuDisable
+            elseIF (actvpoly.gt.0.and.dispnodes) then
+              call MNU_PolyNodeMenuEnable
+              call MNU_PolyMenuDisable
             else
+              call MNU_PolyNodeMenuDisable
               call MNU_PolyMenuDisable
             endif
           endif            

@@ -221,7 +221,6 @@
       result = APPENDMENUQQ(5,$MENUSEPARATOR,' 'C,NUL )
       result = APPENDMENUQQ(5,$MENUENABLED,'AddIntNode'C,AddIntNodeCB )
       result = APPENDMENUQQ(5,$MENUENABLED,'IntLine'C,AddIntLineCB )
-      result = APPENDMENUQQ(5,$MENUSEPARATOR,' 'C,NUL )
 
       result = APPENDMENUQQ(6,$MENUENABLED,'EditGrid'C,NUL )
       result = APPENDMENUQQ(6,$MENUENABLED,'AddLine'C,AddGridEdgeCB )

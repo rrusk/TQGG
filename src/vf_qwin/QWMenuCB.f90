@@ -1258,7 +1258,8 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-            call PolyResampleNodes()
+            call PolyResampleNodes(polylist,TotCoords,Totbndys,&
+                             TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
  !           deltype = 'B'
  !           call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
  !                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code)

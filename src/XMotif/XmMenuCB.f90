@@ -106,7 +106,7 @@
       integer ncode1,ncode2,iecode1,iecode2,ncn
       real zlimit,zlow,zscale
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
-      logical, save ::  newfile=.false., sample_point=.false.
+      logical, save ::  newfile=.false.
       logical IN_BOX
       character cstr*256, ans*10, PigCursYesNo*1, deltype*1
       INTEGER PolyId, numvert
@@ -219,7 +219,6 @@
 !  File menu
         entry OpenGridFileCB() !open grid
           call MNU_MainMenuDisable
-          sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               if(DispNodes) then
@@ -278,7 +277,6 @@
           return
         entry AddGridFileCB() !add grid
           call MNU_MainMenuDisable
-          sample_point=.false.
           Quit = .false.
 !          FlagG = .false.
           call OpenGridFile(Quit)
@@ -307,7 +305,6 @@
           return
         entry OpenNodeFileCB()
           call MNU_MainMenuDisable
-          sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               if(DispNodes) then
@@ -365,7 +362,6 @@
             return
           endif
           call MNU_MainMenuDisable
-          sample_point=.false.
           FlagN = .true.
           call AddNodeFile( Quit)
           if(.not.Quit) then
@@ -393,7 +389,6 @@
           return
         entry XSectionCB()
           call MNU_MainMenuDisable
-          sample_point=.false.
           if(itot.gt.0) then
             IF (PigCursYesNo ('SAVE existing file first?').EQ.'Y') THEN
               if(DispNodes) then
@@ -498,7 +493,6 @@
             newfile = .true.
           endif
           Active_MW = INACTIVE_MW
-          sample_point=.false.
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
           call MNU_NodeMenuEnable
@@ -1233,7 +1227,8 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-            call PolyResampleNodes(polylist)
+            call PolyResampleNodes(polylist,TotCoords,Totbndys,&
+                             TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
  !           deltype = 'B'
  !           call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
  !                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
@@ -1677,25 +1672,7 @@
 
       nrec = itot + 1
       if( (MouseButton.eq.BDOWN).and.(Active_MW.ne.INACTIVE_MW)) then
-        if(Active_MW.eq.sample_MW) then
-          call CHKPT( MouseX, MouseY, INDEX, ierr )
-          if ( ierr .eq. 1 ) then
-            call PigMessageOK('ERROR - Invalid point.','NodeInfo')
-          else
-            call PigDrawCoinSymbol(MouseX, MouseY)
-            call Set_Resolution (index, quit) 
-            if(quit) then
-              Active_MW = INACTIVE_MW
-              sample_point=.false.
-              call MNU_NodeMenuEnable
-              call PigStatusMessage('Done')
-              call DrwFig(CHANGE)
-            else
-              sample_point=.true.
-              call PigStatusMessage('Sample ACTIVE: Pick a point')
-            endif
-          endif
-        elseif(Active_MW.eq.NODEINFO_MW) then
+        if(Active_MW.eq.NODEINFO_MW) then
 !     - see if the point exists
           call CHKPT( MouseX, MouseY, INDEX, ierr )
           if ( ierr .eq. 1 ) then

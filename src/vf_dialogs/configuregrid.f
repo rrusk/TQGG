@@ -111,7 +111,7 @@ C     - display all changeable text
       call PigSetTextColour( HitColor )
 
 C     - ACCEPT option ( hit # 1 )
-C      call PanelHit( 10, 20, 1, 'ACCEPT', 6 )
+      call PanelHit( 10, 20, 1, 'CLOSE', 5 )
 
 C     - Index for second colour to begin ( hit # 2 )
       write ( tmp, FMT = '(I6)' ) GridSIndex
@@ -234,7 +234,7 @@ C     - Create Filename option ( hit # 7 )
       call PanelHit( 1, 18, 7, ContFName, 24 )
 
 C     - ACCEPT option ( hit # 1 )
-      call PanelHit( 13, 22, 1, 'OK', 2 )
+      call PanelHit( 10, 22, 1, 'CLOSE', 5 )
 
 C     - Create Display Flag option ( hit # 2 )
       if ( DispBound ) then

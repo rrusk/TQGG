@@ -53,7 +53,6 @@
       EXTERNAL ShiftCB
       EXTERNAL RotateCB
       EXTERNAL SPXCB
-!      EXTERNAL MercXCB
       EXTERNAL TMXCB
       EXTERNAL NodeInfoCB
       EXTERNAL EleInfoCB
@@ -120,13 +119,9 @@
       EXTERNAL PolyCutGridCB
       EXTERNAL PolySetDepthCB
       EXTERNAL PolyReDepthCB
-      EXTERNAL PlotNodeCB
       EXTERNAL ConfigNodeCB
-      EXTERNAL PlotGridCB
       EXTERNAL ConfigGridCB
-      EXTERNAL PlotContourCB
       EXTERNAL ConfigContourCB
-      EXTERNAL PlotDataCB
       EXTERNAL ConfigDataCB
       EXTERNAL HelpCB
       EXTERNAL AboutCB
@@ -265,16 +260,9 @@
       result = APPENDMENUQQ(9,$MENUENABLED,'ReDepth'C,PolyReDepthCB )
 
       result = APPENDMENUQQ(10,$MENUENABLED,'Config'C,NUL )
-      !result = APPENDMENUQQ(9,$MENUENABLED,'DrawNode'C,PlotNodeCB )
       result = APPENDMENUQQ(10,$MENUENABLED,'ConfigNode'C,ConfigNodeCB )
-      !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
-      !result = APPENDMENUQQ(9,$MENUENABLED,'DrawGrid'C,PlotGridCB )
       result = APPENDMENUQQ(10,$MENUENABLED,'ConfigGrid'C,ConfigGridCB )
-      !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
-      !result = APPENDMENUQQ(9,$MENUENABLED,'DrawContour'C,PlotContourCB )
       result = APPENDMENUQQ(10,$MENUENABLED,'ConfigContour'C,ConfigContourCB)
-      !result = APPENDMENUQQ(9,$MENUSEPARATOR,' 'C,NUL )
-      !result = APPENDMENUQQ(9,$MENUENABLED,'DrawData'C,PlotDataCB )
       result = APPENDMENUQQ(10,$MENUENABLED,'ConfigData'C,ConfigDataCB )
 
       result = APPENDMENUQQ(11,$MENUENABLED,'Help'C,NUL )
@@ -322,8 +310,6 @@
 	result = modifymenuflagsqq(5,0,$MENUENABLED)
 	result = modifymenuflagsqq(6,0,$MENUENABLED)
 	result = modifymenuflagsqq(7,0,$MENUENABLED)
-	result = modifymenuflagsqq(8,0,$MENUENABLED)
-	result = modifymenuflagsqq(9,0,$MENUENABLED)
 	result = modifymenuflagsqq(10,0,$MENUENABLED)
 	result = modifymenuflagsqq(11,0,$MENUENABLED)
 
@@ -355,7 +341,7 @@
 
 	logical result
 
-	result = modifymenuflagsqq(8,0,$MENUENABLED)
+	result = modifymenuflagsqq(9,0,$MENUENABLED)
 
 	return
 	end
@@ -368,7 +354,7 @@
 
 	logical result
 
-	result = modifymenuflagsqq(8,0,$MENUGRAYED)
+	result = modifymenuflagsqq(9,0,$MENUGRAYED)
 
 	return
 	end
@@ -408,7 +394,6 @@
 	result = modifymenuflagsqq(4,6,$MENUENABLED)
 	result = modifymenuflagsqq(4,12,$MENUENABLED)
 	result = modifymenuflagsqq(5,0,$MENUENABLED)
-	result = modifymenuflagsqq(8,0,$MENUENABLED)
 
 	return
 	end
@@ -421,12 +406,6 @@
 
 	logical result
 
-!	result = modifymenuflagsqq(4,1,$MENUENABLED)
-!	result = modifymenuflagsqq(4,3,$MENUENABLED)
-!	result = modifymenuflagsqq(4,4,$MENUENABLED)
-!	result = modifymenuflagsqq(4,6,$MENUENABLED)
-!	result = modifymenuflagsqq(4,7,$MENUENABLED)
-!!	result = modifymenuflagsqq(4,12,$MENUENABLED)
 	result = modifymenuflagsqq(8,0,$MENUENABLED)
 
 	return
@@ -440,13 +419,7 @@
 
 	logical result
 
-!	result = modifymenuflagsqq(4,1,$MENUENABLED)
-!	result = modifymenuflagsqq(4,3,$MENUENABLED)
-!	result = modifymenuflagsqq(4,4,$MENUENABLED)
-!	result = modifymenuflagsqq(4,6,$MENUENABLED)
-!	result = modifymenuflagsqq(4,7,$MENUENABLED)
-!!	result = modifymenuflagsqq(4,12,$MENUENABLED)
-	result = modifymenuflagsqq(8,0,$MENUENABLED)
+	result = modifymenuflagsqq(8,0,$MENUGRAYED)
 
 	return
 	end
@@ -484,139 +457,25 @@
 	result = modifymenuflagsqq(4,9,$MENUENABLED)
 	result = modifymenuflagsqq(4,10,$MENUENABLED)
 	result = modifymenuflagsqq(6,0,$MENUENABLED)
-	result = modifymenuflagsqq(9,0,$MENUENABLED)
 
 	return
 	end
 
 !**********************************************************************
 
-
-	Subroutine SetMenuChkFlags0( fn, fg, fc, fd )
-
-	USE DFLIB
-
-	logical result
-      logical fn, fg, fd, fc
-
-	if(fn) then
-	  result = modifymenuflagsqq(9,1,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(9,1,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-	if(fg) then
-	  result = modifymenuflagsqq(9,4,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(9,4,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-	if(fc) then
-	  result = modifymenuflagsqq(9,7,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(9,7,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-	if(fd) then
-	  result = modifymenuflagsqq(9,10,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(9,10,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-	return
-	end
-
-!**********************************************************************
-
-
-	Subroutine SetTransChkFlags( f1,f2,f3,f4 )
+	Subroutine SetTransformChkFlags( id )
 
 	USE DFLIB
 
-      logical f1,f2,f3,f4
+    integer id
+    logical result
 
-      call SetLinChkFlags(f1)
-      call SetPolarChkFlags(f2)
-      call SetMercChkFlags(f3)
-      call SetTMChkFlags(f4)
-
-	return
-	end
-
-!**********************************************************************
-
-
-	Subroutine SetLinChkFlags( fn )
-
-	USE DFLIB
-
-	logical result
-      logical fn
-
-	if(fn) then
-	  result = modifymenuflagsqq(2,9,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(2,9,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-
-	return
-	end
-
-!**********************************************************************
-
-
-	Subroutine SetPolarChkFlags( fn )
-
-	USE DFLIB
-
-	logical result
-      logical fn
-
-	if(fn) then
-	  result = modifymenuflagsqq(2,13,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(2,13,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-
-	return
-	end
-
-!**********************************************************************
-
-
-	Subroutine SetMercChkFlags( fn )
-
-	USE DFLIB
-
-	logical result
-      logical fn
-
-	if(fn) then
+    result = modifymenuflagsqq(2,14,$MENUENABLED.OR.$MENUUNCHECKED)
+    result = modifymenuflagsqq(2,15,$MENUENABLED.OR.$MENUUNCHECKED)
+    if(id.eq.-1) then
 	  result = modifymenuflagsqq(2,14,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(2,14,$MENUENABLED.OR.$MENUUNCHECKED)
-	endif
-
-
-	return
-	end
-
-!**********************************************************************
-
-
-	Subroutine SetTMChkFlags( fn )
-
-	USE DFLIB
-
-	logical result
-      logical fn
-
-	if(fn) then
+	elseif(id.eq.1) then
 	  result = modifymenuflagsqq(2,15,$MENUENABLED.OR.$MENUCHECKED)
-      else
-	  result = modifymenuflagsqq(2,15,$MENUENABLED.OR.$MENUUNCHECKED)
 	endif
 
 

@@ -75,6 +75,7 @@ C     - display all labels
       call PanelText( 1, 17, ' Index:', 7 )
       call PanelText( 1, 19, '  Node Type:', 12 )
       call PanelText( 1, 20, 'Marker Type:', 12 )
+!      call PanelText( 10, 23, 'CLOSE', 5 )
 
 C     - display all unchangeable text
       call PigSetTextColour( NoHitColor )
@@ -85,10 +86,10 @@ C     - display all changeable text
       call PigSetTextColour( HitColor )
 
 C     - REDRAW option ( hit # 10 )
-      call PanelHit( 10, 22, 10, 'REDRAW', 6 )
+!      call PanelHit( 10, 22, 10, 'REDRAW', 6 )
 
 C     - ACCEPT option ( hit # 1 )
-      call PanelHit( 10, 23, 1, 'ACCEPT', 6 )
+      call PanelHit( 10, 22, 1, 'CLOSE', 5 )
 
 C     - Interior Node color option ( hit # 2 )
       call PanelHitBox( 13, 10, 2, 6, NodeIColor )
@@ -143,6 +144,7 @@ c      call PigDrawSymbols ( 1, gpmX, gpmY )
       return
 
       entry ConfigNodes_Ehandler(hitnum)
+
       call PigGetWindowNum(prev_win)
       call PigSetWindowNum(CONTROLWIN)
       IF ( hitnum .eq. 1 ) THEN

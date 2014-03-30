@@ -108,7 +108,7 @@
       LOGICAL, save :: Redrw, CHANGE, Ok, DrwFlag,Quit, retrowanted,success
       logical, save ::  newfile=.false.
       logical IN_BOX
-      character cstr*256, ans*10, PigCursYesNo*1, deltype*1
+      character cstr*80, ans*10, PigCursYesNo*1, deltype*1
       INTEGER PolyId, numvert
       real vertx1(maxvert+1),verty1(maxvert+1)
 
@@ -196,7 +196,7 @@
         FlagG=.false.
         FlagD=.false.
         FlagC=.false.
-!        call MNU_NodeMenuDisable
+
         call MNU_GridAndNodeMenuDisable
         call MNU_PolyMenuDisable
 
@@ -214,7 +214,6 @@
         return
 
 ! Callback routines 
-! BEGIN, set menu flags
 
 !  File menu
         entry OpenGridFileCB() !open grid
@@ -264,9 +263,7 @@
             FlagG = .true.
             FlagN = .false.
             call DrwFig(change)
-!            Finished = .FALSE.
           endif
-
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_NodeMenuDisable
@@ -278,7 +275,6 @@
         entry AddGridFileCB() !add grid
           call MNU_MainMenuDisable
           Quit = .false.
-!          FlagG = .false.
           call OpenGridFile(Quit)
           call PigEraseMessage
           if(.not.Quit) then
@@ -294,7 +290,6 @@
             FlagN = .false.
             call DrwFig(change)
           endif
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_NodeMenuDisable
@@ -347,7 +342,6 @@
             tottr = 0
             newfile = .true.
           endif
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
@@ -378,7 +372,6 @@
             newfile = .true.
             tottr = 0
           endif
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           call MNU_GridMenuDisable
@@ -445,7 +438,6 @@
             change = .true.
             call DrwFig(change)
           endif
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call MNU_MainMenuEnable
           return
@@ -567,7 +559,6 @@
           endif
           return
         entry ZoomCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = Zoomin_MW
           call PigStatusMessage('Zoom ACTIVE: Drag area')
           FirstZoom=.true.
@@ -581,7 +572,6 @@
           IF (Redrw) call DrwFig(CHANGE)
           return        
         entry PanCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = Pan_MW
           call PigStatusMessage('Pan ACTIVE: Drag to new location')
           FirstPan=.true.
@@ -595,21 +585,18 @@
           IF (Redrw) call DrwFig(CHANGE)
           return
          entry ScaleCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (1)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
         entry ShiftCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (2)
           Redrw = .TRUE.
           IF (Redrw) call DrwFig(CHANGE)
           return
         entry RotateCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ScaleOrShift (3)
           Redrw = .TRUE.
@@ -690,18 +677,14 @@
           return
         entry PMarkCB()
           Active_MW = PLACEMARKERS_MW
-          !Active_CW = INACTIVE_CW
-!          call PlaceMarkers_Init
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
          return
         entry PMDelLastCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = PLACEMARKERS_MW
           call RemoveLastMarker( Success )
           call PigStatusMessage('PMarkers ACTIVE: Pick a point')        
           return
         entry PMDelAllCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           call ErasePermMarkers
           call PigEraseMessage
@@ -766,7 +749,6 @@
             call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,&
      &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,&
      &  PtsThisBnd,Quit,AutoGenFlag)
-!            exist(1:itot) = .true.
             if(.not.Quit) then
               if(itot.gt.1000) then
                 outlineonly = .true.
@@ -779,7 +761,6 @@
               FlagG = .true.
               call InitVertexMarkers
               call DrwFig(.FALSE.)
-!              call Expand(nrec)
             endif
           else
             call PigPutMessage('Cannot generate front')
@@ -794,7 +775,6 @@
             call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,&
      &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,&
      &  PtsThisBnd,Quit,AutoGenFlag)
-            !exist(1:itot) = .true.
             if(.not.Quit) then
               if(itot.gt.1000) then
                 outlineonly = .true.
@@ -807,7 +787,6 @@
               FlagG = .true.
               call InitVertexMarkers
               call DrwFig( .FALSE.)
- !             call Expand(nrec)
               call MNU_NodeMenuDisable
               call MNU_GridMenuEnable
               if(numpolys.gt.0) then
@@ -837,7 +816,6 @@
             call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,&
      &  nbtotr,NL,maxtri,TotTr,ListTr,TCode,TotBndys,TotIntBndys,&
      &  PtsThisBnd,Quit,AutoGenFlag)
-            !exist(1:itot) = .true.
             if(.not.Quit) then
               if(itot.gt.1000) then
                 outlineonly = .true.
@@ -850,7 +828,6 @@
               FlagG = .true.
               call InitVertexMarkers
               call DrwFig(.FALSE.)
-!              call Expand(nrec)
               call MNU_NodeMenuDisable
               call MNU_GridMenuEnable
               if(numpolys.gt.0) then
@@ -865,9 +842,7 @@
           call PigMessageOK('Under construction','options')
           return
         entry GenHexCB()
-!          nogen = .TRUE.
           CHANGE  = .TRUE.
-!          call LdTrLt(CHANGE)
           if(change) then
             call RemoveNotExist(itot,code,nbtot,nl)
             call Element_Lister(CHANGE, .FALSE. , &
@@ -877,15 +852,12 @@
           endif
           call GenHexCells (mrec,itot,dxray,dyray,code,nbtot,nbtotr,NL,Maxtri,TotTr,ListTr)
           quit = .false.
-          !exist(1:itot) = .true.
           change = .true.
           call DrwFig(CHANGE)
           change = .true.
           return
         entry GenSquaresCB()
-!          nogen = .TRUE.
           CHANGE  = .TRUE.
-!          call LdTrLt(CHANGE)
           if(change) then
             call RemoveNotExist(itot,code,nbtot,nl)
             call Element_Lister(CHANGE, .FALSE. , &
@@ -894,17 +866,13 @@
             change = .false.
           endif
           call GenQuadCells (mrec,itot,dxray,dyray,code,nbtot,nbtotr,NL,MaxTri,TotTr,ListTr)
-          !exist(1:itot) = .true.
           quit = .false.
-          !exist(1:itot) = .true.
           change = .true.
           call DrwFig(CHANGE)
           change = .true.
           return
         entry GenMixedCB()
-!          nogen = .TRUE.
           CHANGE  = .TRUE.
-!          call LdTrLt(CHANGE)
           if(change) then
             call RemoveNotExist(itot,code,nbtot,nl)
             call Element_Lister(CHANGE, .FALSE. , &
@@ -913,9 +881,7 @@
             change = .false.
           endif
           call GenMixedCells (mrec,itot,dxray,dyray,code,nbtot,nbtotr,NL,MaxTri,TotTr,ListTr)
-          !exist(1:itot) = .true.
           quit = .false.
-          !exist(1:itot) = .true.
           change = .true.
           call DrwFig(CHANGE)
           change = .true.
@@ -925,7 +891,6 @@
             AutoGenFlag = 0  !.false.
             call Gridit2(mrec,itot,dxray,dyray,depth,code,nbtot,nbtotr,NL,maxtri,TotTr,&
                     ListTr,TCode,TotBndys,TotIntBndys,PtsThisBnd,Quit,AutoGenFlag)
-            !exist(1:itot)=.true.
             if(.not.Quit) then
               if(itot.gt.1000) then
                 outlineonly = .true.
@@ -938,7 +903,6 @@
               FlagG = .true.
               call InitVertexMarkers
               call DrwFig( .FALSE.)
-!              call Expand(nrec)
               call MNU_NodeMenuDisable
               call MNU_GridMenuEnable
               if(numpolys.gt.0) then
@@ -952,131 +916,97 @@
 
 ! Node edit menus
         entry DeleteNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeDelBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
           return
         entry MoveNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeMoveBnd_MW
           call PigStatusMessage('Pick an EXISTING point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call MovTypNode (2)
           return
         entry AddBndNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeAddBnd_MW
           call PigStatusMessage('Pick a NEW boundary point')
-!          call AddBdNode
           return
         entry ReverseBndCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeRevBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary')
-!          call ReverseBoundary
           return
         entry SplitBndCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeSplitBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
-!          call SplitBoundaries
           return
         entry JoinBndCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeJoinBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call JoinBoundaries
           return
         entry ReSampleBndCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeResample_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call ReSelBndNodes
           return
         entry ReselectBndCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeResBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call ReSelBndNodes
           return
         entry AddBndLineCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeStrBnd_MW
           call PigStatusMessage('Pick an EXISTING boundary point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call StraightBnd (nrec)
           return
         entry DeleteIslCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeDelIsl_MW
           call PigStatusMessage('Select Any Node On The Island To Delete.')
-!          call DelIsland
           return
         entry AddIntNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeAddInt_MW
           call PigStatusMessage('Pick a NEW interior point')
-!          call AddInNode
           return
         entry AddIntLineCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = NodeStrInt_MW
           call PigStatusMessage('Pick first EXISTING interior point')
           FirstPoint=.true.
           NextPoint=.false.
-!          call StraightInt (nrec)
           return
 
 !  Grid edit menus
         entry AddGridEdgeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridADDLINE_MW
           call PigStatusMessage('Pick a point')
           FirstPoint=.true.
           NextPoint=.false.
-!            call AddLine_Init()
           CHANGE  = .TRUE.
           return
         entry AddGridNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridAddNode_MW
           call PigStatusMessage('Pick a NEW point')
-!          call AddPro(CHANGE, NREC)
           CHANGE  = .TRUE.
           return
         entry DelGridEdgeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridDelLine_MW
           call PigStatusMessage('Pick an EXISTING edge')
-!          call DelSeg(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry DelGridNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridDelnode_MW
           call PigStatusMessage('Pick an EXISTING point')
-!          call DelPro(CHANGE)
           CHANGE  = .TRUE.
           return
         entry MoveGridNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridMove_MW
           call PigStatusMessage('Move ACTIVE: Pick first EXISTING point')
           FirstPoint=.true.
           NextPoint=.false.
-!            call LNCHG2(CHANGE, CHANGEV, NREC)
           return
         entry MergeGridNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridMerge_MW
           call PigStatusMessage('Merge ACTIVE: Pick first EXISTING point')
           FirstPoint=.true.
@@ -1084,31 +1014,23 @@
           CHANGE  = .TRUE.
           return
         entry CleaveGridNodeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridCleave_MW
           call PigStatusMessage('Cleave ACTIVE: Pick an EXISTING point')
-!          call Cleave(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry InsertGridEdgeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridInsert_MW
           call PigStatusMessage('Pick an EXISTING edge')
-!          call Insert(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry ExchangeGridEdgeCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridExchange_MW
           call PigStatusMessage('Pick an EXISTING edge')
-!          call Xchange(NREC, CHANGE, CHANGEV, IERR)
           CHANGE  = .TRUE.
           return
         entry DekiteGridCB()
-          !Active_CW = INACTIVE_CW
           Active_MW = GridDekite_MW
           call PigStatusMessage('Pick an EXISTING 4-point')
-!          call DeKite(CHANGE,NREC)
           CHANGE  = .TRUE.
           return
         entry ReshapeGridCB()
@@ -1122,12 +1044,10 @@
           endif
 
 !            adjust position of nodes with code = 0 in dispaly window
-          !Active_CW = INACTIVE_CW
           Active_MW = INACTIVE_MW
           do i=1,itot
             polylist(i) = IN_BOX(dxray(i),dyray(i))
           enddo
-!          call Reshape(NREC, CHANGEV, CHANGE, 2)
           call Reshape2(itot,nbtot,dxray,dyray,code,NL,polylist)
           Call DRWFIG(CHANGE)
           call PigEraseMessage
@@ -1144,7 +1064,6 @@
 !  polygon generation
         entry CreatePolyCB()
           Ok = .FALSE.
-          !Active_CW = INACTIVE_CW
           Active_MW = PolyDef_MW
           call PigStatusMessage('Pick Vertices, pick first again to close polygon.')
           FirstPoint=.true.
@@ -1229,9 +1148,6 @@
       
             call PolyResampleNodes(polylist,TotCoords,Totbndys,&
                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
- !           deltype = 'B'
- !           call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
- !                              TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
             itot = Totcoords
           endif
           return
@@ -1250,7 +1166,6 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-!            call DelPolyNodes('B', polylist)
             deltype = 'B'
             call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
                                TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
@@ -1272,7 +1187,6 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-!            call DelPolyNodes('I', polylist)
             deltype = 'I'
             call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
                                TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
@@ -1294,7 +1208,6 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-!            call DelPolyNodes('A', polylist)
             deltype = 'A'
             call DelPolyNodes (deltype,polylist,TotCoords,Totbndys,&
                                TotIntpts,PtsThisBnd,dxray,dyray,depth,code)
@@ -1309,7 +1222,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call nodecode(change,nrec)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1345,7 +1257,6 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-!            call LdTrLt(CHANGE)
             if(change) then
               call RemoveNotExist(itot,code,nbtot,nl)
               call Element_Lister(CHANGE, .FALSE. , &
@@ -1353,7 +1264,6 @@
                    x0off,y0off,scaleX,scaleY,igridtype)
               change = .false.
             endif
-!            call elementcode(change,nrec)
 12          call PigPrompt('Enter existing element Code to change from:', ans )
             READ( ans, FMT = '(I4)', err = 12 ) iecode1
 
@@ -1371,7 +1281,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call Dekite_all (change,NREC)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1395,7 +1304,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call LdTrLt(CHANGE)
             if(change) then
               call RemoveNotExist(itot,code,nbtot,nl)
               call Element_Lister(CHANGE, .FALSE. , &
@@ -1403,7 +1311,6 @@
                    x0off,y0off,scaleX,scaleY,igridtype)
               change = .false.
             endif
-!            call reshapeinpoly(change,nrec)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1426,7 +1333,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call DeleteGridInPoly (NREC)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1450,7 +1356,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call SPLTMD (NREC)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1474,7 +1379,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call LdTrLt(CHANGE)
             if(change) then
               call RemoveNotExist(itot,code,nbtot,nl)
               call Element_Lister(CHANGE, .FALSE. , &
@@ -1482,7 +1386,6 @@
                    x0off,y0off,scaleX,scaleY,igridtype)
               change = .false.
             endif
-!            call Refine_Centroid(NREC,CHANGE)  !Refine(1, nrec)
             change = .true.
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
@@ -1515,7 +1418,6 @@
             call Refine_by2(mrec,itot,nbtot,maxtri,TotTr,dxray,dyray,depth,code,Polylist,NL,ListTr)
             call PigEraseMessage
             
-            !exist(1:itot) = .true.
             change = .true.
             call DrwFig(CHANGE)
             change = .true.
@@ -1527,7 +1429,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call CutGridElevation (nrec)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1574,7 +1475,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call SetDepth (ind)
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1608,7 +1508,6 @@
           elseIF (actvpoly.le.0) then
             call PigPutMessage('Please activate a polygon first.')
           ELSE
-!            call redep()
             PolyId = actvpoly
             numvert = vertcnt(actvpoly)
             vertx1 = 0.
@@ -1668,7 +1567,6 @@
 !*
 !*******************************        
       entry MouseEHandler(Window, MouseButton, MouseX, MouseY)
-        write(*,*) 'Mouse event, button =',MouseButton,MouseX,MouseY 
 
       nrec = itot + 1
       if( (MouseButton.eq.BDOWN).and.(Active_MW.ne.INACTIVE_MW)) then
@@ -1678,7 +1576,6 @@
           if ( ierr .eq. 1 ) then
             call PigMessageOK('ERROR - Invalid point.','NodeInfo')
           else
-!            call PutMarker( DXRAY(index), DYRAY(index), 4, InfoColor)
             call PutNodeMarker(index)
             call WPigNodeInfo(index)  !hook for dialog
           endif

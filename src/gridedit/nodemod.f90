@@ -1353,6 +1353,12 @@
         dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
         nnew = floor(dist)-1
 
+!       If i exceeds limit of 1000000 nodes, error and return
+        IF ( (i + nnew).gt. 1000000 ) THEN
+          call PigMessageOK('The boundary segment is to long','ReSample')
+          return
+        END IF
+
         newbx(i) = dxray(j)
         newby(i) = dyray(j)
         newbd(i) = depth(j)
@@ -1365,11 +1371,7 @@
 
         i = i + nnew + 1
 
-!     If i exceeds limit of 1000000 nodes, error and return
-        IF ( i .gt. 1000000 ) THEN
-          call PigMessageOK('The boundary segment is to long','ReSample')
-          return
-        END IF
+
       END DO
 
 !     Put the last node in the array

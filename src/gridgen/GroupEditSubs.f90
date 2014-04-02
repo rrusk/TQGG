@@ -1779,11 +1779,10 @@
 
       SUBROUTINE haversine(lat1,lon1,lat2,lon2,dist)
 
-! PURPOSE: To resample all nodes in the current polygon against a
-!          specified distance.
-! GIVEN:   variables
-! RETURNS: resampled nodes.
-! EFFECTS: Specified nodes in active polygon are sampled, if confirmed.
+! PURPOSE: Calculate the distance from one point to another in latlon coordinates
+! GIVEN:   lat and lon for 2 points
+! RETURNS: dist between points
+! EFFECTS: -
 !----------------------------------------------------------------------*
 
           ! great circle distance -- adapted from Matlab

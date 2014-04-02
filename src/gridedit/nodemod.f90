@@ -1278,7 +1278,7 @@
       logical FirstPoint, NextPoint
 
 ! - LOCAL VARIABLES
-      integer ierr, ndx, nodetype,i,j,k,nnew,nspc,newbind(10000)
+      integer ierr, ndx, nodetype,i,j,k,nnew,nspc,newbind(1000000)
       integer, save :: indxs(2), bnd, contighalf
       LOGICAL valid
       real :: newbx(1000000), newby(1000000), newbd(1000000), dist,dist1,dist2
@@ -1292,6 +1292,12 @@
 !     nspc - number of spaces/lines (in the new segment)
 
 !-----------------START ROUTINE----------------------------------------
+
+!     Check for correct igridtype
+      IF (.not.((igridtype.eq.0).or.(igridtype.eq.1).or.(igridtype.eq.2))) then
+        call PigMessageOK('Unknown grid type. ReSample only works with UTM, LatLon and Cartesian. (0,1 and 2)','Projection')
+        return
+      END IF
 
 !       - get 2 delimiting nodes to mark section
       if(FirstPoint) then
@@ -1334,23 +1340,21 @@
 
       call PickBndHalf ( bnd, indxs, contighalf )
 
-!     IF spacing is less that 1, assume polar coordinates, and try again
-
-      IF ( sqrt((dxray(indxs(1)+1)-dxray(indxs(1)))**2 + (dyray(indxs(1)+1)-dyray(indxs(1)))**2) .lt. 1 ) THEN
-        call PigMessageOK('Are you in polar coordinates? Please convert to meter-based coordinates and try again.','polar')
-        return       
-      END IF
-
 !     Move end nodes one 'in' on the boundary, to keep initial end spacing
       indxs(1) = indxs(1)+1
       indxs(2) = indxs(2)-1
 
 !     Create a 1m spaced bnd in newbnd
-
       i = 1
       DO j=indxs(1),indxs(2)-1
 !       Get distance between the point and the next
-        dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+
+        IF (igridtype.eq.0) then ! latlon
+          call haversine(dyray(j),dxray(j),dyray(j+1),dxray(j+1), dist)
+        ELSE
+          dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+        END IF
+
         nnew = floor(dist)-1
 
 !       If i exceeds limit of 1000000 nodes, error and return
@@ -1380,8 +1384,14 @@
       newbd(i) = depth(indxs(2))
 
 !     Calculate spacing at start and end of segment
-      dist1 = sqrt((dxray(indxs(1)-1)-dxray(indxs(1)))**2 + (dyray(indxs(1)-1)-dyray(indxs(1)))**2)
-      dist2 = sqrt((dxray(indxs(2))-dxray(indxs(2)+1))**2 + (dyray(indxs(2))-dyray(indxs(2)+1))**2)
+      IF (igridtype.eq.0) then ! latlon
+        call haversine(dyray(indxs(1)-1),dxray(indxs(1)-1),dyray(indxs(1)),dxray(indxs(1)), dist1)
+        call haversine(dyray(indxs(2)+1),dxray(indxs(2)+1),dyray(indxs(2)),dxray(indxs(2)), dist2)
+      ELSE
+        dist1 = sqrt((dxray(indxs(1)-1)-dxray(indxs(1)))**2 + (dyray(indxs(1)-1)-dyray(indxs(1)))**2)
+        dist2 = sqrt((dxray(indxs(2))-dxray(indxs(2)+1))**2 + (dyray(indxs(2))-dyray(indxs(2)+1))**2)
+      END IF
+
 
 !     Pick out the indexes to use in the increasing spacing
 !     And the increase
@@ -1420,11 +1430,6 @@
 !     Assign number of added nodes to nnew
       nnew = i - (indxs(2)-indxs(1)) - 1
 
-!     Add the number of added nodes to the bnd segment, ITOTs and TotCoords
-      PtsThisBnd(bnd) = PtsThisBnd(bnd)+nnew
-      ITOT = ITOT + nnew
-      TotCoords = TotCoords + nnew
-
 !     Move the array to make room for the new array
       IF (nnew.lt.0) THEN ! Less nodes
         DO j=indxs(2)+1,ITOT
@@ -1448,6 +1453,13 @@
       dyray(indxs(1):indxs(1)+i-1)=newby(1:i)
       depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
       code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
+
+
+!     Add the number of added nodes to the bnd segment, ITOTs and TotCoords
+      PtsThisBnd(bnd) = PtsThisBnd(bnd)+nnew
+      ITOT = ITOT + nnew
+      TotCoords = TotCoords + nnew
+
 
 !     Draw the new lines and symbols
       call PigDrawBndSymbols( i , newbx, newby )

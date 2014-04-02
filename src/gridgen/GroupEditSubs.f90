@@ -1605,8 +1605,8 @@
 !----------------------START ROUTINE----------------------------------
 
 !     Check for correct igridtype
-      IF (igridtype.ne.1)then
-        call PigMessageOK('Nodes are not in UTM projection','UTM')
+      IF (.not.((igridtype.eq.0).or.(igridtype.eq.1).or.(igridtype.eq.2))) then
+        call PigMessageOK('Unknown grid type. ReSample only works with UTM, LatLon and Cartesian. (0,1 and 2)','Projection')
         return
       END IF
 
@@ -1687,8 +1687,17 @@
 
 !         Get distance between the point and the next
 !         nnew is the number of 1m segments along the line.
-          dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+
+!         Calcualte distance based on grid type
+          IF (igridtype.eq.0) then ! latlon
+            call haversine(dyray(j),dxray(j),dyray(j+1),dxray(j+1), dist)
+          ELSE
+            dist = sqrt((dxray(j+1)-dxray(j))**2 + (dyray(j+1)-dyray(j))**2)
+          END IF
+
           nnew = floor(dist)-1
+
+          IF( nnew.lt.2 ) nnew = 2
 
           DO k=1,nnew
 !           Calculate position of temporary node
@@ -1697,13 +1706,23 @@
             tmpd = depth(j) + k * ((depth(j+1)-depth(j)) / (nnew + 1))
 
 !           Get distance from the current node (i) to the new temporary node node
-            dist = sqrt((tmpx-newbx(i))**2 + (tmpy-newby(i))**2)
+!           Calcualte distance based on grid type
+            IF (igridtype.eq.0) then !latlon
+              call haversine(tmpy,tmpx,newby(i),newbx(i),dist)
+            ELSE
+              dist = sqrt((tmpx-newbx(i))**2 + (tmpy-newby(i))**2)
+            END IF
+
 
             IF (dist >= res) then
               i = i + 1
               newbx(i) = tmpx
               newby(i) = tmpy
               newbd(i) = tmpd
+              IF ( i.gt.99998 ) then
+                call PigMessageOK('The boundary segment is to long/resolution to small','ReSample')
+                return
+              END IF
             END IF
 
           END DO
@@ -1720,9 +1739,7 @@
 !       Assign number of added nodes to nnew
         nnew = i - (indxs(2)-indxs(1)) - 1
 
-!       Add the number of added nodes to the bnd segment, ITOTs and TotCoords
-        PtsThisBnd(bnd(jj)) = PtsThisBnd(bnd(jj))+nnew
-        TotCoords = TotCoords + nnew
+
 
 !       Move the array to make room for the new array
         IF (nnew.lt.0) THEN ! Less nodes
@@ -1748,12 +1765,48 @@
         depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
         code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
 
+!       Add the number of added nodes to the bnd segment, ITOTs and TotCoords
+        PtsThisBnd(bnd(jj)) = PtsThisBnd(bnd(jj))+nnew
+        TotCoords = TotCoords + nnew
+
+
 
       END DO ! End of loop over bnd segs
 
-
       return
       end
+!-----------------------------------------------------------------------*
+
+      SUBROUTINE haversine(lat1,lon1,lat2,lon2,dist)
+
+! PURPOSE: Calculate the distance from one point to another in latlon coordinates
+! GIVEN:   lat and lon for 2 points
+! RETURNS: dist between points
+! EFFECTS: -
+!----------------------------------------------------------------------*
+
+          ! great circle distance -- adapted from Matlab
+          implicit none
+
+          real :: lat1,lon1,lat2,lon2
+          real :: a,c,rdlat,rdlon,rlat1,rlat2,pi,dist
+          real,parameter :: radius = 6371000
+
+
+!         Generate PI
+          pi = 4*atan(1.0)
+
+!         Convert to radians
+          rdlat = (lat2-lat1)*pi/180.0
+          rdlon = (lon2-lon1)*pi/180.0
+          rlat1 = lat1*pi/180.0
+          rlat2 = lat2*pi/180.0
+
+          a = (sin(rdlat/2))**2 + cos(rlat1)*cos(rlat2)*(sin(rdlon/2))**2
+          c = 2*atan2(sqrt(a),sqrt(1-a))
+          dist = radius*c
+
+      END
      
 ! ---------------------------------------------------------------------*
 !------------------END NODEPOLY.FOR-------------------------------------*

@@ -558,7 +558,6 @@
       enddo
 
 !     Loop through all nodes and transform from UTM to lat/lon
-      write(*,*)grid_zone(1),grid_zone(2)
       DO JJ = 1, ITOT
 
         CALL utm2ll(dxray(jj),dyray(jj),tmpx,tmpy,grid_zone,3)

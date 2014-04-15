@@ -36,6 +36,7 @@
 #define  EleInfoCB  eleinfocb_
 #define  NodeCheckCB  nodecheckcb_
 #define  EleCheckCB  elecheckcb_
+#define  BndCheckCB  bndcheckcb_
 #define  EraseCheckCB  erasecheckcb_
 #define  PMarkCB  pmarkcb_
 #define  PMDelLastCB  pmdellastcb_

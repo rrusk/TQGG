@@ -124,6 +124,7 @@ void  NodeInfoCB(void);
 void  EleInfoCB(void);
 void  NodeCheckCB(void);
 void  EleCheckCB(void);
+void  BndCheckCB(void);
 void  EraseCheckCB(void);
 void  PMarkCB(void);
 void  PMDelLastCB(void);

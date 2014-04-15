@@ -665,7 +665,9 @@
           return
         entry EleCheckCB()
           call FlagsTriangles_Init()
-
+          return
+        entry BndCheckCB()
+          call BoundaryCheck()
           return
         entry EraseCheckCB()
           TrHiOff=.true.

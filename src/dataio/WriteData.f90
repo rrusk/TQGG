@@ -247,11 +247,11 @@
   
 ! *** LOCAL VARIABLES ***
       integer I,ii
-
-!     *** START SUBROUTINE ***
+      real :: zero=0.
 
       write(lun,*) 'VARIABLES="n" "x" "y" "z" "code"'
 
+! look for open boundary conditions
       DO I = 1,itot 
         ii = nindex(i)
         IF(ii.gt.0) then  
@@ -261,11 +261,31 @@
         endif
       enddo  
    
+! look for flow boundary conditions
+      DO I = 1,itot 
+        ii = nindex(i)
+        IF(ii.gt.0) then  
+          if(code(ii).eq.9) then
+            write (LUN,fmt=111,err=9999) ii,dxray(ii),dyray(ii),DEPTH(ii),CODE(ii)
+          endif
+        endif
+      enddo  
+
+      write(lun,*) 'VARIABLES="n_ele" "code" "Q1" "Q2"'
+
+! look for element discharge conditions
+      ii = 99
+      DO I = 1,TotTr 
+        if(Tcode(i).eq.9) then
+            write (LUN,'(2I8,2F5.1)',err=9999) i, ii, zero, zero
+        endif
+      enddo  
+            
       endfile(LUN)
       return
 
 9999  continue
-      call PigMessageOK(' *** ERROR IN WRITING NEIGHBOUR FILE ****', ' ')
+      call PigMessageOK(' *** ERROR in writing Boundary condition file ****', ' ')
 
       return
 

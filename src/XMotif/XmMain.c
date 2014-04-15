@@ -383,6 +383,7 @@ MenuItem info_menu[] = {
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
     { "NodeCheck", &xmPushButtonGadgetClass, 'o', NULL, NULL, NodeCheckCB, (XtPointer) 311, (MenuItem *) NULL },
     { "ElementCheck", &xmPushButtonGadgetClass, 'C', NULL, NULL, EleCheckCB, (XtPointer) 312, (MenuItem *) NULL },
+    { "BoundaryCheck", &xmPushButtonGadgetClass, 'C', NULL, NULL, BndCheckCB, (XtPointer) 314, (MenuItem *) NULL },
     { "EraseChecks", &xmPushButtonGadgetClass, 'r', NULL, NULL, EraseCheckCB, (XtPointer) 313, (MenuItem *) NULL },
     { "sep",&xmSeparatorGadgetClass, ' ', NULL, NULL, 0, (XtPointer) 0, (MenuItem *) NULL },
     { "PMarkers",&xmPushButtonGadgetClass, 'P', NULL, NULL, PMarkCB, (XtPointer) 321, (MenuItem *) NULL },

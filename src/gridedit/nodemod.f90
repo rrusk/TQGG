@@ -1205,7 +1205,7 @@
             onlychoice = .false.
           endif
           
-          rdflag = 1
+          rdflag = 2
           px(2) = islx2
           py(2) = isly2
           call PigDrawLine( i2, px, py, rdflag )
@@ -1232,7 +1232,7 @@
             islx2 = dxray(islndx2)
             isly2 = dyray(islndx2)
             call PigDrawModifySymbol ( islx2, isly2 )
-            rdflag = 1
+            rdflag = 2
             px(2) = islx2
             py(2) = isly2
             call PigDrawLine( i2, px, py, rdflag )

@@ -60,7 +60,7 @@
 		<File RelativePath="..\..\src\gridgen\GeneratePoints10-7-28b.f90"/>
 		<File RelativePath="..\..\src\gridgen\GroupEditSubs.f90"/>
 		<File RelativePath="..\..\src\dataio\MainArrays.f90"/>
-		<File RelativePath="..\..\src\gridgen\Maintri10-7-30.f90"/>
+		<File RelativePath="..\..\src\gridgen\MainTriangle.f90"/>
 		<File RelativePath="..\..\src\gridedit\NEWEDITS.f90"/>
 		<File RelativePath="..\..\src\plotsubs\nodedisp.f90"/>
 		<File RelativePath="..\..\src\gridedit\nodemod.f90"/>
@@ -87,7 +87,7 @@
 		<File RelativePath="..\..\src\vf_dialogs\RHPanel.f"/>
 		<File RelativePath="..\..\src\dataio\SampleData.f90"/>
 		<File RelativePath="..\..\src\gridedit\Scaleagain.f90"/>
-		<File RelativePath="..\..\src\gridgen\SloanTri10-6-23.f90"/>
+		<File RelativePath="..\..\src\gridgen\SloanTriSubs.f90"/>
 		<File RelativePath="..\..\src\gridedit\sortit.f"/>
 		<File RelativePath="..\..\src\gridedit\StraightLine.f"/>
 		<File RelativePath="..\..\src\dataio\Stspl.f"/>

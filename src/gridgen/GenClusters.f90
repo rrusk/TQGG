@@ -729,7 +729,7 @@
       LOGICAL aborted
 
 ! *** local
-      integer :: lencstr
+      integer :: lencstr,ErrorFlag
       real rval,x1(2),y1(2)
       character(128) cstr
       character(1) ans
@@ -857,7 +857,7 @@
           cycle
         endif
 !        call insertp(npts,n,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
-        call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
+        call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j,ErrorFlag)
 
       end do
     

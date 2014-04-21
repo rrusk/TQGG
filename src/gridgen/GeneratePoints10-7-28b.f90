@@ -170,7 +170,7 @@
     
 !  *** local
       integer :: ncb00, ncb0 = 0
-      integer j,jj,nn,n1,ia, istat
+      integer j,jj,nn,n1,ia, istat,ErrorFlag
       integer  p,tp,i,ii,numinb
       integer  newnf, newnf0, newnbreak, breaki, fi
       integer, save :: nf, nbreak
@@ -493,7 +493,7 @@
 
             list(n)=n
 !            call insertp(npts,n,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
-            call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
+            call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j,ErrorFlag)
 
 90    continue
 
@@ -554,7 +554,7 @@
 
               list(n)=n
 !              call insertp(npts,n,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
-              call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j)
+              call insertp(npts,x,y,v,t,ntri,v1,v2,v3,xp,yp,n,j,ErrorFlag)
 
 91              continue
             end do  !ia loop

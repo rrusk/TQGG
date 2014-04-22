@@ -46,18 +46,18 @@
       implicit none
 
 !  - "INCLUDES"
-!      include '../includes/graf.def'
+      include '../includes/graf.def'
       include '../includes/defaults.inc'
       include '../includes/edpolys.inc'
 
-      integer PolyDisplay
-      COMMON /POLYSTATUS/ PolyDisplay
+!      integer PolyDisplay
+!      COMMON /POLYSTATUS/ PolyDisplay
 
 !       - MARKERS stores markers placed by user
-      integer NumMarks
-      LOGICAL MarksOn
-      REAL MarksX(maxmarks), MarksY(maxmarks)
-      COMMON /MARKERS/ NumMarks, MarksOn, MarksX, MarksY
+!      integer NumMarks
+!      LOGICAL MarksOn
+!      REAL MarksX(maxmarks), MarksY(maxmarks)
+!      COMMON /MARKERS/ NumMarks, MarksOn, MarksX, MarksY
 
 ! - COINBOX stores coincident node range and location of range box display
 !      REAL coinrng, boxlocx, boxlocy, rngbox(5), rngboy(5)
@@ -96,32 +96,48 @@
 !    - set index for secondary color to start
       SecClrStrt = NodeSIndex
 
-      IF (.not.outlineonly) THEN
-!      - set marker type
-        call PigSetSymbolNumber ( marktype )
+!     - boundary connections
+      call ConnectBnd
 
-!        IF ( level .eq. 0 ) THEN
-!       - display boundary nodes
-!       - set marker color for boundary nodes
-        call PigSetSymbolColour ( bndcolor )
-        markidx = 0
-        DO jj = 1, TotBndys
-          DO ii = 1, PtsThisBnd(jj)
+!       - set marker type and color for boundary nodes
+      call PigSetSymbolNumber ( marktype )
+      call PigSetSymbolColour ( bndcolor )
+
+      markidx = 0
+      DO jj = 1, TotBndys
+        nodex(1) = dxray(markidx + 1) !first node
+        nodey(1) = dyray(markidx + 1)
+        IF ( In_Box(nodex(1),nodey(1)) ) THEN
+          call PigSetSymbolNumber ( square )
+          call PigSetSymbolColour ( white )
+          call PigDrawSymbols ( 1, nodex, nodey )
+          call PigSetSymbolNumber ( marktype )
+          call PigSetSymbolColour ( bndcolor )
+        endif
+
+        IF (.not.outlineonly) THEN  !do the rest        
+          DO ii = 2, PtsThisBnd(jj)
 !           - add protection from array bounds error if PtsThisBnd(jj) too big
             if( (markidx+ii).le.MaxPts) then
-             nodex(1) = dxray(markidx + ii)
-             nodey(1) = dyray(markidx + ii)
+              nodex(1) = dxray(markidx + ii)
+              nodey(1) = dyray(markidx + ii)
               IF ( In_Box(nodex(1),nodey(1)) ) THEN
-                IF ((markidx + ii) .ge. SecClrStrt) call PigSetSymbolColour(seccolor)
-                if(FlagC) call DepthClrCode ( 2, depth(markidx + ii) )
+                if(FlagC) then
+                  call DepthClrCode ( 2, depth(markidx + ii) )
+                elseif ((markidx + ii) .eq. SecClrStrt) then
+                  call PigSetSymbolColour(seccolor)
+                endif
                 call PigDrawSymbols ( 1, nodex, nodey )
               ENDIF
             endif
           END DO
-          markidx = markidx + PtsThisBnd(jj)
-        END DO
+        endif
+        markidx = markidx + PtsThisBnd(jj)
+      END DO
 !       - display interior nodes
 !       - set marker color for interior nodes
+      IF (.not.outlineonly) THEN
+        call PigSetSymbolNumber ( marktype )
         call PigSetSymbolColour ( intcolor )
         DO ii = 1, TotIntPts
 !         - add protection from array bounds error if PtsThisBnd(jj) too big
@@ -134,46 +150,7 @@
               call PigDrawSymbols ( 1, nodex, nodey )
             endif
           endif
-        END DO
-        
-!        ELSE  !level
-!       - display boundary nodes
-!       - set marker color for boundary nodes
-!        call PigSetSymbolColour ( bndcolor )
-!        markidx = 0
-!        DO jj = 1, TotBndys
- !         DO ii = 1, PtsThisBnd(jj)
-!          - add protection from array bounds error if PtsThisBnd(jj) too big
-!            if( (markidx+ii).le.MaxPts) then
-!              nodex(1) = dxray(markidx + ii)
-!              nodey(1) = dyray(markidx + ii)
-!              if(IN_BOX(nodex(1),nodey(1))) then
-!                IF ((markidx + ii) .ge. SecClrStrt) call PigSetSymbolColour(seccolor)
-!                if(FlagC) call DepthClrCode ( 2, depth(markidx + ii) )
-!                call PigDrawSymbols ( 1, nodex, nodey )
-!              endif
- !           endif
-!          END DO
-!           - ( ii = 1, PtsThisBnd(jj) )
-!          markidx = markidx + PtsThisBnd(jj)
-!        END DO
-
-!     - set marker color for interior nodes
-!        call PigSetSymbolColour ( intcolor )
-!     - display interior nodes
-!        DO ii = 1, TotIntPts
-!         - add protection from array bounds error if PtsThisBnd(jj) too big
-!          if( (markidx+ii).le.MaxPts) then
-!            nodex(1) = dxray(markidx + ii)
-!            nodey(1) = dyray(markidx + ii)
-!            if(IN_BOX(nodex(1),nodey(1))) then
-!              IF ((markidx + ii) .ge. SecClrStrt) call PigSetSymbolColour(seccolor)
-!              if(FlagC) call DepthClrCode ( 1, depth(markidx + ii) )
-!              call PigDrawSymbols ( 1, nodex, nodey )
-!            ENDIF
-!          endif
-!        END DO
-!        ENDIF  !level
+        END DO        
       endif
 
 !     - DISPLAY OTHER FEATURES AS REQUIRED...
@@ -189,25 +166,14 @@
         call DisplayPoly ( jj )
       enddo
 
-!     - tooclose node markers
-!      IF ( showcoin ) THEN
-!      call MarkCoins
-!      ENDIF
-!      IF ( showbox ) THEN
-!      call DisplayRangeBox( .TRUE. )
-!      ENDIF
-
-!     - boundary connections
-      call ConnectBnd
-
 !     - markers
-      IF ( MarksOn ) THEN
+!      IF ( MarksOn ) THEN
 !         - set marker type & display markers
-        call PigSetSymbolNumber ( MarkMType )
-        call PigSetSymbolColour ( MarkColor )
+!        call PigSetSymbolNumber ( MarkMType )
+!        call PigSetSymbolColour ( MarkColor )
 !        call PigSetWindowNum ( MAINWIN )
-        call PigDrawSymbols ( NumMarks, MarksX, MarksY )
-      ENDIF
+!        call PigDrawSymbols ( NumMarks, MarksX, MarksY )
+!      ENDIF
       call PigSetLineColour(PrevLineColour)
 
       END
@@ -241,11 +207,12 @@
 !     COMMON /BNDCONN/ showbndconn
 
 ! - LOCAL VARIABLES
-      integer i, bndsofar
+      integer i, ii, startidx, endidx, bndsofar
       integer PrevColour
-
+      real nx, ny
       integer linecolours(8)
-!      integer mod
+      logical inside
+      LOGICAL IN_BOX
 
 !---------------START ROUTINE--------------------------------------
 
@@ -265,10 +232,26 @@
         bndsofar = 0
         DO i = 1, TotBndys
           call PigSetLineColour ( linecolours(MOD(i,8)+1) )
+          startidx = 0
+          inside = .false.
+          DO ii = 1, PtsThisBnd(i)
+            nx = dxray(bndsofar + ii)
+            ny = dyray(bndsofar + ii)
+            if (IN_BOX(nx,ny)) then
+              if(startidx.eq.0) startidx = max(1,ii-1)+bndsofar
+              endidx = min(PtsThisBnd(i),ii+1)+bndsofar
+              inside = .true.
+!              exit
+            endif
+          enddo
 ! ensure do not overrun arrays dxray and dyray
-          if  (    (bndsofar+1.le.MaxPts).and.(PtsThisBnd(i).gt.0)) then
-              call PigDrawPolyline( MIN(PtsThisBnd(i),MaxPts-(bndsofar+1)),&
-                                    dxray(bndsofar+1), dyray(bndsofar+1))
+          if(inside) then
+            if  (    (bndsofar+1.le.MaxPts).and.(PtsThisBnd(i).gt.0)) then
+              call PigDrawPolyline( MIN(endidx-startidx+1,MaxPts-(bndsofar+1)),&
+                                    dxray(startidx), dyray(startidx))
+!              call PigDrawPolyline( MIN(PtsThisBnd(i),MaxPts-(bndsofar+1)),&
+!                                    dxray(bndsofar+1), dyray(bndsofar+1))
+            endif
           endif
           bndsofar = bndsofar + PtsThisBnd(i)
         END DO

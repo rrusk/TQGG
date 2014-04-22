@@ -397,7 +397,7 @@
       real :: dxray(totcoords),dyray(totcoords),depth(totcoords)
 
 ! - LOCAL VARIABLES
-      integer  i,j, ptindx,numdel,numdelbnd
+      integer  i,j, ptindx,numdel,numdelbnd, numbnd0
 
 !--------------------START ROUTINE--------------------------------------*
 
@@ -405,6 +405,7 @@
 
       ptindx = 0
       numdel = 0
+      numbnd0 = 0
       DO i=1,NumBnd
         numdelbnd = 0
         do j=1,PtsThisBnd(i)
@@ -412,14 +413,20 @@
           if(ncode(ptindx).lt.-10000) then
             numdel = numdel + 1
             numdelbnd = numdelbnd + 1
-          endif
-          if(ptindx-numdel.gt.0) then
+          !endif
+          elseif(ptindx-numdel.gt.0) then
             dxray(ptindx-numdel) = dxray(ptindx)
             dyray(ptindx-numdel) = dyray(ptindx)
             depth(ptindx-numdel) = depth(ptindx)
+            ncode(ptindx-numdel) = ncode(ptindx)
           endif
         enddo
-        PtsThisBnd(i) = PtsThisBnd(i) - numdelbnd
+        !check for no points - if so eliminate boundary
+        if((PtsThisBnd(i) - numdelbnd).le.0) then
+          numbnd0 = numbnd0 + 1
+        else
+          PtsThisBnd(i-numbnd0) = PtsThisBnd(i) - numdelbnd
+        endif
       ENDDO
 
       i = ptindx+1
@@ -427,15 +434,17 @@
         ptindx = ptindx + 1
         if(ncode(ptindx).lt.-10000) then
           numdel = numdel + 1
-        endif
-        if(ptindx-numdel.gt.0) then
+        !endif
+        elseif(ptindx-numdel.gt.0) then
           dxray(ptindx-numdel) = dxray(ptindx)
           dyray(ptindx-numdel) = dyray(ptindx)
           depth(ptindx-numdel) = depth(ptindx)
+          ncode(ptindx-numdel) = ncode(ptindx)
         endif
       enddo
 
       totcoords = ptindx - numdel
+      NumBnd = NumBnd - numbnd0
 
       RETURN
       END

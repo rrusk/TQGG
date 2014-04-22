@@ -968,44 +968,50 @@
       implicit none
 
 ! - LOCAL VARIABLES
-      integer ierr, islndx2, islndx2_next, isl2, isl2start, isl2end
-      integer, save :: islndx, islndx_next, isl1, islstart, islend
-      integer j, jj, k, knum, isldiff, n2, i2, icnt,rdflag
-      REAL islx, isly, islx1, isly1, islx2, isly2
+      integer ierr, islndx2, isl2, isl2start, isl2end, isl, islstart, islend
+      integer, save :: islndx
+      integer j, jj, k, knum, n, n2, i2
+      REAL islx, isly
       real, save :: px(2), py(2)
       CHARACTER*1 PigCursYesNo, ans
-      logical  FirstPoint, NextPoint  
+      logical  FirstPoint, NextPoint,flip,flip2
 
 !*-------------------START ROUTINE-------------------------------------
 
-      i2 = 2
+      i2 = 2 ! Only boundary nodes
 
       if(FirstPoint) then
         ierr = 0
         call CheckNode ( islx, isly, islndx, ierr, i2 )
 
+!       Pick first node
         IF ( ierr .eq. 1 ) THEN
-!           - valid node to move selected, put a marker at exact location
-          islx1 = dxray(islndx)
-          isly1 = dyray(islndx)
-          call PigDrawModifySymbol ( islx1, isly1 )
-          px(1) = islx1
-          py(1) = isly1
+!         Valid node to move selected, put a marker at exact location
+
+!         Loop through bnds to find bnds indexes
           jj = 0
           do j=1,TotBndys
             jj = jj + PtsThisBnd(j)
-            IF ( islndx .le. jj ) THEN
-              isl1 = j
+            IF (( islndx.le.jj ).and. (islndx.ge.jj-PtsThisBnd(j)+1)) THEN
+              isl = j
               islstart = jj - PtsThisBnd(j) + 1
               islend = jj
-              IF ( islndx .eq. jj ) THEN
-                islndx_next = islstart
-              else
-                islndx_next = islndx + 1
-              endif
-              exit
-            endif
-          enddo
+              n = PtsThisBnd(j)
+            END IF
+          END DO
+
+!         Reselect the nearest endnode by finding the closes end-node (in terms of index)
+          IF ((islndx-islstart).lt.(islend-islndx)) THEN
+            islndx = islstart
+          ELSE
+            islndx = islend
+          END IF
+
+
+!          
+          call PigDrawModifySymbol ( dxray(islndx), dyray(islndx) )
+          px(1) = dxray(islndx)
+          py(1) = dyray(islndx)
           FirstPoint = .false.
           NextPoint = .true.
           return
@@ -1015,105 +1021,157 @@
           return
         endif
 
+!     Pick second node
       elseif(NextPoint) then
         ierr=0
         call CheckNode ( islx, isly, islndx2, ierr, i2 )
+
         IF ( ierr .eq. 1 ) THEN
-          islx2 = dxray(islndx2)
-          isly2 = dyray(islndx2)
-          call PigDrawModifySymbol ( islx2, isly2 )
-          rdflag = 1
-          icnt = 2
-          px(2) = islx2
-          py(2) = isly2
-          call PigDrawLine( icnt, px, py, rdflag )
+!         Loop through bnds to find bnds indexes
           jj = 0
           do j=1,TotBndys
             jj = jj + PtsThisBnd(j)
-            IF ( islndx2 .le. jj ) THEN
+            IF (( islndx2.le.jj ).and. (islndx2.ge.jj-PtsThisBnd(j)+1)) THEN
               isl2 = j
               isl2start = jj - PtsThisBnd(j) + 1
               isl2end = jj
               n2 = PtsThisBnd(j)
-              call PigDrawModifySymbols ( n2, dxray(islstart+1), dyray(islstart+1) )           
-              IF ( islndx2 .eq. isl2start ) THEN
-                islndx2_next = jj
-              else
-                islndx2_next = islndx2 - 1
-              endif
-!              px(1) = dxray(islndx_next)
-!              py(1) = dyray(islndx_next)
-!              px(2) = dxray(islndx2_next)
-!              py(2) = dyray(islndx2_next)
-!              call PigDrawLine( icnt, px, py, rdflag )
-!              rdflag = 2
-!              px(1) = dxray(islndx)
-!              py(1) = dyray(islndx)
-!              px(2) = dxray(islndx_next)
-!              py(2) = dyray(islndx_next)
-!              call PigDrawLine( icnt, px, py, rdflag )
-!              px(1) = dxray(islndx2)
-!              py(1) = dyray(islndx2)
-!              px(2) = dxray(islndx2_next)
-!              py(2) = dyray(islndx2_next)
-!              call PigDrawLine( icnt, px, py, rdflag )
+            END IF
+            IF (( islndx.le.jj ).and. (islndx.ge.jj-PtsThisBnd(j)+1)) THEN !Duplicate to get rid of warning
+              isl = j
+              islstart = jj - PtsThisBnd(j) + 1
+              islend = jj
+              n = PtsThisBnd(j)
+            END IF
+          END DO
 
-              ans = PigCursYesNo ('Join these boundaries ?:')
-              IF ( ans(1:1) .eq. 'Y' ) THEN
-!  *** find lowest boundary
-                if(isl2.lt.isl1) then
-                  k = isl2
-                  isl2 = isl1
-                  isl1 = k
-                  k = islndx2
-                  islndx2 = islndx
-                  islndx = k
-                  k = islndx2_next
-                  islndx2_next = islndx_next
-                  islndx_next = k
-                  k = isl2start
-                  isl2start = islstart
-                  islstart = k
-                  k = isl2end
-                  isl2end = islend
-                  islend = k
-                endif
-!  *** move up
-                knum = 0
-                do k=islndx2,isl2end
-                  knum = knum +1
-                  dxray(TotCoords+knum) = dxray(k)
-                  dyray(TotCoords+knum) = dyray(k)
-                  depth(TotCoords+knum) = depth(k)
-                enddo
-                do k=isl2start,islndx2-1
-                  knum = knum +1
-                  dxray(TotCoords+knum) = dxray(k)
-                  dyray(TotCoords+knum) = dyray(k)
-                  depth(TotCoords+knum) = depth(k)
-                enddo
-!  *** shuffle nodes up
-                isldiff = PtsThisBnd(isl2)
-                do k = isl2start-1,islndx+1,-1
-                  dxray(k+isldiff) = dxray(k)
-                  dyray(k+isldiff) = dyray(k)
-                  depth(k+isldiff) = depth(k)
-                enddo                  
-!  *** insert joined nodes
-                do k = 1, PtsThisBnd(isl2)
-                  dxray(islndx+k) = dxray(TotCoords+k)
-                  dyray(islndx+k) = dyray(TotCoords+k)
-                  depth(islndx+k) = depth(TotCoords+k)
-                enddo
-                PtsThisBnd(isl1) = PtsThisBnd(isl1) + PtsThisBnd(isl2)                
-                do k = isl2, TotBndys-1
-                  PtsThisBnd(k) = PtsThisBnd(k+1)
-                enddo
-                TotBndys = TotBndys-1
-              endif
-              exit
+!         Reselect the nearest endnode by finding the closes end-node (in terms of index)
+          IF ((islndx2-isl2start).lt.(isl2end-islndx2)) THEN
+            islndx2 = isl2start
+          ELSE
+            islndx2 = isl2end
+          END IF
+
+!         Check it is the same boundary as nr 1
+          IF (isl2.eq.isl) then
+            call PigMessageOK('Cannot join the same boundary','DelUpdate')
+            FirstPoint = .true.
+            NextPoint = .false.
+            return
+          END IF
+          write(*,*)islndx, isl,islstart,islend, islndx2, isl2,isl2start, isl2end
+
+          call PigDrawModifySymbol ( dxray(islndx2), dyray(islndx2) )
+          px(2) = dxray(islndx2)
+          py(2) = dyray(islndx2)
+
+!         Draw the joining line
+          call PigDrawLine( 2, px, py, 1 )
+
+!         Prompt user for joining
+          ans = PigCursYesNo ('Join these boundaries ?:')
+          IF ( ans(1:1) .eq. 'Y' ) THEN
+
+!     *** find lowest boundary
+            if(isl2.lt.isl) then
+              k = isl2
+              isl2 = isl
+              isl = k
+              k = isl2start
+              isl2start = islstart
+              islstart = k
+              k = isl2end
+              isl2end = islend
+              islend = k
+              k = islndx2
+              islndx2 = islndx
+              islndx = k
+              k = n2
+              n2 = n
+              n = k
             endif
-          enddo
+
+!           Determine if bnds should be flipped
+            flip = .false.
+            flip2 = .false.
+
+            IF ( (islndx.eq.islstart).and.(islndx2.eq.isl2start) ) THEN
+              flip = .true.
+              flip2 = .false.
+            ELSEIF ( (islndx.eq.islstart).and.(islndx2.eq.isl2end) ) THEN
+              flip = .true.
+              flip2 = .true.
+            ELSEIF ( (islndx.eq.islend).and.(islndx2.eq.isl2end) ) THEN
+              flip = .false.
+              flip2 = .true.
+            END IF
+
+
+!   *** move up the second segment to the back of array
+            knum = 0
+            do k=isl2start,isl2end
+              knum = knum+1
+              dxray(TotCoords+knum) = dxray(k)
+              dyray(TotCoords+knum) = dyray(k)
+              depth(TotCoords+knum) = depth(k)
+              code(TotCoords+knum) = code(k)
+            enddo
+
+!      Shuffle nodes between first and second back to make room for second
+            do k=isl2start-1,islend+1,-1
+              dxray(k+n2) = dxray(k)
+              dyray(k+n2) = dyray(k)
+              depth(k+n2) = depth(k)
+              code(k+n2) = code(k)
+            enddo
+         
+!  *** Put second bnd segement after the first one
+            do k = 1, n2
+              IF(flip2) THEN ! Flip it
+                jj = n2-k+1
+              ELSE
+                jj = k
+              END IF
+               dxray(islend+k) = dxray(TotCoords+jj)
+               dyray(islend+k) = dyray(TotCoords+jj)
+               depth(islend+k) = depth(TotCoords+jj)
+               code(islend+k) = code(TotCoords+jj)
+            enddo
+
+!       Flip first segment if needed by moving to back, then flip on way back
+            IF(flip) then
+
+              knum = 0
+              do k=islstart,islend
+                knum = knum+1
+                dxray(TotCoords+knum) = dxray(k)
+                dyray(TotCoords+knum) = dyray(k)
+                depth(TotCoords+knum) = depth(k)
+                code(TotCoords+knum) = code(k)
+              enddo
+
+              do k = 1, n
+                jj = n-k+1
+                dxray(islstart-1+k) = dxray(TotCoords+jj)
+                dyray(islstart-1+k) = dyray(TotCoords+jj)
+                depth(islstart-1+k) = depth(TotCoords+jj)
+                code(islstart-1+k) = code(TotCoords+jj)
+               enddo
+            END IF ! flip
+     
+
+!       Clean up bnd register
+            PtsThisBnd(isl) = PtsThisBnd(isl) + PtsThisBnd(isl2)                
+            do k = isl2, TotBndys-1
+              PtsThisBnd(k) = PtsThisBnd(k+1)
+            enddo
+
+            TotBndys = TotBndys-1
+          else ! - Join bnd prompt
+!           Remove the joining line
+            call PigDrawLine( i2, px, py, 2 )
+          endif ! - Join bnd prompt
+
           FirstPoint = .true.
           NextPoint = .false.
         ENDIF  !   - ( ierr = 1), for xmov, ymov in CheckNode
@@ -1139,7 +1197,7 @@
 
 ! - LOCAL VARIABLES
       integer j, ierr, islndx2, idif1, idif2
-      integer, save :: islndx
+      integer, save :: islndx,upDown
       integer i2, icnt,iend,rdflag, ibnd
       REAL islx, isly, islx1, isly1, islx2, isly2
       real, save :: px(2), py(2)
@@ -1184,27 +1242,30 @@
             icnt = iend + 1
           enddo
 
-! first try
-          if(idif1.eq.1) then !near end 
-            islndx2 = islndx + 1
-            islx2 = dxray(islndx2)
-            isly2 = dyray(islndx2)
-            call PigDrawModifySymbol ( islx2, isly2 )
+! Determine if the first try should be up or down.
+
+
+          if(idif1.eq.1) then !near start
+            upDown = 1
             onlychoice = .true.
           elseif(idif2.eq.1) then !near end 
-            islndx2 = islndx - 1
-            islx2 = dxray(islndx2)
-            isly2 = dyray(islndx2)
-            call PigDrawModifySymbol ( islx2, isly2 )
+            upDown = -1
             onlychoice = .true.
-          else
-            islndx2 = islndx + 1
-            islx2 = dxray(islndx2)
-            isly2 = dyray(islndx2)
-            call PigDrawModifySymbol ( islx2, isly2 )
+          else ! Determine by distance - longest first
+            upDown = -1
+            if(sqrt( (dxray(islndx)-dxray(islndx-1))**2 + (dyray(islndx)-dyray(islndx-1))**2 ).lt. &
+              sqrt( (dxray(islndx)-dxray(islndx+1))**2 + (dyray(islndx)-dyray(islndx+1))**2 )) upDown = 1
             onlychoice = .false.
-          endif
-          
+          end if
+
+
+! first try
+
+          islndx2 = islndx + upDown
+          islx2 = dxray(islndx2)
+          isly2 = dyray(islndx2)
+          call PigDrawModifySymbol ( islx2, isly2 )
+
           rdflag = 2
           px(2) = islx2
           py(2) = isly2
@@ -1227,8 +1288,12 @@
               call PigDrawBndSymbol( islx1, isly1 )
               return
             endif
+
+! Switch upDown for second try
+            upDown = upDown*(-1)
+
 ! second try
-            islndx2 = islndx - 1
+            islndx2 = islndx  + upDown
             islx2 = dxray(islndx2)
             isly2 = dyray(islndx2)
             call PigDrawModifySymbol ( islx2, isly2 )

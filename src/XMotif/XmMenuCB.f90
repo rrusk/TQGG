@@ -165,6 +165,7 @@
         DispCont = .false.
         DispBound = .false.
         GMerge = .false.
+        BoundCCW = .false.
 
         NodeRName = 'NONE        '
         NodeIName = 'interim1.nod'

@@ -120,7 +120,7 @@
           npint = npint + NumBndPts(jj)
         enddo
         npint = np - npint
-        CALL COINCIDE(NCOINPTS,np,ncode,x,y)
+ !       CALL COINCIDE(NCOINPTS,np,ncode,x,y)
 
         IF(NCOINPTS.gt.0) THEN
           call PigMessageYesNo('Coincident nodes: Remove them (Y/N)?', ans)
@@ -176,10 +176,10 @@
 46      continue
 
 
-        open(76,file='TriErrors.txt')
+!        open(76,file='TriErrors.txt')
         call CONTRI(maxnp,np,nce,ncb,elist,x,y,ncode,list,w,&
                     nen,t,ne,AutoGenFlag)
-        close(76)
+!        close(76)
         IF(AutoGenFlag.lt.0) THEN
           Quit = .true.
           return
@@ -299,7 +299,9 @@
         DO 108 JJ = 1, NumBnd
           DO 109 KK = 1, NumBndPts(JJ)
              CUVX = CUVX + 1
-             IF (JJ.eq.1) THEN
+             IF (nonbrs(cuvx).le.0) then
+                nCODE(CUVX) = -9
+             ELSEIF (JJ.eq.1) THEN
                 nCODE(CUVX) = 1
              ELSEIF (jj.le.NumBnd-NumIntBnd) then
                 nCODE(CUVX) = 2

@@ -1,8 +1,7 @@
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: bclip.f
-!X-Sun-Content-Lines: 277
+!**********************************************************************
 
       SUBROUTINE BCLIP(NPTS,NCB,BLIST,TN,V,T,NTRI,NB)
+
 !**********************************************************************
 !
 !     PURPOSE:
@@ -75,8 +74,8 @@
 !     PROGRAMMER:           Scott Sloan
 !     -----------
 !
-!     LAST MODIFIED:        3 march 1991        Scott Sloan
-!     --------------
+!     LAST MODIFIED:          19 April 2014      Roy Walters
+!     --------------          Modify to ignore coincident nodes
 !
 !     COPYRIGHT 1990:       Scott Sloan
 !     ---------------       Department of Civil Engineering
@@ -84,7 +83,7 @@
 !                           NSW 2308
 !
 !**********************************************************************
-      INTEGER A,C,E,I,J,L,R,S
+      INTEGER A,C,E,I,J,L,R,S,ndel
       INTEGER NB,TS,V1,V2
       INTEGER NCB,NEV
       INTEGER NPTS,NTRI
@@ -92,11 +91,10 @@
       INTEGER T(3,NTRI),V(4,NTRI)
       INTEGER TN(NPTS+3)
       INTEGER BLIST(2,*)
-!      integer ncode(npts+3)
 !---------------------------------------------------------------------
 !     Skip to triangle deletion step if triangulation has no
 !     boundary constraints
-!
+
       IF(NCB.EQ.0)THEN
         NB=1
         GOTO 55
@@ -106,9 +104,14 @@
 !     S=triangle in which search starts
 !     R=triangle to right of edge V1-V2
 !     
+      ndel = 0
       DO 20 I=1,NCB
         V1=BLIST(1,I)
         V2=BLIST(2,I)
+        if(TN(V1).eq.0.or.TN(V2).eq.0) then
+          ndel = ndel + 1
+          cycle
+        endif
         S=TN(V1)
         R=S
 
@@ -160,7 +163,7 @@
       NEV=0
       NTRI1=NTRI+1
       NPTS1=NPTS+1
-   30 IF(NEV.LT.NCB)THEN
+   30 IF(NEV.LT.NCB-ndel)THEN
 
 !       Find an edge on a boundary
 
@@ -289,12 +292,10 @@
         ENDIF
   80  CONTINUE 
       END
-!X----------
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: bsort.f
-!X-Sun-Content-Lines: 137
+!**********************************************************************
 
       SUBROUTINE BSORT(N,NPTS,X,Y,XMIN,XMAX,YMIN,YMAX,DMAX,BIN,LIST,W)
+
 !***********************************************************************
 !
 !     PURPOSE:
@@ -431,12 +432,12 @@
         ENDIF
    40 CONTINUE
       END
-!X----------
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: contri.f
-!X-Sun-Content-Lines: 323
+!**********************************************************************
 
       SUBROUTINE CONTRI(NPTS,N,NCE,NCB,ELIST,X,Y,ncode,LIST,W,V,T,NTRI,AutoGenFlag)
+      
+      implicit none
+
 !**********************************************************************
 !
 !     PURPOSE:
@@ -500,6 +501,7 @@
 !     V      - Not defined
 !     T      - Not defined
 !     NTRI   - Not defined
+!     AutoGenFlag - if>0 determines grid generation method
 !
 !     OUTPUT:
 !     -------
@@ -529,6 +531,7 @@
 !            - Adjacent triangles listed in anticlockwise sequence
 !            - Zero denotes no adjacent triangle
 !     NTRI   - Total number of triangles in final triangulation
+!     AutoGenFlag - if<0 returns fatal error code
 !
 !     SUBROUTINES  CALLED:  BSORT, DELAUN, EDGE, TCHECK, BCLIP
 !     --------------------
@@ -536,8 +539,8 @@
 !     PROGRAMMER:             Scott Sloan
 !     -----------
 !
-!     LAST MODIFIED:          3 march 1991        Scott Sloan
-!     --------------
+!     LAST MODIFIED:          19 April 2014      Roy Walters
+!     --------------          Modify to automatically delete coincident nodes
 !
 !     COPYRIGHT 1990:         Scott Sloan
 !     ---------------         Department of Civil Engineering
@@ -545,16 +548,17 @@
 !                             NSW 2308
 !
 !**********************************************************************
+      
       integer AutoGenFlag
       INTEGER I,J,N,P
-      INTEGER JW,NB,VI,VJ
+      INTEGER JW,NB,VI,VJ,VK
       INTEGER NCB,NCE,NEF
       INTEGER NPTS,NTRI
       INTEGER T(3,2*NPTS+1),V(4,2*NPTS+1),W(NPTS+3,2)
       INTEGER LIST(NPTS)
       INTEGER ELIST(2,npts)
       integer ncode(npts+3)
-
+      logical found
 
       REAL DMAX,XMIN,XMAX,YMIN,YMAX
       REAL C00001
@@ -562,11 +566,8 @@
       REAL X(NPTS+3),Y(NPTS+3)
 
       PARAMETER(C00001=1.0)
+      
 !---------------------------------------------------------------------
-
-!     Test error messages
-!      call TestErrorMessages
-
 
 !     Check input for obvious errors
 
@@ -786,7 +787,7 @@
 !     Sort points into bins using a linear bin sort
 !     This call is optional
 
-      CALL BSORT(N,NPTS,X,Y,XMIN,XMAX,YMIN,YMAX,DMAX,W,LIST,W(1,2))
+!      CALL BSORT(N,NPTS,X,Y,XMIN,XMAX,YMIN,YMAX,DMAX,W,LIST,W(1,2))
 !---------------------------------------------------------------------
 !     Compute Delaunay triangulation
 
@@ -797,25 +798,23 @@
         go to 145
       endif
       
-      DO 141 I=1,NCE
-        VI=ELIST(1,I)
-        VJ=ELIST(2,I)
-  141 CONTINUE
+!      DO 141 I=1,NCE
+!        VI=ELIST(1,I)
+!        VJ=ELIST(2,I)
+!  141 CONTINUE
 
 
 ! insert new front-related and/or cluster-based nodes if creating grid
-      if(AutoGenFlag.gt.0)    then
-
-      call GenPoints(NPTS,N,X,Y,ncode,LIST,V,T,NTRI,ELIST,NCB,NCE, &
+      if(AutoGenFlag.gt.0) then
+        call GenPoints(NPTS,N,X,Y,ncode,LIST,V,T,NTRI,ELIST,NCB,NCE, &
                                    DMAX,XMIN,YMIN,AutoGenFlag)
-
       end if
 
-    
 !---------------------------------------------------------------------
 !     For each node, store any triangle in which it is a vertex
 !     Include supertriangle vertices
 
+      W(:,1) = 0
       DO 130 J=1,NTRI
         DO 120 I=1,3
           VI=V(I,J)
@@ -829,7 +828,21 @@
       JW=(NPTS+3)/2
       DO 140 I=1,NCE
         VI=ELIST(1,I)
+        if(w(VI,1).eq.0) cycle
         VJ=ELIST(2,I)
+        if(w(VJ,1).eq.0) then  !bridge deleted nodes
+          found = .false.
+          do j = VJ,NCE
+            VK = ELIST(2,J)
+            if(w(VK,1).gt.0) then
+              ELIST(2,I) = VK
+              VJ = VK
+              found = .true.
+              exit
+            endif
+          enddo
+          if(.not.found) cycle
+        endif
         CALL EDGE(VI,VJ,NPTS,NTRI,NEF,JW,X,Y,V,T,W,W(1,2),AutoGenFlag)
         if(AutoGenFlag.lt.0) go to 145
   140 CONTINUE
@@ -853,6 +866,7 @@
 145   continue
       DO 150 I=1,N
         P=LIST(I)
+        if(P.eq.0) cycle
         X(P)=X(P)*DMAX+XMIN
         Y(P)=Y(P)*DMAX+YMIN
   150 CONTINUE
@@ -871,13 +885,14 @@
 !     +        /,'ELIST(',I5,',',I5,' )=',I5,
 !     +        /,'THIS POINT IS NOT IN LIST')
       END 
-!X----------
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: delaun.f
-!X-Sun-Content-Lines: 363
+
+!**********************************************************************
 
       SUBROUTINE DELAUN(NPTS,N,X,Y,LIST,V,T,NTRI,AutoGenFlag)
 !      SUBROUTINE DELAUN(NPTS,N,X,Y,LIST,STACK,V,T,NTRI) !,AutoGenFlag)
+
+      implicit none
+
 !***********************************************************************
 !
 !     PURPOSE:
@@ -910,6 +925,7 @@
 !     V      - Not defined
 !     T      - Not defined
 !     NTRI   - Not defined
+!     AutoGenFlag - if>0 determines grid generation method
 !
 !     OUTPUT:
 !     ------- 
@@ -934,6 +950,7 @@
 !     NTRI   - Number of triangles in triangulation, including those
 !              formed with the supertriangle vertices
 !            - NTRI = 2*N+1
+!     AutoGenFlag - if<0 returns fatal error code
 !
 !     NOTES:
 !     ------
@@ -949,8 +966,8 @@
 !     PROGRAMMER:             Scott Sloan
 !     -----------
 !
-!     LAST MODIFIED:          3 march 1991          Scott Sloan
-!     --------------
+!     LAST MODIFIED:          19 April 2014      Roy Walters
+!     --------------          Modify to ignore coincident nodes
 !
 !     COPYRIGHT 1990:         Scott Sloan
 !     ---------------         Department of Civil Engineering
@@ -958,9 +975,10 @@
 !                             NSW 2308
 !
 !***********************************************************************
-      integer AutoGenFlag
+      
+      integer AutoGenFlag, ErrorFlag
 !      INTEGER A,B,C,I,J,L,N,P,R
-      INTEGER I,J,N,P
+      INTEGER I,J,N,P,ndel
       INTEGER V1,V2,V3
       INTEGER NPTS,NTRI
       INTEGER TOPSTK
@@ -973,7 +991,7 @@
       REAL TOL
 !      REAL TOL,X13,X23,X1P,X2P,Y13,Y23,Y1P,Y2P
 !      REAL COSA,COSB
-      REAL C00000 !,C00100
+      REAL C00000,C00100
       REAL X(NPTS+3),Y(NPTS+3)
 
 !     TOL is the tolerance used to detect coincident points
@@ -1026,6 +1044,7 @@
 !---------------------------------------------------------------------
 !     Loop over each point (except first) and construct triangles
 !   
+      ndel = 0
       NTRI=3
       TOPSTK=0
       DO 140 I=2,N
@@ -1052,33 +1071,43 @@
           J=T(3,J)
           GOTO 10
         ENDIF
-!    Code replaced by AKS
+!    Insertion code moved to separate subroutine
 !        CALL INSERTP(NPTS,N,X,Y,V,T,NTRI,V1,V2,V3,XP,YP,P,J)
-        CALL INSERTP(NPTS,X,Y,V,T,NTRI,V1,V2,V3,XP,YP,P,J)
+        CALL INSERTP(NPTS,X,Y,V,T,NTRI,V1,V2,V3,XP,YP,P,J,ErrorFlag)
+        
+        If(ErrorFlag.eq.-15) then
+          ndel = ndel + 1
+          list(I) = 0  !coincident node
+        elseif(ErrorFlag.eq.-14) then
+          AutoGenFlag = -14
+          return !stack overflow
+        endif
 
   140 CONTINUE
 
 !---------------------------------------------------------------------
 !     Check consistency of triangulation
 
-      IF(NTRI.NE.2*N+1)THEN
+      IF(NTRI.NE.2*(N-ndel)+1)THEN
+!      IF(NTRI.NE.2*N+1)THEN
        ! Error 13
 !        WRITE(76,'(//,''***ERROR IN DELAUN***'',
 !     +             /,''INCORRECT NUMBER OF TRIANGLES FORMED'')')
 !        STOP
         AutoGenFlag = -13
-        call ErrorMessage(13,P,P,P,P)
+        call ErrorMessage(13,NTRI,N,ndel,P)
         return
       ENDIF
 !---------------------------------------------------------------------
 
       END
-!X----------
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: edge.f
-!X-Sun-Content-Lines: 569
+
+!**********************************************************************
 
       SUBROUTINE EDGE(VI,VJ,NPTS,NTRI,NEF,JW,X,Y,V,T,TN,W,AutoGenFlag)
+      
+      implicit none
+
 !***********************************************************************
 !
 !     PURPOSE:
@@ -1683,12 +1712,11 @@
 ! 1000 FORMAT(//,'***ERROR IN EDGE***',
 !     +        /,'   VERTEX',I5,' NOT IN ANY TRIANGLE')
       END
-!X----------
-!X-Sun-Data-Type: fortran-file
-!X-Sun-Data-Name: tcheck.f
-!X-Sun-Content-Lines: 404
+
+!**********************************************************************
 
       SUBROUTINE TCHECK(NPTS,N,X,Y,LIST,V,T,NTRI,NEF,NB,NCE,NCB,ELIST,W,ierror)
+
 !***********************************************************************
 !
 !     PURPOSE:
@@ -1776,8 +1804,8 @@
 !     PROGRAMMER:             Scott Sloan
 !     -----------
 !
-!     LAST MODIFIED:          3 march 1991          Scott Sloan
-!     --------------
+!     LAST MODIFIED:          19 April 2014      Roy Walters
+!     --------------          Modify to accommodate deleted coincident nodes
 !
 !     COPYRIGHT 1990:         Scott Sloan
 !     ---------------         Department of Civil Engineering
@@ -1788,7 +1816,7 @@
       INTEGER I,J,L,N,R,S
       INTEGER NB,V1,V2,V3,V4
       INTEGER NBOV,NEDG,NOPT,NPTS,NTRI
-      INTEGER NCB,NCE,NEF
+      INTEGER NCB,NCE,NEF,ndel,ndelb
       INTEGER T(3,NTRI),V(4,NTRI),W(NPTS)
       INTEGER LIST(N)
       INTEGER ELIST(2,*)
@@ -1799,6 +1827,7 @@
       REAL X(NPTS+3),Y(NPTS+3)
 
       integer ierror
+      logical found
 
       character(80) cstr
 
@@ -1807,6 +1836,17 @@
       PARAMETER (TOL=1.E-5)
       PARAMETER (C00000=0.0, CP5000=0.5)
 !-----------------------------------------------------------------------
+
+!     Count deleted (coincident) nodes
+      ndel = 0
+      ndelb = 0
+      DO I=1,N
+        if(LIST(I).eq.0) then
+          ndel = ndel + 1
+          if(I.le.NCB) ndelb = ndelb + 1
+        endif
+      enddo
+
 !     Loop over each triangle and count the following
 !     NOPT=number of edges which are not optimal
 !     NEDG=number of edges in triangulation
@@ -1906,7 +1946,7 @@
         call ErrorMessage(24,NBOV,NBOV,NBOV,NBOV)
         return
       ENDIF
-      IF(NTRI.NE.2*(N+NB)-NBOV-4)THEN
+      IF(NTRI.NE.2*(N-ndel+NB)-NBOV-4)THEN
         ! Error 25
 !        ierror = 25
 
@@ -1915,21 +1955,25 @@
 !     +             /,''NTRI IS NOT EQUAL TO 2*(N+NB)-NBOV-4'')')
 !        write(76,*) ' ntri,n,nb,nbov=',ntri,n,nb,nbov
 
+        open(76,file='TriErrors.txt')
         WRITE(76,1000)
         WRITE(76,2000)
+        close(76)
 !        STOP
         ierror = -25
         call ErrorMessage(25,ntri,n,nb,nbov)
         return
       ENDIF
-      IF(NEDG.NE.N+NTRI+NB-2)THEN
+      IF(NEDG.NE.N-ndel+NTRI+NB-2)THEN
         ! Error 26
 !        ierror = 26
 !        WRITE(76,'(//,''***ERROR IN TCHECK***'',
 !     +             /,''INVALID TRIANGULATION'',
 !     +             /,''NEDG IS NOT EQUAL TO N+NTRI+NB-2'')')
+        open(76,file='TriErrors.txt')
         WRITE(76,1000)
         WRITE(76,2000)
+        close(76)
 !        STOP
         ierror = -26
         call ErrorMessage(26,nedg,n,ntri,nb)
@@ -1941,22 +1985,26 @@
 !        WRITE(76,'(//,''***ERROR IN TCHECK***'',
 !     +             /,''INVALID TRIANGULATION'',
 !     +             /,''TOO MANY NON-OPTIMAL EDGES'')')
+        open(76,file='TriErrors.txt')
         WRITE(76,1000)
         WRITE(76,2000)
+        close(76)
 !        STOP    
         ierror = -27
         call ErrorMessage(27,nedg,n,ntri,nb)
         return
       ENDIF
       IF(NCB.GT.0)THEN
-        IF(NCB.NE.NBOV)THEN
+        IF(NCB-ndelb.NE.NBOV)THEN
         ! Error 28
 !        ierror = 28
 !          WRITE(76,'(//,''***ERROR IN TCHECK***'',
 !     +               /,''INVALID TRIANGULATION'',
-!     +               /,''NO. BOUNDARY VERTICES NOT EQUAL TO NBC'')')
-          WRITE(76,1000)
-          WRITE(76,2000)
+!     +               /,''NO. BOUNDARY VERTICES NOT EQUAL TO NCB'')')
+        open(76,file='TriErrors.txt')
+        WRITE(76,1000)
+        WRITE(76,2000)
+        close(76)
 !          STOP    
         ierror = -28
         call ErrorMessage(28,ncb,nbov,ntri,nb)
@@ -1984,6 +2032,7 @@
    35 CONTINUE
       DO 40 I=1,N
         V1=LIST(I)
+        if(V1.eq.0) cycle
         IF(W(V1).EQ.0)THEN
         ! Error 29
 !          WRITE(76,'(//,''***ERROR IN TCHECK***'',
@@ -2000,7 +2049,21 @@
 
       DO 70 I=NCB+1,NCE
         V1=ELIST(1,I)
+        if(w(V1).eq.0) cycle
         V2=ELIST(2,I)
+        if(w(V2).eq.0) then  !bridge deleted nodes
+          found = .false.
+          do j = V2,NCE
+            V3 = ELIST(2,J)
+            if(w(V3).gt.0) then
+              ELIST(2,I) = V3
+              V2 = V3
+              found = .true.
+              exit
+            endif
+          enddo
+          if(.not.found) cycle
+        endif
         S=W(V1)
         R =S
 
@@ -2165,10 +2228,13 @@
              /,' EXTERNAL BOUNDARY OR INSIDE ANY INTERNAL BOUNDARY')
       END
 
-! **********************************************************
+!**********************************************************************
 
-      SUBROUTINE INSERTP(NPTS,X,Y,V,T,NTRI,V1,V2,V3,XP,YP,P,J)
+      SUBROUTINE INSERTP(NPTS,X,Y,V,T,NTRI,V1,V2,V3,XP,YP,P,J,ErrorFlag)
+      
+      implicit none
 
+!**********************************************************************
 !
 !     PURPOSE:
 !     --------
@@ -2210,6 +2276,7 @@
 !     NTRI   - Number of triangles in triangulation, including those
 !              formed with the supertriangle vertices
 !            - NTRI = 2*N+1
+!     ErrorFlag - Return error code if any.
 !
 !
 !     NOTES:
@@ -2229,9 +2296,8 @@
 !     PROGRAMMER:             Scott Sloan
 !     -----------
 
-!     LAST MODIFIED:          11 February 2002          Alastair Senior
+!     LAST MODIFIED:          19 April 2014       Roy Walters
 !     ---------------   
-
 
 
 !     COPYRIGHT 1990:         Scott Sloan
@@ -2247,6 +2313,7 @@
 !***********************************************************************
 
 !      INTEGER A,B,C,I,J,L,N,P,R
+      integer ErrorFlag
       INTEGER A,B,C,J,L,P,R
       INTEGER V1,V2,V3
       INTEGER NPTS,NTRI
@@ -2265,14 +2332,16 @@
       PARAMETER (C00000=0.0)
 
 !       Check that new point is not coincident with any previous point
+        ErrorFlag = 0
+        
         D=(X(V1)-XP)**2
         IF(D.LT.TOL)THEN
            D=D+(Y(V1)-YP)**2
            IF(D.LT.TOL)THEN
        ! Error 15
 !             WRITE(76,2000)V1,P
-             AutoGenFlag = -15
-             call ErrorMessage(15,V1,P,P,P)
+             ErrorFlag = -15
+!             call ErrorMessage(15,V1,P,P,P)
              return
            ENDIF
         ENDIF
@@ -2282,8 +2351,8 @@
            IF(D.LT.TOL)THEN
        ! Error 15
 !             WRITE(76,2000)V2,P
-             AutoGenFlag = -15
-             call ErrorMessage(15,V2,P,P,P)
+             ErrorFlag = -15
+!             call ErrorMessage(15,V2,P,P,P)
              return
            ENDIF
         ENDIF
@@ -2293,8 +2362,8 @@
            IF(D.LT.TOL)THEN
        ! Error 15
 !             WRITE(76,2000)V3,P
-             AutoGenFlag = -15
-             call ErrorMessage(15,V3,P,P,P)
+             ErrorFlag = -15
+!             call ErrorMessage(15,V3,P,P,P)
              return
            ENDIF
         ENDIF
@@ -2436,7 +2505,7 @@
        ! Error 14
 !                  WRITE(76,1000)
 !                  STOP
-                  AutoGenFlag = -14
+                  ErrorFlag = -14
                   call ErrorMessage(14,V1,V1,V1,V1)
                   return
                 ENDIF
@@ -2448,7 +2517,7 @@
        ! Error 14
 !                  WRITE(76,1000)
 !                  STOP
-                  AutoGenFlag = -14
+                  ErrorFlag = -14
                   call ErrorMessage(14,V1,V1,V1,V1)
                   return
                 ENDIF

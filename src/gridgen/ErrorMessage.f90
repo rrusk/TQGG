@@ -136,7 +136,11 @@
       elseif(ierr.eq.13) then
       ! Error 13
         cmess = '***ERROR IN DELAUN***'//newline//&
-                'INCORRECT NUMBER OF TRIANGLES FORMED'//newline//char(0)
+                'INCORRECT NUMBER OF TRIANGLES FORMED'//newline
+        write(str1,'(3(a,i7))') 'NTRI=',v1,' N=',v2,' ndel=',v3
+        lstr = len_trim(cmess)
+        lstr1 = len_trim(str1)
+        cmess = cmess(:lstr)//str1(:lstr1)//newline//char(0)
         call PigMessageOK(cmess, 'triangulate'//char(0))
     
       elseif(ierr.eq.14) then

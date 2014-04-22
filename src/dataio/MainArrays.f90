@@ -45,7 +45,7 @@
 !-----------------------------------------------------------------------*
 
       integer, parameter :: maxnnb=10000
-      integer PtsThisBnd(Maxnnb)
+      integer PtsThisBnd(Maxnnb), BndryIndex(Maxnnb)
       integer TotBndys,TotIntBndys,TotIntPts,TotCoords
 
 !-----------------------------------------------------------------------*

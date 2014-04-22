@@ -231,15 +231,11 @@
         call PigSetLineColour ( LTGRAY )
         bndsofar = 0
         DO i = 1, TotBndys
-<<<<<<< HEAD
-          call PigSetLineColour ( linecolours(MOD(i,8)+1) )
-=======
           if(BoundCCW) then
             call PigSetLineColour ( linecolours(BndryIndex(i)+2) )
           else
             call PigSetLineColour ( linecolours(MOD(i,8)+1) )
           endif
->>>>>>> TQRoy/master
           startidx = 0
           inside = .false.
           DO ii = 1, PtsThisBnd(i)

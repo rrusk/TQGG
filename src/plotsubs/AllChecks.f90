@@ -176,7 +176,6 @@
       i2 = 2
 
 
-
 !     Find the outer boundary and make sure that it is first in the arrays
       imin = MINLOC(dyray(1:TotCoords),1)
 
@@ -256,6 +255,68 @@
 
         END IF ! Move?
       END IF ! Bnd is first bnd?
+
+
+
+!     Check for coincident nodes on boundary start/end
+      iend = 0
+      closedIsl = .false.
+      DO i=1,TotBndys
+!       Set start and end of bnd
+        istrt = iend + 1
+        iend = istrt+PtsThisBnd(i)-1
+
+        tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
+        tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
+        tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
+
+!       Find distance between ends
+        tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
+
+        IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
+          closedIsl = .true.
+          EXIT
+        END IF  
+      END DO
+
+      IF (closedIsl) THEN ! There are closed islands. Ask the user to remove coincident nodes
+        cstr = 'Detected closed boundaries. Open them up?'
+        ans = PigCursYesNo (cstr)
+
+        IF ( ans(1:1) .eq. 'Y' ) then
+          istrt = TotCoords-TotIntPts+1 
+          DO i=TotBndys,1,-1
+!           Set start and end of bnd
+            iend = istrt-1
+            istrt = iend-PtsThisBnd(i)+1
+
+!           Get 10% of average distance at ends of segment
+            tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
+            tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
+            tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
+
+!           Find distance between ends
+            tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
+
+            IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
+!             Move all points from iend to TotCoods one step back
+              DO k=iend,TotCoords-1
+                dxray(k) = dxray(k+1)
+                dyray(k) = dyray(k+1)
+                depth(k) = depth(k+1)
+                code(k) = code(k+1)
+              END DO
+
+!             Correct TotCoords and PtsThisBnd
+              TotCoords = TotCoords - 1
+              PtsThisBnd(i) = PtsThisBnd(i)-1
+
+            END IF
+
+          END DO ! Loop bndys      
+
+        END IF ! Open up islands?
+      END IF ! There are closed isl
         
 
 
@@ -268,23 +329,35 @@
         ans = PigCursYesNo (cstr)
 
         IF ( ans(1:1) .eq. 'Y' ) then ! Delete them
-          iend = 0
-          DO i=1,TotBndys
+
+          istrt = TotCoords-TotIntPts+1 
+          DO i=TotBndys,1,-1
 !           Set start and end of bnd
-            istrt = iend + 1
-            iend = istrt+PtsThisBnd(i)-1
+            iend = istrt-1
+            istrt = iend-PtsThisBnd(i)+1
 
             IF (PtsThisBnd(i).lt.3) THEN ! Delete the current boundary
-              CALL DelIslUpdate ( i, OK, .false. )
+
+              DO j=istrt,TotCoords-PtsThisBnd(i)
+                dxray(j) = dxray(j+PtsThisBnd(i))
+                dyray(j) = dyray(j+PtsThisBnd(i))
+                depth(j) = depth(j+PtsThisBnd(i))
+                code(j) = code(j+PtsThisBnd(i))
+              END DO
+
+              TotCoords = TotCoords - PtsThisBnd(i) 
+
+              DO j=i,TotBndys-1
+                PtsThisBnd(j) = PtsThisBnd(j+1)
+              END DO
+              
+              TotBndys = TotBndys - 1 
+
             END IF
 
           END DO
         END IF
       END IF
-
-
-
-
 
 
 
@@ -423,73 +496,6 @@
       END DO
 
 
-
-
-
-!     Check for coincident nodes on boundary start/end
-      iend = 0
-      closedIsl = .false.
-      DO i=1,TotBndys
-!       Set start and end of bnd
-        istrt = iend + 1
-        iend = istrt+PtsThisBnd(i)-1
-
-        tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
-        tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
-        tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
-
-!       Find distance between ends
-        tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
-
-        IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
-          closedIsl = .true.
-          EXIT
-        END IF  
-      END DO
-
-      IF (closedIsl) THEN ! There are closed islands Ask the user to remove coincident nodes
-        cstr = 'Detected closed boundaries. Open them up?'
-        ans = PigCursYesNo (cstr)
-
-        IF ( ans(1:1) .eq. 'Y' ) then
-          istrt = TotCoords+1 
-          DO i=TotBndys,1,-1
-!           Set start and end of bnd
-            iend = istrt-1
-            istrt = iend-PtsThisBnd(i)+1
-
-!           Get 10% of average distance at ends of segment
-            tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
-            tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
-            tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
-
-!           Find distance between ends
-            tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
-
-            IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
-!             Move all points from iend to TotCoods one step back
-              DO k=iend,TotCoords-1
-                dxray(k) = dxray(k+1)
-                dyray(k) = dyray(k+1)
-                depth(k) = depth(k+1)
-                code(k) = code(k+1)
-              END DO
-
-!             Correct TotCoords and PtsThisBnd
-              TotCoords = TotCoords - 1
-              PtsThisBnd(i) = PtsThisBnd(i)-1
-
-            END IF
-
-
-
-          END DO ! Loop bndys      
-
-        END IF ! Open up islands?
-      END IF ! There are closed isl
-
-
-
 !     Check for self-intersecting bnd   
 
       cstr = 'Check for selfintersecting boundaries? (Slow)'
@@ -510,7 +516,6 @@
           CALL simplePolygon(dxray(istrt:iend),dyray(istrt:iend),iend-istrt+1,imin)
 !         If imin is returned anything other than 0, then it holds index of one of the intersecting bndsegments points
           IF (imin.ne.0) THEN
-            CALL DrawPMark( dxray(imin+istrt-1),  dyray(imin+istrt-1) )
             OK = .false.
           END IF
         END DO

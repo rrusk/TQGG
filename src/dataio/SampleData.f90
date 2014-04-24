@@ -97,13 +97,14 @@
       INCLUDE '../includes/defaults.inc'
 
 !     - local variables
-      integer j,Fnlen,nunit,stat
+      integer j,Fnlen,nunit,stat,ierr
       integer segcode,seglast,gridcode,isave,TotCoordslast
       logical PigOpenFileCD
       real xtest,ytest,ztest,segtest,xmin,xmax,ymin,ymax,dsmin
       real xlast,ylast,dx,dy,ds2,dl2
       CHARACTER*256 fle
-      character(80) Firstline
+      character(80) Firstline,ans
+      character(256) cstrgrid
       logical Quit
       CHARACTER*80 cstr, retstring
 
@@ -143,6 +144,21 @@
       elseif(firstline(1:4).eq."#XYZ") then  !xyz  file, new format
         call ReadXYZData (Quit)
       else  !then just parse the file for coordinates
+
+!       Get igridtype from user
+        igridtype = -9999
+        cstrgrid = 'Enter grid type:'//newline//&
+                 ' 0 = latitude/longitude (degrees)'//newline//&
+                 ' 1 = UTM coordinates (meters)'//newline//&
+                 ' 2 = Cartesian coordinates (meters)'//newline//&
+                 ' 3 = unspecified units'//newline//char(0)
+
+        do
+          call PigPrompt(cstrgrid, ans )
+          READ( ans, *, iostat=ierr ) igridtype
+          if(ierr.eq.0) exit
+        enddo
+
         read(firstline,*,iostat=stat) xlast,ylast,ztest,segtest  !xyz+segment file
         if(stat.eq.0) then ! ok format
 
@@ -150,14 +166,15 @@
 !       on each line.
         
         
-20        cstr= 'Enter minimum subsample spacing (0 = all data):'
+20        cstr= 'Enter minimum subsample spacing [m] (0 = all data):'
           call PigPrompt( cstr, RetString )
           read(RetString,*,iostat=stat) dsmin
           if(stat.ne.0) then
             call PigMessageOK('Error reading real number:','Sample')
             go to 20
           endif
-            
+
+         
           seglast = nint(segtest)
           ds2 = dsmin*dsmin
           gridcode = 1
@@ -201,11 +218,18 @@
               ylast = ytest
             else  !add to current boundary
 
-! NOTE: Put test for closeness here, discard if too close.
+!             Test for closeness
+!             Calc dist based on grid type
+              IF (igridtype.eq.0) THEN
+                call haversine(ylast,xlast,ytest,xtest,dl2)
+                dl2 = dl2*dl2
+              ELSE
+                dx = xtest - xlast
+                dy = ytest - ylast
+                dl2 = dx*dx + dy*dy
+              END IF
 
-              dx = xtest - xlast
-              dy = ytest - ylast
-              dl2 = dx*dx + dy*dy
+
               if(dl2.ge.ds2) then !save it
                 isave = isave + 1
                 dxray(isave) = xtest
@@ -217,12 +241,11 @@
               endif
             endif
           enddo
-          igridtype = -9999
         else
           read(firstline,*,iostat=stat) xlast,ylast,ztest  !xyz file, one boundary
           if(stat.eq.0) then
 
-10          cstr= 'Enter minimum subsample spacing (0 = all data):'
+10          cstr= 'Enter minimum subsample spacing [m] (0 = all data):'
             call PigPrompt( cstr, RetString )
             read(RetString,*,iostat=stat) dsmin
             if(stat.ne.0) then
@@ -255,11 +278,17 @@
                 exit
               endif
 
-! NOTE: Put test for closeness here, discard if too close.
+!             Test for closeness
+!             Calc dist based on grid type
+              IF (igridtype.eq.0) THEN
+                call haversine(ylast,xlast,ytest,xtest,dl2)
+                dl2 = dl2*dl2
+              ELSE
+                dx = xtest - xlast
+                dy = ytest - ylast
+                dl2 = dx*dx + dy*dy
+              END IF
 
-              dx = xtest - xlast
-              dy = ytest - ylast
-              dl2 = dx*dx + dy*dy
               if(dl2.ge.ds2) then !save it
                 isave = isave + 1
                 dxray(isave) = xtest
@@ -270,7 +299,6 @@
                 ylast = ytest
               endif
             enddo
-            igridtype = -9999
           else
             call PigMessageOK('Unsupported file format ','Sample')
             quit = .true.

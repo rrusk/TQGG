@@ -1489,7 +1489,7 @@
 !***********************************************************************
 
       SUBROUTINE CoincidentNodes (TotCoords,totbndys,PtsThisBnd,&
-                                  dxray,dyray,depth,code,range,dispnodes)
+                                  dxray,dyray,depth,code,range,dispnodes,igridtype)
 
 ! *******************************************************************
 
@@ -1504,7 +1504,7 @@
 ! *******************************************************************
  
 ! *** passed variables ***
-      integer totcoords,totbndys
+      integer totcoords,totbndys,igridtype,k
       integer PtsThisBnd(totbndys),code(totcoords)
       real dxray(totcoords),dyray(totcoords),depth(totcoords)
       real range
@@ -1512,40 +1512,98 @@
 
 ! *** Local variables ***
 
-      INTEGER II,JJ,ncoinpts
-      real coinx,coiny,dx,dy,x1,x2,y1,y2
-      real, parameter :: tol=1.e-5
+      INTEGER II,ncoinpts,i,j
+      real coinx,coiny,x1,x2,y1,y2,dist,dx,dxx,dy,range2
+      real arr(totcoords)
+      integer iarr(totcoords),NUM
+      real, parameter :: dyy=110000,pi=3.14159
       character(1) ans
 
 !     NCOINPTS - number of locations where coincident nodes occur
 !     PAIRS  - number of coincident pairs of points at current point
 !     NUMPTS - number of coincident nodes at current point
 
+!     dyy = distance in meters of 1 lat degree (or 1 lon degree at equator) 
+!     dx 
+
+
 !   call PigSetSymbolNumber ( SQUARE )
 !   call PigSetSymbolColour ( violet )
-      dx = abs(maxval(dxray(1:TotCoords)) - minval(dxray(1:TotCoords)))
-      dy = abs(maxval(dyray(1:TotCoords)) - minval(dyray(1:TotCoords)))
+!      dx = abs(maxval(dxray(1:TotCoords)) - minval(dxray(1:TotCoords)))
+!      dy = abs(maxval(dyray(1:TotCoords)) - minval(dyray(1:TotCoords)))
 
-! *** check boundaries first
       ncoinpts = 0
-      DO II = 1, TotCoords
-        x1 = dxray(ii)
-        y1 = dyray(ii)
-        DO JJ = II+1, TotCoords
-          x2 = dxray(jj)
-          y2 = dyray(jj)
-          IF (abs(x1-x2).lt.range) then  !tol*dx) then
-            if(abs(y1-y2).lt.range) then  !tol*dy) then
-              code(jj) = code(jj) - 100000
-              NCOINPTS = NCOINPTS + 1
-              coinx = dxray(jj)
-              coiny = dyray(jj)
-              call PigDrawCoinSymbol ( coinx, coiny )  !display coincident points
-            endif
-          endif
-        enddo
-      enddo
 
+
+!     Sort along x-axis
+      IARR = (/ (k, k = 1, TotCoords) /) ! Index array
+      ARR = dxray(1:TotCoords)
+      NUM = TotCoords
+
+      CALL QSORT(ARR,IARR,NUM)
+
+!     Set dy - delta distance in y direction
+      IF (igridtype.eq.0) THEN
+       dy = range/dyy ! bounding box offset
+       range2 = range
+      ELSE
+       dy = range
+       dx = range
+       range2 = range*range ! To eliminate sqrt i pytagoras
+      END IF
+
+      
+
+!     Go along the list and check for coincident nodes
+      DO i=1,TotCoords-1
+        x1 = dxray(IARR(i))
+        y1 = dyray(IARR(i))
+
+!       Set dx - delta distance in x direction
+        IF (igridtype.eq.0) THEN
+          dxx = dyy*cos(PI*(dyray(IARR(i))/180)) ! meters per degree on this latitude approx
+          dx = range/dxx
+        END IF
+
+!       Look at the next points along x to see if its within the range
+        j = i + 1
+        DO
+          x2 = dxray(IARR(j))
+          y2 = dyray(IARR(j))
+
+          IF ((x2-x1).lt.dx) THEN !Within x range
+            IF( abs(y2-y1).lt.dy ) THEN ! Within y range
+
+!             Calc dist based on either Haversine or Pythagoras
+              IF (igridtype.eq.0) THEN
+                call haversine(y1,x1,y2,x2,dist)
+              ELSE
+                dist = ( (x2-x1)**2 + (y2-y1)**2 )
+              END IF
+
+              IF (dist.lt.range2) then
+                code(IARR(i)) = code(IARR(i)) - 100000
+                NCOINPTS = NCOINPTS + 1
+                coinx = dxray(IARR(i))
+                coiny = dyray(IARR(i))
+                CALL PigDrawCoinSymbol ( coinx, coiny )  !display coincident points
+                EXIT ! Node has been flagged - exit loop
+              ENDIF !Within range?
+            END IF !y-range
+          ELSE !Not within x-range
+            EXIT !Exit the loop
+          END IF !x-range
+
+!         Next node
+          j = j + 1
+!         Exit if reached end
+          IF (j.gt.totcoords) EXIT
+
+        END DO 
+      END DO !i
+
+      
+!       There are coincident nodes - delete?
         IF(NCOINPTS.gt.0) THEN
           call PigMessageYesNo('Close nodes: Remove them (Y/N)?',ans)
           if(dispnodes) then
@@ -1558,7 +1616,7 @@
           endif
 
           if(ans(1:1).eq.'N') then
-! *** remove marker codes
+! *** remove marker codes - don't delete - restore nodecodes
             DO ii = 1, totcoords
               if(code(ii).lt.-10000) then
                   code(ii) = mod(code(ii),100000)
@@ -1705,7 +1763,7 @@
             tmpy = dyray(j) + k * ((dyray(j+1)-dyray(j)) / (nnew + 1))
             tmpd = depth(j) + k * ((depth(j+1)-depth(j)) / (nnew + 1))
 
-!           Get distance from the current node (i) to the new temporary node node
+!           Get distance from the current node (i) to the new temporary node
 !           Calcualte distance based on grid type
             IF (igridtype.eq.0) then !latlon
               call haversine(tmpy,tmpx,newby(i),newbx(i),dist)
@@ -1739,6 +1797,11 @@
 !       Assign number of added nodes to nnew
         nnew = i - (indxs(2)-indxs(1)) - 1
 
+!       Check if the new bnd is less than three nodes - delete if it is
+        IF ((PtsThisBnd(bnd(jj)) + nnew).lt.3) THEN
+          nnew = -PtsThisBnd(bnd(jj)) ! Assign to remove all nodes
+        END IF
+
 
 
 !       Move the array to make room for the new array
@@ -1758,17 +1821,22 @@
           END DO
         END IF
 
-
-!       Input new array
-        dxray(indxs(1):indxs(1)+i-1)=newbx(1:i)
-        dyray(indxs(1):indxs(1)+i-1)=newby(1:i)
-        depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
-        code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
-
 !       Add the number of added nodes to the bnd segment, ITOTs and TotCoords
         PtsThisBnd(bnd(jj)) = PtsThisBnd(bnd(jj))+nnew
         TotCoords = TotCoords + nnew
 
+!       Check if the bnd is empty, delete the marker if it is.
+        IF (PtsThisBnd(bnd(jj)).eq.0) THEN
+          DO j=bnd(jj),TotBndys-1
+            PtsThisBnd(j)=PtsThisBnd(j+1)
+          END DO
+          TotBndys = TotBndys - 1
+        ELSE ! Input new array
+          dxray(indxs(1):indxs(1)+i-1)=newbx(1:i)
+          dyray(indxs(1):indxs(1)+i-1)=newby(1:i)
+          depth(indxs(1):indxs(1)+i-1)=newbd(1:i)
+          code(indxs(1)+1:indxs(1)+i-1)=code(indxs(1))
+        END IF
 
 
       END DO ! End of loop over bnd segs

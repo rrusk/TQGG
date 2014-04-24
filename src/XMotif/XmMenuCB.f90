@@ -246,6 +246,7 @@
               if(ans(1:1).eq.'N') then
                 do
                   call PigPrompt(cstrgrid, ans )
+
                   READ( ans, *, iostat=ierr ) igridtype
                   if(ierr.eq.0) exit
                 enddo
@@ -706,7 +707,7 @@
             itot = TotCoords
           endif
           call CoincidentNodes(TotCoords,totbndys,PtsThisBnd, &
-                                dxray,dyray,depth,code,range,dispnodes)
+                                dxray,dyray,depth,code,range,dispnodes,igridtype)
 ! *** redraw here
           itot = Totcoords
           call DrwFig(.false.)
@@ -1423,6 +1424,7 @@
             verty1 = 0.
             vertx1(1:numvert) = vertx(actvpoly,1:numvert)
             verty1(1:numvert) = verty(actvpoly,1:numvert)
+
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
 

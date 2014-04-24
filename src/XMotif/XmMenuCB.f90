@@ -166,6 +166,7 @@
         DispBound = .false.
         GMerge = .false.
         BoundCCW = .false.
+        CheckBN1 = .false.
 
         NodeRName = 'NONE        '
         NodeIName = 'interim1.nod'
@@ -696,34 +697,19 @@
           call ConfigXhr(range)
           return
         entry TooCloseCB()
-          IF (numpolys.eq.0) then
-            call PigMessageOK('Please define a polygon first.','TooClose')
-          elseIF (actvpoly.le.0) then
-            call PigMessageOK('Please activate a polygon first.','TooClose')
-          ELSE
-            if(range.lt.0.) then
-              call ConfigXhr(range)
-            endif
-            PolyId = actvpoly
-            numvert = vertcnt(actvpoly)
-            vertx1 = 0.
-            verty1 = 0.
-            vertx1(1:numvert) = vertx(actvpoly,1:numvert)
-            verty1(1:numvert) = verty(actvpoly,1:numvert)
-            if(.not.dispnodes) then
-              TotCoords = itot
-            else
-              itot = TotCoords
-            endif
-
-            call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
-
-            call CoincidentNodes(TotCoords,totbndys,PtsThisBnd, &
-                                  dxray,dyray,depth,code,range,dispnodes)
-! *** redraw here
-            itot = Totcoords
-            call DrwFig(.false.)
+          if(range.lt.0.) then
+            call ConfigXhr(range)
           endif
+          if(.not.dispnodes) then
+            TotCoords = itot
+          else
+            itot = TotCoords
+          endif
+          call CoincidentNodes(TotCoords,totbndys,PtsThisBnd, &
+                                dxray,dyray,depth,code,range,dispnodes)
+! *** redraw here
+          itot = Totcoords
+          call DrwFig(.false.)
           return
         entry FileInfoCB()
           call InfoFiles

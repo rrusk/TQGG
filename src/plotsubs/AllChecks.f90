@@ -159,14 +159,18 @@
 
       IMPLICIT NONE
 
+      INCLUDE '../includes/defaults.inc'
 
 ! - LOCAL VARIABLES
-      integer ierr,i2,tmpc(100000), iouter
+      integer ierr,i2, iouter,iouter0   !,tmpc(100000)
       integer istrt, iend,i,j,k,tmpi
       logical bndCW(TotBndys)
-      logical flipIsl,closedIsl,OK
-      real bndsum, tmpx(100000),tmpy(100000),tmpd(100000)
+      logical flipIsl,OK
+      real bndsum, tmpx(mrec),tmpy(mrec),tmpd(mrec)
       integer imin
+      integer nce, ncb, ii, jj, jjadd,start, end, i0
+      integer elist(2,mrec), list(mrec)
+      integer t(3,maxtri),w(mrec+3,2)
       CHARACTER*80 cstr, ans
       CHARACTER*1 PigCursYesNo
 
@@ -174,192 +178,6 @@
 
       ierr = 0
       i2 = 2
-
-
-!     Find the outer boundary and make sure that it is first in the arrays
-      imin = MINLOC(dyray(1:TotCoords),1)
-
-      IF( (imin.le.PtsThisBnd(1)).and.(imin.gt.0) ) THEN !Bnd is the first bnd
-        call PigStatusMessage('First boundary is outer boundary.')
-!       Set iouter to contain the index of the outer boundary
-        iouter = 1
-     
-      ELSE ! The outer bnd is not the first boundary - ask about moving it
-        cstr = 'Outer boundary is not the first boundary. Move to first posistion?'
-        ans = PigCursYesNo (cstr)
-        IF ( ans(1:1) .eq. 'Y' ) then ! Move it
-
-!         Loop through bnd to find the correct segment to be moved move it
-          iend = 0
-          DO i=1,TotBndys
-!           Set start and end of bnd
-            istrt = iend+1
-            iend = istrt+PtsThisBnd(i)-1
-!           Break the loop if we are on the right segment
-            IF ((imin.ge.istrt).and.(imin.le.iend)) THEN
-              EXIT
-            END IF
-          END DO
-
-!         Now we have i, istrt and iend of the segment that should be moved to start
-!         Using imin to hold number of nodes in the bnd
-          imin = iend - istrt + 1
-
-!         Put bnd in tmp arrays
-          do k=istrt,iend 
-            tmpi = k-istrt+1
-            tmpx(tmpi) = dxray(k)
-            tmpy(tmpi) = dyray(k)
-            tmpd(tmpi) = depth(k)
-            tmpc(tmpi) = code(k)
-          end do
-
-!         Shift arrays to close the gap
-          do k=istrt-1,1,-1 
-            dxray(k+imin) = dxray(k)
-            dyray(k+imin) = dyray(k)
-            depth(k+imin) = depth(k)
-            code(k+imin) = code(k)
-          end do
-
-!         Insert the tmp array in front
-          do k = 1,imin
-            dxray(k) = tmpx(k)
-            dyray(k) = tmpy(k) 
-            depth(k) = tmpd(tmpi)
-            code(k) = tmpc(tmpi)
-          end do
-
-!         Shift and update PtsThisBnd
-          do k=i,2,-1
-            PtsThisBnd(k) = PtsThisBnd(k-1)
-          end do
-          PtsThisBnd(1) = imin
-!         Set iouter to contain the index of the outer boundary
-          iouter = 1
-
-        ELSE  ! User does not want to move bnd to to start
-
-!         Find index of the outer boundary
-          iend = 0
-          DO i=1,TotBndys
-!           Set start and end of bnd
-            istrt = iend+1
-            iend = istrt+PtsThisBnd(i)-1
-!           Break the loop if we are on the right segment
-            IF ((imin.ge.istrt).and.(imin.le.iend)) THEN
-              iouter = i
-              EXIT
-            END IF
-          END DO
-
-        END IF ! Move?
-      END IF ! Bnd is first bnd?
-
-
-
-!     Check for coincident nodes on boundary start/end
-      iend = 0
-      closedIsl = .false.
-      DO i=1,TotBndys
-!       Set start and end of bnd
-        istrt = iend + 1
-        iend = istrt+PtsThisBnd(i)-1
-
-        tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
-        tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
-        tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
-
-!       Find distance between ends
-        tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
-
-        IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
-          closedIsl = .true.
-          EXIT
-        END IF  
-      END DO
-
-      IF (closedIsl) THEN ! There are closed islands. Ask the user to remove coincident nodes
-        cstr = 'Detected closed boundaries. Open them up?'
-        ans = PigCursYesNo (cstr)
-
-        IF ( ans(1:1) .eq. 'Y' ) then
-          istrt = TotCoords-TotIntPts+1 
-          DO i=TotBndys,1,-1
-!           Set start and end of bnd
-            iend = istrt-1
-            istrt = iend-PtsThisBnd(i)+1
-
-!           Get 10% of average distance at ends of segment
-            tmpx(1) = sqrt( (dxray(iend)-dxray(iend-1))**2 + (dyray(iend)-dyray(iend-1))**2 )
-            tmpy(1) = sqrt( (dxray(istrt+1)-dxray(istrt))**2 + (dyray(istrt+1)-dyray(istrt))**2 )
-            tmpx(10) = (tmpx(1) + tmpy(1)) / 20 
-
-!           Find distance between ends
-            tmpx(20) = sqrt( (dxray(iend)-dxray(istrt))**2 + (dyray(iend)-dyray(istrt))**2 )
-
-            IF (tmpx(20).lt.tmpx(10)) THEN   ! Coincident start and end nodes on islands
-!             Move all points from iend to TotCoods one step back
-              DO k=iend,TotCoords-1
-                dxray(k) = dxray(k+1)
-                dyray(k) = dyray(k+1)
-                depth(k) = depth(k+1)
-                code(k) = code(k+1)
-              END DO
-
-!             Correct TotCoords and PtsThisBnd
-              TotCoords = TotCoords - 1
-              PtsThisBnd(i) = PtsThisBnd(i)-1
-
-            END IF
-
-          END DO ! Loop bndys      
-
-        END IF ! Open up islands?
-      END IF ! There are closed isl
-        
-
-
-
-!     Check for bnd with less than three point and ask to delete them
-
-      imin = MINVAL(PtsThisBnd(1:TotBndys),1)
-      IF (imin.lt.3) THEN ! There are bnd with less points than three
-        cstr = 'There are boundaries with less points than 3. Delete them?'
-        ans = PigCursYesNo (cstr)
-
-        IF ( ans(1:1) .eq. 'Y' ) then ! Delete them
-
-          istrt = TotCoords-TotIntPts+1 
-          DO i=TotBndys,1,-1
-!           Set start and end of bnd
-            iend = istrt-1
-            istrt = iend-PtsThisBnd(i)+1
-
-            IF (PtsThisBnd(i).lt.3) THEN ! Delete the current boundary
-
-              DO j=istrt,TotCoords-PtsThisBnd(i)
-                dxray(j) = dxray(j+PtsThisBnd(i))
-                dyray(j) = dyray(j+PtsThisBnd(i))
-                depth(j) = depth(j+PtsThisBnd(i))
-                code(j) = code(j+PtsThisBnd(i))
-              END DO
-
-              TotCoords = TotCoords - PtsThisBnd(i) 
-
-              DO j=i,TotBndys-1
-                PtsThisBnd(j) = PtsThisBnd(j+1)
-              END DO
-              
-              TotBndys = TotBndys - 1 
-
-            END IF
-
-          END DO
-        END IF
-      END IF
-
-
 
 !     Loop over bnds to determine direction
       iend = 0
@@ -380,26 +198,111 @@
         end do
         bndsum = bndsum + ( dxray(istrt)-dxray(iend) )*( dyray(istrt)+dyray(iend) )
 
-        if (bndsum.lt.0) bndCW(i) = .false.
-
-!       If this is not the outer boundary and the direction is not CW the island is defined the wrong way around
-        if (( i.ne.iouter ).and.( .not.bndCW(i) ).and.( PtsThisBnd(i).gt.2 ))THEN ! Detected a island that is defined the wrong way
-          flipIsl = .true.
-        end if
+        if (bndsum.lt.0) then
+          bndCW(i) = .false.
+          BndryIndex(i) = 1
+        else
+          BndryIndex(i) = 0
+        endif
 
       end do
 
-
-!
-!     Now bndCW is true for the bnds that are cw, and false for CCW.
-!     READY TO PLOT!
-!
+      BoundCCW = .true.
+      call ReDrawOnly ()
 
 
+!     Find the outer boundary and make sure that it is first in the arrays
+      imin = MINLOC(dyray(1:TotCoords),1)
+
+      IF( (imin.le.PtsThisBnd(1)).and.(imin.gt.0) ) THEN !Bnd is the first bnd
+        call PigStatusMessage('First boundary is outer boundary.')
+!       Set iouter to contain the index of the outer boundary
+        iouter = 1
+     
+      ELSE ! The outer bnd is not the first boundary - ask about moving it
+        cstr = 'Outer boundary is not the first boundary.'//newline//&
+               'Move to first posistion?'//char(0)
+        ans = PigCursYesNo (cstr)
+        IF ( ans(1:1) .eq. 'Y' ) then ! Move it
+
+!         Loop through bnd to find the correct segment to be moved move it
+          iend = 0
+          DO i=1,TotBndys
+!           Set start and end of bnd
+            istrt = iend+1
+            iend = istrt+PtsThisBnd(i)-1
+!           Break the loop if we are on the right segment
+            IF ((imin.ge.istrt).and.(imin.le.iend)) THEN
+              iouter0 = i
+              EXIT
+            END IF
+          END DO
+
+!         Now we have i, istrt and iend of the segment that should be moved to start
+!         Using imin to hold number of nodes in the bnd
+          imin = iend - istrt + 1
+
+!         Put bnd in tmp arrays
+          do k=istrt,iend 
+            tmpi = k-istrt+1
+            tmpx(tmpi) = dxray(k)
+            tmpy(tmpi) = dyray(k)
+            tmpd(tmpi) = depth(k)
+!            tmpc(tmpi) = code(k)
+          end do
+
+!         Shift arrays to close the gap
+          do k=istrt-1,1,-1 
+            dxray(k+imin) = dxray(k)
+            dyray(k+imin) = dyray(k)
+            depth(k+imin) = depth(k)
+!            code(k+imin) = code(k)
+          end do
+
+!         Insert the tmp array in front
+          do k = 1,imin
+            dxray(k) = tmpx(k)
+            dyray(k) = tmpy(k) 
+            depth(k) = tmpd(tmpi)
+!            code(k) = tmpc(tmpi)
+          end do
+
+!         Shift and update PtsThisBnd
+          do k=i,2,-1
+            PtsThisBnd(k) = PtsThisBnd(k-1)
+          end do
+          PtsThisBnd(1) = imin
+!         Set iouter to contain the index of the outer boundary
+          iouter = 1
+          k = BndryIndex(iouter0)
+          BndryIndex(iouter0) = BndryIndex(iouter)
+          BndryIndex(iouter) = k
+          ok = bndCW(iouter0)
+          bndCW(iouter0) = bndCW(iouter)
+          bndCW(iouter) = ok
+
+        ELSE  ! User does not want to move bnd to to start
+
+!         Find index of the outer boundary
+          iend = 0
+          DO i=1,TotBndys
+!           Set start and end of bnd
+            istrt = iend+1
+            iend = istrt+PtsThisBnd(i)-1
+!           Break the loop if we are on the right segment
+            IF ((imin.ge.istrt).and.(imin.le.iend)) THEN
+              iouter = i
+              EXIT
+            END IF
+          END DO
+
+        END IF ! Move?
+      END IF ! Bnd is first bnd?
 
 !     Determine if outer boundary is defined right
       IF (bndCW(iouter)) THEN ! No - prompt user to reverse
-        cstr = 'Outer boundary is defined CW. Reverse?'
+        cstr = 'Outer boundary is defined CW.'//newline//&
+               'Reverse it?'//char(0)
         ans = PigCursYesNo (cstr)
 
         IF ( ans(1:1) .eq. 'Y' ) then ! Reverse outer bnd
@@ -417,7 +320,7 @@
             tmpx(tmpi) = dxray(k)
             tmpy(tmpi) = dyray(k)
             tmpd(tmpi) = depth(k)
-            tmpc(tmpi) = code(k)
+!            tmpc(tmpi) = code(k)
           end do
 
 !         Put it back reversed
@@ -426,16 +329,26 @@
             dxray(k) = tmpx(tmpi)
             dyray(k) = tmpy(tmpi)
             depth(k) = tmpd(tmpi)
-            code(k) = tmpc(tmpi) 
+!            code(k) = tmpc(tmpi) 
           end do
+          BndryIndex(iouter) = 1
 
         END IF ! Reverse?
       END IF ! Is bnd CW?
 
 
 !     If there are reversed islands, ask the user to correct them
+      DO i=1,TotBndys
+!       If this is not the outer boundary and the direction is not CW
+!       then the island is defined the wrong way around
+        if (( i.ne.iouter ).and.( .not.bndCW(i) ).and.( PtsThisBnd(i).gt.2 ))THEN ! Detected a island that is defined the wrong way
+          flipIsl = .true.
+        end if
+      enddo
+      
       IF (flipIsl) THEN ! There are flipped islands
-        cstr = 'Detected islands that are defined CW. Reverse?'
+        cstr = 'Some islands are defined CW.'//newline//&
+               'Reverse them?'//char(0)
         ans = PigCursYesNo (cstr)
 
         IF ( ans(1:1) .eq. 'Y' ) then ! Reverse islands
@@ -453,7 +366,7 @@
                 tmpx(tmpi) = dxray(k)
                 tmpy(tmpi) = dyray(k)
                 tmpd(tmpi) = depth(k)
-                tmpc(tmpi) = code(k)
+!                tmpc(tmpi) = code(k)
               end do
 
 !             Put it back reversed
@@ -462,19 +375,56 @@
                 dxray(k) = tmpx(tmpi)
                 dyray(k) = tmpy(tmpi)
                 depth(k) = tmpd(tmpi)
-                code(k) = tmpc(tmpi) 
+!                code(k) = tmpc(tmpi) 
               end do
 
-
+              BndryIndex(i) = 0
+                           
             END IF ! Current boundary reversed?
           END DO ! Loop bnds
         END IF ! Reverse islands?
       END IF ! Flipped islands?
 
+!     Check for bnd with less than three point and ask to delete them
 
+      imin = MINVAL(PtsThisBnd(1:TotBndys),1)
+      IF (imin.lt.3) THEN ! There are bnd with less points than three
+        cstr = 'There are boundaries with less'//newline//&
+               'than 3 points. Delete them?'//char(0)
+        ans = PigCursYesNo (cstr)
 
+        IF ( ans(1:1) .eq. 'Y' ) then ! Delete them
 
+          istrt = TotCoords-TotIntPts+1 
+          DO i=TotBndys,1,-1
+!           Set start and end of bnd
+            iend = istrt-1
+            istrt = iend-PtsThisBnd(i)+1
 
+            IF (PtsThisBnd(i).lt.3) THEN ! Delete the current boundary
+
+              DO j=istrt,TotCoords-PtsThisBnd(i)
+                dxray(j) = dxray(j+PtsThisBnd(i))
+                dyray(j) = dyray(j+PtsThisBnd(i))
+                depth(j) = depth(j+PtsThisBnd(i))
+!                code(j) = code(j+PtsThisBnd(i))
+              END DO
+
+              TotCoords = TotCoords - PtsThisBnd(i) 
+
+              DO j=i,TotBndys-1
+                PtsThisBnd(j) = PtsThisBnd(j+1)
+              END DO
+              
+              TotBndys = TotBndys - 1 
+
+            END IF
+
+          END DO
+        END IF
+      END IF
+
+      call ReDrawOnly ()
 
 !     Reset all nodecodes
       iend = 0
@@ -484,53 +434,70 @@
         iend = istrt+PtsThisBnd(i)-1
 
         IF (i.eq.iouter) THEN
-          tmpc(1) = 1
+          tmpi = 1
         ELSE
-          tmpc(1) = 2
+          tmpi = 2
         END IF
 
         DO j=istrt,iend
-          code(j) = tmpc(1)
+          code(j) = tmpi
         END DO
 
       END DO
 
 
-!     Check for self-intersecting bnd   
+!     Form elist,list for checks
+        start = 1
+        ncb = 0
+        nce = 0
+        jjadd = 0
+        do ii = 1,TotBndys
+          if(PtsThisBnd(ii).le.0) then
+            cycle
+          endif
+          end = (start-1) + PtsThisBnd(ii)
+          do jj = start, end - 1
+            elist(1,jj) = jj + jjadd
+            elist(2,jj) = jj + jjadd + 1
+            if(ii.le.TotBndys-TotIntBndys) ncb = ncb + 1
+            nce = nce + 1
+          enddo
+! 45       continue
+          if(ii.le.TotBndys-TotIntBndys) then
+            ncb = ncb + 1
+            elist(1,end) = end
+            elist(2,end) = start
+            nce = nce + 1
+            start = end + 1
+          else
+            start = end
+            jjadd = jjadd + 1
+          endif
+        enddo  !ii
 
-      cstr = 'Check for selfintersecting boundaries? (Slow)'
-      ans = PigCursYesNo (cstr)
+        do 46 jj = 1, itot
+          list(jj) = jj
+46      continue
 
-      IF ( ans(1:1) .eq. 'Y' ) then
+!     call contri()
+        i0 = 0
+        call CONTRI(itot,itot,nce,ncb,elist,dxray,dyray,code,list,w,&
+                    ListTr,t,TotTr,i0)
 
-!       Loop through bnd to find the correct segment to be moved move it
-        iend = 0
-   
-        OK = .true.
+!      i0 = -34571
+      if(i0.lt.-100) then
+        jj = -i0-100
+        call PutPermMarker ( dxray(jj), dyray(jj), ok )
+      endif
+                    
+!     set codes for deleted nodes
+      do jj = 1, itot
+        if(list(jj).eq.0) code(jj) = -100000
+      enddo
+      call DeleteAnyNode2(itot,TotBndys,PtsThisBnd,dxray,dyray,depth,code )
 
-        DO i=1,TotBndys
-!         Set start and end of bnd
-          istrt = iend+1
-          iend = istrt+PtsThisBnd(i)-1
-          
-          CALL simplePolygon(dxray(istrt:iend),dyray(istrt:iend),iend-istrt+1,imin)
-!         If imin is returned anything other than 0, then it holds index of one of the intersecting bndsegments points
-          IF (imin.ne.0) THEN
-            OK = .false.
-          END IF
-        END DO
-
-        IF (.not.OK) THEN
-          call PigMessageOK('Selfintersecting boundaries found.')
-        END IF
-      
-      END IF
-
-
-!     CHECKS YET TO BE INCLUDED
-!     Determine if there are nodes outside the outer boundary bnd.
-!     Check for nodes inside islands
-
+      call ReDrawOnly ()
+      BoundCCW = .false.
 
 
 !     End of subroutine
@@ -539,289 +506,9 @@
       END
 
 !---------------------------------------------------------------------------*
-!                         Check for self-intersecting polygon               *
-!---------------------------------------------------------------------------*
-!     
-!     Shamos-Hoey Algorithm from http://geomalgorithms.com/a09-_intersect-3.html#simple_Polygon()
-
-! Purpose: Check for crossing boundaries
-! Returns: isSimple (index of intersecting segment point) or 0
-! Effects: None
-
-      SUBROUTINE simplePolygon(X,Y,N,isSimple)
-!     Input
-!       X = x-coordinates of points on polygon
-!       Y = y-coordinates of points on polygon
-!       N = number of points on polygon
-
-!     Output
-!       isSimple - index of point on polygon that has a segment that intersects with another
-!                  returns zero if no intersection
-
-!     Input/output variables
-      integer N
-      real X(N), Y(N)
-      integer isSimple
-
-!     Internal variables
-
-!     LS = line segments
-      real LSsx(N),LSsy(N),LSex(N),LSey(N),tempx(N)
-
-!     EQ is event queue = all segment endpoints - sorted list
-      integer EQ((N)*2)
-      integer EQs((N)*2)
-      logical EQleft(N*2),EQsreg(N)
-
-!     SL = sweep line list of all the  
-      integer IARRsx(N),IARRex(N),i,j,sI,eI,imin,SL(N),SLnum
-      real rmin
-
-      logical intersect,OK
-
-! ***********************************************
-      isSimple = 0
-
-!     Create list of line segments
-      DO i = 1,N-1
-        IF(X(i).lt.X(i+1)) THEN ! To find the most left point
-          LSsx(i) = X(i)
-          LSsy(i) = Y(i)
-          LSex(i) = X(i+1)
-          LSey(i) = Y(i+1)
-        ELSE
-          LSsx(i) = X(i+1)
-          LSsy(i) = Y(i+1)
-          LSex(i) = X(i)
-          LSey(i) = Y(i)
-        END IF
-      END DO
-!     Add last segment to close up polygon
-      IF(X(N).lt.X(1)) THEN
-        LSsx(N) = X(N)
-        LSsy(N) = Y(N)
-        LSex(N) = X(1)
-        LSey(N) = Y(1)
-      ELSE
-        LSsx(N) = X(N)
-        LSsy(N) = Y(N)
-        LSex(N) = X(1)
-        LSey(N) = Y(1)
-      END IF
-      
-
-!     Sorted the linesegment start and end-points along the x-axis
-!     This part should be excanged because this sorting algorithm is slow
-
-
-      tempx = LSsx
-
-      DO i =1,N
-       IARRsx(i)=i
-       IARRex(i)=i
-      END DO
-
-!     Sort start points, but only keep index
-      DO i=1,N-1
-
-        rmin = 999999 
-        DO j=i,N
-          IF (tempx(j).lt.rmin) THEN
-            rmin = tempx(j)
-            imin = j
-          END IF
-        END DO
-
-!       Minimum found, swap and register
-        tempx(imin) = tempx(i)
-        tempx(i) = rmin
-
-        j = IARRsx(imin)
-        IARRsx(imin) = IARRsx(i)
-        IARRsx(i) = j
-        
-      END DO
-
-!     Sort end points, but only keep index
-      tempx = LSex
-      DO i=1,N-1
-
-        rmin = 999999 
-        DO j=i,N
-          IF (tempx(j).lt.rmin) THEN
-            rmin = tempx(j)
-            imin = j
-          END IF
-        END DO
-
-!       Minimum found, swap and register
-        tempx(imin) = tempx(i)
-        tempx(i) = rmin
-
-        j = IARRex(imin)
-        IARRex(imin) = IARRex(i)
-        IARRex(i) = j
-        
-      END DO
-
-
-
-!     Register all events (start and end of line segments)
-      sI = 1
-      eI = 1
-      i = 1
-      EQsreg(1:N) = .false.
-      OK = .false.
-
-      DO WHILE (i.le.N*2)
-
-!       Register the end point
-        IF (( ( LSex(IARRex(eI)).lt.LSsx(IARRsx(sI)) ).and.EQsreg(IARRex(eI)) ).or.(OK)) THEN
-          EQ(i) = i
-          EQs(i) = IARRex(eI)
-          EQleft(i) = .false.
-          eI=eI+1
-          i=i+1
-
-!       Register the start point
-        ELSE
-          EQ(i) = i
-          EQs(i) = IARRsx(sI)
-          EQleft(i) = .true.
-          EQsreg(IARRsx(sI)) = .true. ! To know that starts are registered before ends
-          sI=sI+1
-          IF (sI.gt.N) THEN
-            OK = .true.
-            sI = N
-          END IF
-          i=i+1
-        END IF
-      END DO
-
-
-!     Init list of segments that are currently crossed by sweep-line
-      SL(1:N) = 0
-      SLnum = 0
-
-
-!     Loop events and keep track of segments that the sweeping line intersects
-      DO i=1,N*2
-
-!       Keep track of segments that are intersected with the sweep line
-        IF ( EQleft(i) ) THEN ! This is the leftmost end - add the segment
-          SLnum = SLnum + 1 
-          SL(SLnum) = EQs(i)
-
-!         Check for line intersections with the line allready in the SL list.
-          DO j=1,SLnum-1
-            CALL LineIntersect(LSsx(SL(SLnum)),LSsy(SL(SLnum)),LSex(SL(SLnum)),LSey(SL(SLnum)), &
-                  LSsx(SL(j)),LSsy(SL(j)),LSex(SL(j)),LSey(SL(j)), intersect )
-            IF (intersect) THEN ! Intersection detected
-              isSimple = EQs(i)
-              RETURN
-            END IF
-          END DO
-
-        ELSE ! Remove line segment from SL list
-          OK = .false. ! Have we passed the one to remove?
-
-!         Loop through list to remove the linesegment to be removed
-          DO j=1,SLnum-1
-            IF ( SL(j).eq.EQs(i) ) THEN
-              OK = .true.
-            END IF
-
-            IF ( OK ) THEN
-              SL(j)=SL(j+1)
-            END IF
-          END DO
-
-          SLnum = SLnum - 1
-        END IF
-      END DO
-          
-!     End rutine        
-      RETURN ! isSimple is 0 by default
-      END
-
-!---------------------------------------------------------------------------*
-!                         Check for self-intersecting polygon               *
-!---------------------------------------------------------------------------*
-
-      SUBROUTINE LineIntersect(x1,y1,x2,y2,x3,y3,x4,y4,intersect)
-
-! Purpose: Check if two lines intersect each other.
-! Given: x and y coordinates of to lines.
-! Returns: intersect (true or false)
-! Effects: None      
-!     Point 1 and 2 is line 1. Point 2 and 3 is line 2
-
-!     Input/output variables
-      real x1,y1,x2,y2,x3,y3,x4,y4
-      logical intersect
-
-!     Internal variables
-      real a1,a2,b1,b2,xint
-
-      intersect=.false.
-
-!     Check for intersecting bounding boxes first
-!     http://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
-      IF (.not.( MIN(x1,x2).lt.MAX(x3,x4) ).and. &
-         ( MAX(x1,x2).gt.MIN(x3,x4) ).and. &
-         ( MAX(y1,y2).lt.MIN(y3,y4) ).and. &
-         ( MIN(y1,y2).gt.MAX(y3,y4) )) THEN ! Does not intersect
-        intersect=.false.
-        RETURN
-      END IF
-
-!     IF they share endpoint, it does not count
-      IF ( ((x1.eq.x3).and.(y1.eq.y3)).or. &
-           ((x1.eq.x4).and.(y1.eq.y4)).or. &
-           ((x2.eq.x3).and.(y2.eq.y3)).or. &
-           ((x2.eq.x4).and.(y2.eq.y4)) ) THEN
-        intersect=.false.
-        RETURN
-      END IF
-           
-
-!     Find line equation variables
-      a1 = (y2-y1)/(x2-x1)
-      a2 = (y4-y3)/(x4-x3)
-      b1 = y1 - a1*x1
-      b2 = y3 - a2*x3
-
-!     Return false if slope is equal
-      IF (a1.eq.a2) THEN
-        intersect=.false.
-        RETURN
-      END IF
-
-!     Determine crossing point
-      xint = (b2-b1)/(a1-a2)
-
-!     If it is within the limits of the segments it is intersecting
-      IF ( (xint.gt.MIN(x1,x2)).and. &
-           (xint.lt.MAX(x1,x2)).and. &
-           (xint.gt.MIN(x3,x4)).and. &
-           (xint.lt.MAX(x3,x4)) ) THEN ! It intersects
-        intersect=.true.
-        RETURN
-      ELSE
-        intersect=.false.
-        RETURN
-      END IF
-
-!     End of routine
-      RETURN
-      END
-
-
-!---------------------------------------------------------------------------*
-!------------- ans, TheCriteria, MaxCrit  ----------------------------------*
 !                         NUP.FOR                                           *
 !     This module is concerned with the colouring of triangles              *
-!     by criteria tests, from  a colour table.                              *
+!     by criteria tests, from  a given colour table.                              *
 !---------------------------------------------------------------------------*
 
       SUBROUTINE NUP_FPARAMS()
@@ -2010,9 +1697,15 @@
           endif
         endif
       
-!      elseif(ntest.eq.19) then !EXT
+      elseif(ntest.eq.19) then !BN1
+        if(check) then
+          CheckBN1 = .true.
+        else
+          CheckBN1 = .false.
+        endif
       
-      
+!      elseif(ntest.eq.20) then !EXT
+     
       endif
 
       return

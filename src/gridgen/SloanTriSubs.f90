@@ -724,7 +724,7 @@
 !     +                 /,''CHECK ENTRIES IN COLS 1...NCB OF ELIST '',
 !     +                   ''FOR NODE'',I5)')VI
 !            STOP
-            AutoGenFlag = -7
+            AutoGenFlag = -100-vi  !-7
             call ErrorMessage(7,vi,vi,VI,VI)
             return
 
@@ -1239,14 +1239,14 @@
       IF(S.LE.0)THEN
 !        WRITE(76,1000)VI
 !        STOP
-        AutoGenFlag = -23
+        AutoGenFlag = -100-vi  !-23
         call ErrorMessage(23,VI,VI,VI,VI)
         return
       ENDIF           
       IF(TN(VJ).LE.0)THEN
 !        WRITE(76,1000)VJ
 !        STOP
-        AutoGenFlag = -23
+        AutoGenFlag = -100-vj  !-23
         call ErrorMessage(23,VJ,VJ,VJ,VJ)
         return
       ENDIF
@@ -1310,7 +1310,7 @@
 !     +           /,''VERTEX ADJACENT TO'',I5,'' IS ON ARC'',
 !     +           /,''BETWEEN VERTICES'',I5,'' AND'',I5)')VI,VI,VJ
 !      STOP
-        AutoGenFlag = -18
+        AutoGenFlag = -100-VI  !-18
         call ErrorMessage(18,VI,VI,VJ,VJ)
         return
    15 CONTINUE
@@ -1362,7 +1362,7 @@
 !     +             /,''VERTEX'',I5,'' IS ON ARC'',
 !     +             /,''BETWEEN VERTICES'',I5,'' AND'',I5)')V3,VI,VJ
 !        STOP
-        AutoGenFlag = -20
+        AutoGenFlag = -100-v3   !-20
         call ErrorMessage(20,V3,VI,VJ,VJ)
         return
       ENDIF
@@ -1395,7 +1395,7 @@
 !     +                   /,''CROSSES SUPERTRIANGLE BOUNDARY DEFINED '',
 !     +                     ''BY VERTICES'',I5,''AND'',I5)')VI,VJ,V1,V2
 !               STOP
-               AutoGenFlag = -21
+               AutoGenFlag = -100-vi   !-21
                call ErrorMessage(21,VI,VJ,V1,V2)
                return
             ENDIF
@@ -1571,7 +1571,7 @@
 !     +                   /,''CANNOT BE OPTIMISED SINCE IT IS A '',
 !     +                     ''SUPERTRIANGLE BOUNDARY'')')V1,V2
 !               STOP
-               AutoGenFlag = -22
+               AutoGenFlag = -100-v1   !-22
                call ErrorMessage(22,V1,V2,V2,V2)
                return
             ENDIF
@@ -1904,7 +1904,7 @@
             ! error 30
 !              WRITE(76,'(//,''***WARNING IN TCHECK***'',&
 !                        /,''ZERO OR -VE AREA FOR TRIANGLE'',I5)')L
-              ierror = -30
+              ierror = -100-V1   !-30
               call ErrorMessage(30,L,L,L,L)
               return
             ELSE
@@ -2039,8 +2039,8 @@
 !     +               /,''INVALID TRIANGULATION'',
 !     +               /,''VERTEX'',I5,'' IS NOT IN ANY TRIANGLE'')')V1
 !          STOP
-          ierror = -29
-          call ErrorMessage(29,ncb,nbov,ntri,nb)
+          ierror = -100-V1   !-29
+          call ErrorMessage(29,V1,ncb,nbov,ntri)
         ENDIF
    40 CONTINUE   
       IF(NCE.EQ.NCB)RETURN
@@ -2125,13 +2125,14 @@
         ! error 32
 !                WRITE(76,'(''IT INTERSECTS ANOTHER CONSTRAINED EDGE '',&
 !                         ''WITH VERTICES'',I5,'' AND'',I5)')V3,V4
-                ierror = -32
+                ierror = -100-V1   !-32
                 call ErrorMessage(32,V1,V2,V3,V4)
                 GOTO 70
               ENDIF
             ENDIF
    55     CONTINUE
           if(ierror.eq.-31) then
+            ierror = -100-V1
             call ErrorMessage(31,V1,V2,V2,V2)
           endif
           GOTO 70
@@ -2194,13 +2195,14 @@
         ! error 32
 !              WRITE(76,'(''IT INTERSECTS ANOTHER CONSTRAINED EDGE '',&
 !                       ''WITH VERTICES'',I5,'' AND'',I5)')V3,V4
-                ierror = -32
+                ierror = -100-V1   !-32
                 call ErrorMessage(32,V1,V2,V3,V4)
               GOTO 70
             ENDIF
           ENDIF
    65   CONTINUE
         if(ierror.eq.-31) then
+          ierror = -100-V1
           call ErrorMessage(31,V1,V2,V2,V2)
         endif
    70 CONTINUE

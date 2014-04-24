@@ -930,7 +930,7 @@ int *theCriteria, *maxCrit;
 unsigned long toggles_set = (unsigned long) 0 ; /* has the bits of which toggles are set */
 
 char *strings[] = { "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9",
-	 "NC0", "C=?","DLT", "DGT", "DBTW", "NBLT", "NBGT", "NBE", "EXT"};
+	 "NC0", "C=?","DLT", "DGT", "DBTW", "NBLT", "NBGT", "NBE", "BN1", "EXT"};
 
 /* callback for all ToggleButtons of WPigNodeCheck.*/
 void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_data)

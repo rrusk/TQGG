@@ -20,12 +20,13 @@
       INTEGER GridPColour, GridSColour, ContColour, BoundColour
       integer SoundColour, ModificationColour
       LOGICAL DispCont, DispBound, DispSound, GMerge 
-      logical DispNodes, BoundCCW
+      logical DispNodes, BoundCCW, CheckBN1
 
       COMMON /DrawDefaults/ GridPColour, GridSColour, ContColour
-      COMMON /DrawDefaults2/ BoundColour, GridSIndex, DispCont 
-      COMMON /DrawDefaults3/ DispBound, GMerge,ModificationColour
-      COMMON /DrawDefaults4/ SoundColour,DispSound,DispNodes,BoundCCW
+      COMMON /DrawDefaults2/ BoundColour, GridSIndex 
+      COMMON /DrawDefaults3/ SoundColour,ModificationColour
+      COMMON /DrawDefaults4/ DispBound, DispCont, DispSound, GMerge
+      COMMON /DrawDefaults5/ DispNodes, BoundCCW, CheckBN1
 
       INTEGER TitleColour
       PARAMETER( TitleColour = 3 )

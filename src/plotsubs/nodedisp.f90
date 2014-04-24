@@ -104,18 +104,20 @@
       call PigSetSymbolColour ( bndcolor )
 
       markidx = 0
-      DO jj = 1, TotBndys
-        nodex(1) = dxray(markidx + 1) !first node
-        nodey(1) = dyray(markidx + 1)
-        IF ( In_Box(nodex(1),nodey(1)) ) THEN
-          call PigSetSymbolNumber ( square )
-          call PigSetSymbolColour ( white )
-          call PigDrawSymbols ( 1, nodex, nodey )
-          call PigSetSymbolNumber ( marktype )
-          call PigSetSymbolColour ( bndcolor )
-        endif
 
-        IF (.not.outlineonly) THEN  !do the rest        
+      DO jj = 1, TotBndys
+        IF (.not.outlineonly.or.CheckBN1) THEN  !mark first node       
+          nodex(1) = dxray(markidx + 1) !first node
+          nodey(1) = dyray(markidx + 1)
+          IF ( In_Box(nodex(1),nodey(1)) ) THEN
+            call PigSetSymbolNumber ( square )
+            call PigSetSymbolColour ( white )
+            call PigDrawSymbols ( 1, nodex, nodey )
+            call PigSetSymbolNumber ( marktype )
+            call PigSetSymbolColour ( bndcolor )
+          endif
+        endif
+        if(.not.outlineonly) then
           DO ii = 2, PtsThisBnd(jj)
 !           - add protection from array bounds error if PtsThisBnd(jj) too big
             if( (markidx+ii).le.MaxPts) then
@@ -134,6 +136,7 @@
         endif
         markidx = markidx + PtsThisBnd(jj)
       END DO
+
 !       - display interior nodes
 !       - set marker color for interior nodes
       IF (.not.outlineonly) THEN

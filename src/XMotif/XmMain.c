@@ -151,7 +151,7 @@ int WPigGetFileName(char *prompt, char *name, char *tmpl )
         name = (void *)strncpy(name,mycall_data.name,(anslen-1));
                 //name = mycall_data.name;
     }
-    printf ("return from int iWPigGetOpenFileName(%s)\n", name);
+//    printf ("return from int iWPigGetOpenFileName(%s)\n", name);
 
     if(strlen(name)==0) return FALSE;
     /* otherwise return true */
@@ -208,7 +208,7 @@ void WPigGetString(char *prompt, int *anslen, char *retstring )
         *anslen = 0;
         break;
     }
-    printf ("int WPigGetString return (%s)\n", retstring);
+//    printf ("int WPigGetString return (%s)\n", retstring);
 }  
 
 /*----------------------------------------------------------------------------*/
@@ -625,7 +625,7 @@ int main (int argc, char *argv[])
 	MainCanvas = XmCreateDrawingArea (main_w, "MainCanvas", NULL, 0);
     XtAddCallback (MainCanvas, XmNinputCallback, drawing_area_callback, &mycall_data);
     XtVaGetValues (MainCanvas, XmNwidth, &width, XmNheight, &height, NULL);
-    printf ("height,width= (%d,%d)\n", height, width);
+ //   printf ("height,width= (%d,%d)\n", height, width);
     if (use_pixmap) {
     	XtAddCallback (MainCanvas, XmNexposeCallback, drawing_area_callback, &mycall_data);
     }
@@ -705,7 +705,7 @@ void fileok_cb (Widget widget, XtPointer client_data, XtPointer call_data)
 
 
 /*    *answer2 = YES;*/
-    printf ("Filename given: \"%s\"\n", filename);
+//    printf ("Filename given: \"%s\"\n", filename);
     XtFree (filename);
 }
 

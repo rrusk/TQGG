@@ -75,8 +75,8 @@
           endif
           call PigPutMessage('Reading file '//fle(:fnlen))
           GridRName =  fle
-          write(*,*) fnlen-2,fnlen
-          write(*,*) fle(fnlen-2:fnlen)
+!          write(*,*) fnlen-2,fnlen
+!          write(*,*) fle(fnlen-2:fnlen)
 !          istat = index( fle, '.nc' )
           if(fle(fnlen-2:fnlen).eq.'.nc') then !netCDF file
             close(nunit,status='keep')
@@ -95,20 +95,26 @@
             if(firstline(1:4).eq."#NOD") then  !node file, new format
               call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
               Quit = .true.
-            elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
-              call ReadXYEData (nunit,Quit)
+            elseif(firstline(1:4).eq."#GRD") then  !xyz and element grid file, new format
+              call PigStatusMessage( 'Reading Grid file.. [GRD] format' )
+              call ReadGRDData (nunit,Quit)
+              call PigStatusMessage( 'Done' )
             elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
               newformat = .true.
+              call PigStatusMessage( 'Reading Grid file.. [NGH] format' )
               call ReadNGHData (nunit,addfile,newformat)
               Quit = addfile
               if(.not.quit) call DoCheckEdges()
+              call PigStatusMessage( 'Done' )
             else ! guess format
               newformat = .false.
+              call PigStatusMessage( 'Reading Grid file.. old [NGH] format' )
               call ReadNGHData (nunit,addfile,newformat)
               Quit = addfile
               if(.not.quit) then
                 call DoCheckEdges()
               endif
+              call PigStatusMessage( 'Done' )
             endif
           endif
         endif
@@ -171,8 +177,6 @@
         nbtot_max = nbtotr
         GridSIndex = nrec
       endif
-
-      call PigPutMessage( 'Reading Grid file.. [NGH] format' )
 
       if(newformat) then
 
@@ -309,24 +313,12 @@
       ymax = maxval(dyray(1:itot))
       call fullsize(xmin,ymin,xmax,ymax)
 
-!     - determine max/min depths (datatype 1)
-!      SMaxVal(1) = depth(1)
-!      SMinVal(1) = depth(1)
-!      do i=2,itot
-!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-!        SMaxVal(1) = Depth(i)
-!        ENDIF
-!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-!        SMinVal(1) = Depth(i)
-!        ENDIF
-!      enddo
-
       RETURN
       END
 
 ! --------------------------------------------------------------------------*
 
-      SUBROUTINE ReadXYEData (nunit,quit)
+      SUBROUTINE ReadGRDData (nunit,quit)
    
 ! Purpose : To read grid data into memory
 
@@ -348,7 +340,7 @@
       INTEGER  nunit, istat
 !        - the number of records that is to be in the data file
       INTEGER numrec, numele, linenum
-      character(80) Firstline
+      character(80) Firstline,message
 
 !------------------BEGIN-------------------------------
 
@@ -362,6 +354,9 @@
         Quit = .TRUE.
         return
       endif
+
+      write(message,'(a,i6,a,i8,a)') 'Reading Grd File with ',NUMREC,' nodes, ',numele,' elements'
+      call PigPutMessage(message)
 
       do i=1,numrec
         read(nunit,*,IOSTAT=istat) dxray(i),dyray(i),depth(i),code(i)
@@ -437,18 +432,6 @@
       ymax = maxval(dyray(1:itot))
       call fullsize(xmin,ymin,xmax,ymax)
 
-!     - determine max/min depths (datatype 1)
-!      SMaxVal(1) = depth(1)
-!      SMinVal(1) = depth(1)
-!      do i=2,itot
-!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-!        SMaxVal(1) = Depth(i)
-!        ENDIF
-!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-!        SMinVal(1) = Depth(i)
-!        ENDIF
-!      enddo
-
       return
       END
 
@@ -485,7 +468,7 @@
 
 ! local variables
       integer i, j, k, nei, last
-      character*80 cstr
+!      character*80 cstr
 ! code
       do i=1,itot !Nrec-1
 !          if(exist(i).or.code(i).ge.0)then
@@ -497,18 +480,18 @@
                       if(code(i).lt.0) then
 !                         pointing to a non-existent node
 !                          NL(j,i) = 0
-                          write(cstr,'(a,i7,a,i7)')'Removing connection from node ',i,' to non-existent (deleted) node',NL(j,i)
-                          call PigPutMessage(cstr)
+!                          write(cstr,'(a,i7,a,i7)')'Removing connection from node ',i,' to non-existent (deleted) node',NL(j,i)
+!                          call PigPutMessage(cstr)
                           NL(j,i) = 0
                       else if(NL(j,i).gt.itot) then
 !                         pointing to a node > last node
-                          write(cstr,'(a,i7,a,i7)')'Removing connection from node ',i,' to non-existent ( >Nrec) node',NL(j,i)
-                          call PigPutMessage(cstr)
+!                          write(cstr,'(a,i7,a,i7)')'Removing connection from node ',i,' to non-existent ( >Nrec) node',NL(j,i)
+!                          call PigPutMessage(cstr)
                           NL(j,i) = 0
                       else if(NL(j,i).eq.i) then
 ! test 4: cannot be joined to self
-                          write(cstr,'(a,i7,a)')'Removing connection from node ',i,' to itself!'
-                          call PigPutMessage(cstr)
+!                          write(cstr,'(a,i7,a)')'Removing connection from node ',i,' to itself!'
+!                          call PigPutMessage(cstr)
                           NL(j,i) = 0
                       endif
                   endif
@@ -520,8 +503,8 @@
                     do k=j+1,nbtot
                       if(NL(j,i).eq.NL(k,i)) then
 !                         duplicate found
-                          write(cstr,'(a,i6,a,i6,a,i6)')'Removing duplicated neighbour ',k,'(',NL(k,i),') from node',i
-                          call PigPutMessage(cstr)
+!                          write(cstr,'(a,i6,a,i6,a,i6)')'Removing duplicated neighbour ',k,'(',NL(k,i),') from node',i
+!                          call PigPutMessage(cstr)
                           NL(k,i) = 0
                       endif
                     enddo
@@ -549,8 +532,8 @@
                       enddo
                       if(NL(k,nei).ne.i) then
 !                         this node not found in neighbour's neighbour list
-                          write (cstr,'(a,i7,a,i7)') 'Adding node ',i,' to neighbour list of node ',nei
-                          call PigPutMessage(cstr)
+!                          write (cstr,'(a,i7,a,i7)') 'Adding node ',i,' to neighbour list of node ',nei
+!                          call PigPutMessage(cstr)
                           k = 1
                           do while(    (NL(k,nei).ne.0).and.(k.lt.nbtot))
                               k = k + 1
@@ -763,7 +746,7 @@
         if(firstline(1:4).eq."#NOD") then  !node file, new format
           quit = .true.  !new format
           call ReadNodeFile ( Quit )
-        elseif(firstline(1:4).eq."#XYE".or.firstline(1:4).eq."#NGH") then
+        elseif(firstline(1:4).eq."#GRD".or.firstline(1:4).eq."#NGH") then
           call PigMessageOK('ERROR: Grid file-wrong format','ReadNode' )
           quit = .true.
         else ! guess format
@@ -907,7 +890,7 @@
         call PigMessageOK ( 'INPUT HAS TOO MANY BOUNDARIES','ReadNode' )
         TotBndys = Maxnnb
       ENDIF
-      write(cstr,'(a,i7,a,i4,a)') 'Reading ',TotCoords,' from ',TotBndys,' boundaries'
+      write(cstr,'(a,i7,a,i4,a)') 'Reading ',TotCoords,' nodes from ',TotBndys,' boundaries'
       call PigPutMessage(cstr)
 
 !       - loop thru boundaries
@@ -923,8 +906,8 @@
 !         - end = end of nodes on boundary ( ii )
         end = ( start - 1 ) + PtsThisBnd(ii)
 !         - loop thru node coordinates for boundary ( ii )
-        write(cstr,'(a,i7,a,i4)') 'Reading ',PtsThisBnd(ii),' from boundary', ii
-        call PigPutMessage(cstr)
+!        write(cstr,'(a,i7,a,i4)') 'Reading ',PtsThisBnd(ii),' from boundary', ii
+!        call PigPutMessage(cstr)
         if(ii.eq.1) then
           bcode = 1
         else
@@ -952,8 +935,8 @@
           call PigMessageOK ( cstr,'ReadNode' )
           PtsThisBnd(ii) = MaxPts - start + 1
           end = start - 1 + PtsThisBnd(ii)
-          write(cstr,'(a,i7,a,i4)') 'PtsThisBnd reduced to ',PtsThisBnd(ii),' for boundary', ii
-          call PigMessageOK ( cstr,'ReadNode' )
+!          write(cstr,'(a,i7,a,i4)') 'PtsThisBnd reduced to ',PtsThisBnd(ii),' for boundary', ii
+!          call PigMessageOK ( cstr,'ReadNode' )
 
         ENDIF
 !         - start = beginning of next set of boundary nodes
@@ -1007,8 +990,8 @@
 
       TotCoords = jjmax
       do ii=1,TotBndys
-        write(cstr,'(a,i7,a,i4)') 'PtsThisBnd is ',PtsThisBnd(ii),' for boundary', ii
-        call PigPutMessage(cstr)
+!        write(cstr,'(a,i7,a,i4)') 'PtsThisBnd is ',PtsThisBnd(ii),' for boundary', ii
+!        call PigPutMessage(cstr)
       end do
       IF ( end .gt. MaxPts ) THEN
         cstr = 'TOO MANY DATA POINTS, DATAFILE TRUNCATED'
@@ -1040,18 +1023,6 @@
       ymin = minval(dyray(1:itot))
       ymax = maxval(dyray(1:itot))
       call fullsize(xmin,ymin,xmax,ymax)
-
-!     - determine max/min depths (datatype 1)
-!      SMaxVal(1) = depth(1)
-!      SMinVal(1) = depth(1)
-!      do i=2,itot
-!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-!        SMaxVal(1) = Depth(i)
-!        ENDIF
-!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-!        SMinVal(1) = Depth(i)
-!        ENDIF
-!      enddo
 
       return
 
@@ -1559,18 +1530,6 @@
       ymin = minval(dyray(1:itot))
       ymax = maxval(dyray(1:itot))
       call fullsize(xmin,ymin,xmax,ymax)
-
-!     - determine max/min depths (datatype 1)
-!      SMaxVal(1) = depth(1)
-!      SMinVal(1) = depth(1)
-!      do i=2,itot
-!        IF ( SMaxVal(1) .lt. Depth(i) ) THEN
-!        SMaxVal(1) = Depth(i)
-!        ENDIF
-!        IF ( SMinVal(1) .gt. Depth(i) ) THEN
-!        SMinVal(1) = Depth(i)
-!        ENDIF
-!      enddo
 
       return
       END

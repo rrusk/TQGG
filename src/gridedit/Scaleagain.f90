@@ -453,11 +453,11 @@
 
 !     Find center of grid and find central meridan (in essence the UTM zone representer by the centerline)
 
-      gxmax = MAXVAL(dxray(1:ITOT))
-      gxmin = MINVAL(dxray(1:ITOT))
+      gxmax = MAXVAL(dxray(1:itot))
+      gxmin = MINVAL(dxray(1:itot))
       gxc = (gxmax + gxmin) / 2 ! Center
-      gymax = MAXVAL(dyray(1:ITOT))
-      gymin = MINVAL(dyray(1:ITOT))
+      gymax = MAXVAL(dyray(1:itot))
+      gymin = MINVAL(dyray(1:itot))
       gyc = (gymax + gymin) / 2 ! Center
 
 !     Figure out the UTM zone, as well as lambda0
@@ -465,7 +465,7 @@
 
       call get_grid_zone (gxc, gyc, grid_zone, lambda0)
       write(zonestr,'(I0.2)') grid_zone(1)
-
+      grid_zone(2) = grid_zone(2) + 1
 !     Prompt user for UTM zone
       do
         call PigPrompt('Enter UTM zone number ('//zonestr//utmchars(grid_zone(2):grid_zone(2)) &
@@ -477,15 +477,15 @@
         grid_zone(1) = nint(tmpx)
 
 !       Check for grid lat zone
-        grid_zone2 = 0
+        grid_zone2 = -1
         DO JJ = 1,20
           IF(ans(3:3).eq.utmchars(JJ:JJ)) then
-            grid_zone2 = JJ
+            grid_zone2 = JJ - 1
             exit
           END IF
         END DO
         
-        IF(grid_zone2.eq.0) then
+        IF(grid_zone2.lt.0) then
           cycle
         else
           grid_zone(2) = grid_zone2
@@ -497,14 +497,13 @@
 !     Get new central meridan (lambda0) and validate.
       call get_lambda0 (grid_zone, lambda0, ierr)
       if (ierr .NE. 0) then
-        write (*,*) 'Unable to translate UTM to LL'
+        call PigMessageOK('Unable to translate UTM to LL','UTM Transform')
         return
       endif
 
 
 
 !     Loop through all nodes and transform from lat/lon to UTM
-      write(*,*)grid_zone(1),grid_zone(2)
       DO JJ = 1, ITOT
 
         CALL ll2utm (dxray(jj), dyray(jj), tmpx, tmpy, lambda0, 3)
@@ -531,7 +530,7 @@
 !
 
 !     Prompt user for UTM zone
-      grid_zone(2) = 0
+      grid_zone(2) = -1
       utmchars = 'CDEFGHJKLMNPQRSTUVWX'
       do
         call PigPrompt('Enter UTM zone number (##S): ',ans)
@@ -545,11 +544,11 @@
 !         Check for grid lat zone
         DO JJ = 1,20
           IF(ans(3:3).eq.utmchars(JJ:JJ)) then
-            grid_zone(2) = JJ
+            grid_zone(2) = JJ - 1
           END IF
         END DO
 
-        IF(grid_zone(2).eq.0) then
+        IF(grid_zone(2).lt.0) then
           cycle
         else
           exit
@@ -580,6 +579,7 @@
 ! * Peter Daly
 ! * MIT Ocean Acoustics
 ! * pmd@mit.edu
+
 ! * 25-MAY-1998
 ! * 
 ! Revisions:

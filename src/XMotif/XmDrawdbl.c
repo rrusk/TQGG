@@ -211,7 +211,7 @@ void  WPigSetWorldCoordinates(const double *xlow, const double *xhigh, const dou
         XtNheight, &height, 
         XtNwidth, &width, 
         NULL);
-    printf ("set val height,width= (%d,%d)\n", height, width);
+ //   printf ("set val height,width= (%d,%d)\n", height, width);
 
     WorldX1 = (double) *xlow;
     WorldX2 = (double) *xhigh;

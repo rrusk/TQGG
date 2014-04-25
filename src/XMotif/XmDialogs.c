@@ -195,7 +195,9 @@ void UpdateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     char *y_str;
     char *z_str;
     char *code_str;
+    char *tmp_str;
     int max_chars;
+    int i;
     
 //    printf("C code received:");
 //    printf("index: %d\n", *index);
@@ -229,11 +231,22 @@ void UpdateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     XmTextFieldSetString(node_code_widget, code_str);
     XtFree(code_str);
 
-    printf("UNID numngh: %d\n", *numngh);
+    char buf[256];
+
+    strcpy(buf, "");
+    for (i=0;i<=*numngh-1;i++){
+    tmp_str = int_to_str(*(nvp+i), max_chars);
+    strcat(buf,tmp_str);
+    strcat(buf,"\n");
+    }
+    
+    XmTextSetString(adj_nodes_widget, buf);
+
+    /*    printf("UNID numngh: %d\n", *numngh);
     printf("UNID n1: %d\n", *nvp);
     printf("UNID n2: %d\n", *(nvp+1));
     printf("UNID n3: %d\n", *(nvp+2));
-    printf("UNID n4: %d\n", *(nvp+3));
+    printf("UNID n4: %d\n", *(nvp+3));*/
     
     XtManageChild(nodeinfo_dialog);
 }
@@ -314,7 +327,9 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     char *y_str;
     char *z_str;
     char *code_str;
+    char *tmp_str;
     int max_chars=15;
+    int i;
 
 	Arg args[6];
 
@@ -351,7 +366,7 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     node_z_widget = create_labeled_textfield(&row_column, "Z:");
     node_code_widget = create_labeled_textfield(&row_column, "Code:");
 
-    char buf[80];
+    char buf[256];
     strcpy(buf, "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n");
     adj_nodes_widget = create_scrolled_textfield(&row_column, "Adjacent Nodes", buf);
 
@@ -376,11 +391,20 @@ void CreateNodeInfoDialog(int *index, double *x, double *y, double *z, int *code
     XmTextFieldSetString(node_code_widget, code_str);
     free(code_str);
 
-    printf("CNID numngh: %d\n", *numngh);
+    strcpy(buf, "");
+    for (i=0;i<=*numngh-1;i++){
+    tmp_str = int_to_str(*(nvp+i), max_chars);
+    strcat(buf,tmp_str);
+    strcat(buf,"\n");
+    }
+
+    XmTextSetString(adj_nodes_widget, buf);
+
+/*    printf("CNID numngh: %d\n", *numngh);
     printf("CNID n1: %d\n", *nvp);
     printf("CNID n2: %d\n", *(nvp+1));
     printf("CNID n3: %d\n", *(nvp+2));
-    printf("CNID n4: %d\n", *(nvp+3));
+    printf("CNID n4: %d\n", *(nvp+3));*/
 
 	XtManageChild(row_column);
 	XtManageChild(dialog);

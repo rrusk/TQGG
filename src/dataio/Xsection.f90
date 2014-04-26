@@ -2,8 +2,8 @@
   !    Copyright (C) 1995-
   !        Roy A. Walters, R. Falconer Henry
   !
-  !        rawalters@shaw.ca
-  !
+  !        TQGridGen@gmail.com
+ !
   !    This file is part of TQGG, Triangle-Quadrilateral Grid Generation,
   !    a grid generation and editing program.
   !
@@ -48,6 +48,8 @@
 !----------------------------------------------------------------------*
 
       use MainArrays
+      
+      implicit none
 
 ! - PASSED PARAMETERS
         integer AutoGenFlag, EType
@@ -55,7 +57,6 @@
 
 ! - "INCLUDES"
       include '../includes/defaults.inc'
-      include '../includes/graf.def'
 
 !----------------------------------------------------------------------
 !       - XSecCom stores parameters set in XSection.
@@ -65,13 +66,6 @@
       LOGICAL :: Nth=.true., Nth2=.true.
       COMMON /XSecCom/ XSFname,sdist,sdist2,srate,srate2,Nth,Nth2
 
-!       - XSecCom stores parameters set in XSection.
-!      CHARACTER*80 XSFname
-!      REAL sdist, sdist2
-!      integer srate, srate2
-!      LOGICAL Nth, Nth2
-!      COMMON /XSecCom/ XSFname, sdist, sdist2, srate, srate2,Nth, Nth2
-
 !----------------------------------------------------------------------
 
 ! - LOCAL VARIABLES
@@ -80,6 +74,7 @@
       REAL dumr
       real :: defsdist=1.0
       integer fnlen,dumi
+      integer nx,ny
       integer, save :: defsrate=3, defsrate2=0
       LOGICAL, save :: filein=.FALSE.
       logical PigGetOpenFileName
@@ -186,6 +181,8 @@
       subroutine ReadXSecFile( Quit, nx, ny )
 
       use MainArrays
+      
+      implicit none
 
 !   Passed variables
       logical Quit
@@ -493,6 +490,8 @@
 !----------------------------------------------------------------------
 
       SUBROUTINE SPCCTR(i,im,pi2,c)
+      
+      implicit none
 
         integer i,im,ip
         real wt,thet,zz,rds,tct,xct,yct,twg,zws
@@ -518,6 +517,8 @@
 !----------------------------------------------------------------------
 
       SUBROUTINE LOCGEOM(stry,sigx,sigy,slt,xc,yc,yzx,yzy,xx,yy,thz) !,rho)
+      
+      implicit none
 
 !      real stry,sigx,sigy,xx,yy,thz,rho,dstry,dxs,dys,str,x2,y2,th2
       real stry,sigx,sigy,xx,yy,thz,dstry,dxs,dys,str,x2,y2,th2

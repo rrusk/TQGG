@@ -92,7 +92,7 @@ void promptcancel_cb(Widget, XtPointer, XtPointer);
 void CreateDialogs( Widget );
 void CreateDrawTools( Widget );
 //void redraw();
-void setUsePixmap();
+void setUsePixmap(int);
 
 //int   WPigGetOpenFileName(char *prompt, char *name, char *tmpl, const int dummy_len1, const int dummy_len2, const int dummy_len3);
 

@@ -23,7 +23,7 @@
   !    USA, or see <http://www.gnu.org/licenses/>.
   !***********************************************************************
 
-  !***********************************************************************
+! *************************************************************************
 
       Subroutine SAMPLE(quit)
 
@@ -135,14 +135,11 @@
         call PigMessageOK('Cannot sample from ngh file ','Sample')
         quit = .true.
       elseif(firstline(1:4).eq."#NOD") then  !nod point file
-        rewind nunit
+        call PigMessageOK('Read nod file then use resample ','Sample')
         Quit = .true.
-        call ReadNodeFile ( Quit )
-      elseif(firstline(1:4).eq."#XYE") then  !xyz and element grid file, new format
-        call PigMessageOK('Cannot sample from xye file ','Sample')
+      elseif(firstline(1:4).eq."#GRD") then  !xyz and element grid file, new format
+        call PigMessageOK('Cannot sample from grd file ','Sample')
         quit = .true.
-      elseif(firstline(1:4).eq."#XYZ") then  !xyz  file, new format
-        call ReadXYZData (Quit)
       else  !then just parse the file for coordinates
 
 !       Get igridtype from user
@@ -310,111 +307,3 @@
       end subroutine
 
 ! ********************************************************************
-
-      subroutine Set_Resolution ()  !NOT USED
-
-      implicit none
-
-!     - passed variables
-!      integer :: index
-!      logical quit
-
-!     - local variables
-      integer,save :: nscale = 0, nscalepoint(100)
-      integer :: stat
-      real, save :: ds, dsscale(100)
-!      character PigCursYesNo*1
-      CHARACTER*80 cstr, retstring
-
-! *** initialize
-      nscale = 0
-      nscalepoint = 0
-      dsscale = 0.
-
-      cstr= 'Enter minimum spacing for grid:'
-      call PigPrompt( cstr, RetString )
-      read(RetString,*,iostat=stat) ds
-      if(stat.ne.0) then
-        call PigMessageOK('Error reading real number:','Sample')
-      else
-! *** store data point and spacing
-        nscale = nscale + 1
-        dsscale(nscale) = ds
-      endif
-
-! *** interpolate and quit
-      call Sample_Boundary (nscale,nscalepoint,dsscale)
-!      quit = .true.
-      
-      end subroutine
-
-! ********************************************************************
-
-      subroutine Sample_Boundary (nscale,nscalepoint,dsscale)  !NOT USED
-
-      use MainArrays
-
-      implicit none
-
-      integer,intent(in) :: nscale, nscalepoint(100)
-      real, intent(in) :: dsscale(100)
-
-!     - local variables
-      integer j, k, icount, isave
-      real ds, ds2
-      real x0, y0, dx, dy, dl2
-
-! *** start
-      ds = dsscale(nscale)
-      k = nscalepoint(nscale) !dummy to kill warning
-      ds2 = ds*ds
-      x0 = dxray(1)
-      y0 = dyray(1)
-      icount = 0
-      isave = 1
-!   outer boundary
-      do j= 2,PtsThisBnd(1)
-!        icount = icount + 1
-        dx = x0 - dxray(j)
-        dy = y0 - dyray(j)
-        dl2 = dx*dx + dy*dy
-        if(dl2.ge.ds2) then !save it
-          isave = isave + 1
-          x0 = dxray(j)
-          y0 = dyray(j)
-          dxray(isave) = x0
-          dyray(isave) = y0
-        endif
-      enddo
-      icount = PtsThisBnd(1)+1
-      PtsThisBnd(1) = isave
-!   loop over other boundaries
-      do k = 2,TotBndys
-        x0 = dxray(icount)
-        y0 = dyray(icount)
-        isave = isave + 1
-        dxray(isave) = x0
-        dyray(isave) = y0
-        do j= 2,PtsThisBnd(k)
-          icount = icount + 1
-          dx = x0 - dxray(icount)
-          dy = y0 - dyray(icount)
-          dl2 = dx*dx + dy*dy
-          if(dl2.ge.ds2) then !save it
-            isave = isave + 1
-            x0 = dxray(icount)
-            y0 = dyray(icount)
-            dxray(isave) = x0
-            dyray(isave) = y0
-          endif
-        enddo
-        PtsThisBnd(k) = isave - PtsThisBnd(k-1)
-        icount = icount + 1
-      enddo
-      TotCoords = isave
-      itot = isave
-      
-      end subroutine
-
-! ********************************************************************
-! *********************************************************************

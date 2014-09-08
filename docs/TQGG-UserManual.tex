@@ -7,7 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb,amsfonts,textcomp}
 \usepackage{array}
-\usepackage{supertabular}
+%\usepackage{supertabular}
 \usepackage{hhline}
 \usepackage{graphicx}
 \usepackage{listings}
@@ -98,7 +98,7 @@ Print \\ Quit\\
 These menu items are described next.
 
 \subsubsection[Menu item OpenGrid]{Menu item OpenGrid}
-This option allows for reading a new grid file in NEIGH format (see Section \ref{sec:formats}). Any existing data is replaced.
+This option allows for reading a new grid file in NGH or GRD format (see Section \ref{sec:formats}). Any existing data is replaced.
 
 \subsubsection[Menu item AddGrid]{Menu item AddGrid}
 This option allows for reading a new grid file in NEIGH format (see Section \ref{sec:formats}). This grid is merged with any existing data so that this action is used to join grids together. Along the edge of the grids that are merged, the boundary node codes are changed to 90, which make this a line that is fixed in space. After merging files, use the \textbf{\{Info\}NodeCheck} to examine the codes at the ends of the lines where the grids are joined. In many cases, the codes at these points need to be changed to 1, 5, or 6, depending on the type of boundary (land, open, or junction of land and open).
@@ -114,7 +114,7 @@ This option allows for reading a new node file in NODE format (see Section \ref{
 This option permits reading a NODE format file and sub-sampling the boundaries and interior nodes by index or by distance. If there are no nodes in existence prior to choosing this option, a NODE format file can be sub-sampled. Otherwise, the nodes are added to the existing nodes. If the prompt option is ON, the user is prompted before any set of nodes is added. This is useful for selectively adding boundaries or interior nodes. [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
 
 \subsubsection[Menu item Sample]{Menu item Sample}
-This menu item is used to sample .xys and .xye files into TQGG. The workspace will be cleared prior to sampling the files.
+This menu item is used to sample *.xyz files into TQGG. The workspace will be cleared prior to sampling the files.
 The user will be prompted to input a gridtype and minimum subsample spacing. The subsample spacing is defined in meters and will subsample the boundaries by only including new nodes that are farther away from the previous one than the minimum spacing.
 
 \subsubsection[Menu item CrossSection]{Menu item XSection}
@@ -350,7 +350,7 @@ After the needed check and options are selected, the check can be run by pressin
 \subsubsection{Menu item BoundaryCheck}
 Selection of this option will perform boundary checks on the boundary. The check is intended to be run prior to doing a triangualtion to make sure that the grid is defined correctly.The following checks will be performed:
 \begin{description}
-\item[Boundary Orientation] All boundaries orientation are checked. Clockwise boundaries are then displayed in \emph{red}, while counter-clockwise boundaries are display in \emp{green}
+\item[Boundary Orientation] All boundaries orientation are checked. Clockwise boundaries are then displayed in \emph{red}, while counter-clockwise boundaries are display in \emph{green}
 \item[Outer Boundary Location] The outer boundary is found and if this is not the first boundary in the data-arrays, the user will be prompted to move it.
 \item[Outer Boundary Orientation] The outer boundarys orientation should be CCW. If it is CW, the user is prompted to reverse it.
 \item[Island Boundary Orientation] All other boundaries than the outer boundary should be defined CW. If any are CCW, the user will be prompted to reverse them.
@@ -839,7 +839,7 @@ In general, the first line of the main files is a description of the file conten
 on the line define the file type (see below). The program will attempt to select the correct file format
 by reading the file type at the beginning of the file, or by parsing the file to find the correct variables.
 
-There are 2 broad categories of files: Grid files that contain nodal and connection information (*.NGH and *.XYE)
+There are 2 broad categories of files: Grid files that contain nodal and connection information (*.NGH and *.GRD)
 , and Node files that contain only nodal information (*.NOD and *.XYZ). 
 
 \newpage
@@ -934,7 +934,10 @@ NBR(J,ID) contains the index of the Jth neighbour of the IDth node.
 \subsection[Node (NOD) format]{Node (NOD) format}
 
 \subsubsection[Description]{Description}
-\textbf{Data Layout:}\newline
+
+\textbf{Data layout}: \\ 
+
+\noindent
 FTYPE \ \ \ \ \ \  {}- (string, free format) \newline
 x0off, y0off, scaleX, scaleY, igridtype\ \ \ \ \ (5 reals, free format)\newline
 NP \ \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
@@ -947,10 +950,10 @@ X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
 :\newline
 NPI \ \ \ \ \ \ \ \ \ \ \ {}- (integer, free format)\newline
 X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
-:\newline
- \ \ \ \newline
-\textbf{Definitions} :\newline
- \ \newline
+
+\noindent\textbf{Definitions}:\\ 
+
+\noindent
 FTYPE - an indicator of the file type.  For node files it is <\#NOD> \newline
 x0off, y0off - the grid offset in the x and y dimensions \newline
 scaleX, scaleY - scaling of the grid in the x and y dimensions \newline
@@ -1013,12 +1016,16 @@ to determine the correct format to read.
 
 \subsubsection[Description]{Description}
 
-\bigskip
+\textbf{Data layout}: \\ 
 
-Data Layout :\newline
+\noindent
 VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (3 integers, free format)\newline
 \ \ Data Layout with element codes:\newline
-VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
+VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format) \\
+
+\noindent\textbf{Definitions}:\\ 
+
+\noindent
 
 \subsubsection{Example of data file in ELEMENT format}
 \begin{small}
@@ -1046,11 +1053,8 @@ VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
      1    48    41   0    1
      2     3    26   0    1
      2    26    29   0    1
-     2    29    48   0    1
-     3     4    38   0    1
      .     .     .   .    .
      .     .     .   .    .
-    32    43    37   0    1
     32    37    36   0    2
     34    45    35   0    2
     34    35    46   0    1
@@ -1058,34 +1062,43 @@ VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
 \end{small}
 
 \newpage
-\subsection[Grid (XYE) format]{Grid (XYE) format}
+\subsection[Grid (GRD) format]{Grid (GRD) format}
 \subsubsection[Description]{Description}
 
-\textbf{Data layout}:\newline 
-NP,NE \ \ \ \ \ \ \ \ \ \ \ \ {}- (2 integer, free format)\newline
-X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
-VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (3 integers, free format)\newline
-\ \ or data Layout with element codes:\newline
-VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
+\textbf{Data layout}: \\ 
 
-\subsubsection{Example of data file in XYE format}
+\noindent
+FTYPE \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (string, free format) \newline
+NP,NE \ \ \ \ \ \ \ \ \ \ \ \ {}- (2 integer, free format)\newline
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (NP lines, 3 reals, free format)\newline
+\ \ or data Layout with node codes:\newline
+X,Y,Z,Code \ \ \ \ \ \ \ \ \ {}- (NP lines, 3 reals, 1 integer, free format)\newline
+VERTEX 1, VERTEX 2, VERTEX 3 \ \ {}- (NE lines, 3 integers, free format)\newline
+\ \ or data Layout with element codes:\newline
+VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (NE lines, 5 integers,free format) \\
+
+\noindent\textbf{Definitions}:\\ 
+
+\noindent
+FTYPE - an indicator of the file type.  For grid files it is <\#GRD> \newline
+NP - number of points (nodes) in the grid.\newline
+NE - number of elements in the grid.\newline
+X,Y,Z - coordinates for bottom topography, \\
+Code - node code for boundary conditions and other purposes. \\
+VERTEX 1 to VERTEX4 - node index for element vertices. \\
+TCode - element code for assigning friction type.  \\
+
+\subsubsection{Example of data file in GRD format}
 
 \begin{small}
 \begin{lstlisting}
-#XYE
+#GRD
          477   795
     1.5700001E+00  1.3470000E+01     0.0000000E+00   1  
     1.4299999E+00  1.3180000E+01     0.0000000E+00   1  
     1.4800000E+00  1.2880000E+01     0.0000000E+00   1  
-    1.5300000E+00  1.2580000E+01     0.0000000E+00   1  
-    1.4800000E+00  1.2280000E+01     0.0000000E+00   1  
-    1.2700000E+00  1.2020000E+01     0.0000000E+00   1  
-    1.0900000E+00  1.1750000E+01     0.0000000E+00   1  
           .              .                 .         .
           .              .                 .         .
-    2.6099999E+00  1.1900000E+01     3.0000000E+01   0  
-    2.6099999E+00  1.2300000E+01     3.0000000E+01   0  
-    2.6600001E+00  1.2700000E+01     3.0000000E+01   0  
     5.3130002E+00  1.1940000E+00     1.5000000E+01   0  
     5.5460000E+00  7.5000000E-01     1.5000000E+01   0  
        1       2     204       0   1
@@ -1095,9 +1108,6 @@ VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
        3     203     204       0   1
        .      .       .        .   .
        .      .       .        .   .
-     466     467     468       0   1
-     466     468     472       0   1
-     468     469     471       0   1
      468     471     472       0   1
      469     470     471       0   1
 \end{lstlisting}
@@ -1107,10 +1117,23 @@ VERTEX 1, VERTEX 2, VERTEX 3, VERTEX 4, TCODE - (5 integers,free format)
 \subsection[Node (XYZ) format]{Node (XYZ) format}
 \subsubsection[Description]{Description}
 
-\textbf{Data layout}:\newline
-X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+\textbf{Data layout}: \\ 
 
-\subsubsection{Example of data file in XYE format}
+\noindent
+X,Y \ \ \ \ \ \ \ \ \ {}- (2 reals, free format)\newline
+or with full coordinates \\
+X,Y,Z \ \ \ \ \ \ \ \ \ {}- (3 reals, free format)\newline
+or multi-segement with segment number \\
+X,Y,Z,S \ \ \ \ \ \ \ \ \ {}- (3 reals, 1 integer, free format)\newline
+
+\noindent\textbf{Definitions}:\\ 
+
+\noindent
+X,Y,Z - coordinates for bottom topography, \\
+S - segment number such that all segments where S is the same are joined together. \\
+
+
+\subsubsection{Example of data file in XYZ format}
 
 \begin{small}
 \begin{lstlisting}

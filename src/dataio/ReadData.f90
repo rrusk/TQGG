@@ -350,7 +350,7 @@
       read(nunit,*,IOSTAT=istat) numrec, numele
       linenum = 2
       if(istat.ne.0) then
-        call StatusError(istat,linenum,'Read_XYE' )
+        call StatusError(istat,linenum,'Read_GRD' )
         Quit = .TRUE.
         return
       endif
@@ -358,24 +358,54 @@
       write(message,'(a,i6,a,i8,a)') 'Reading Grd File with ',NUMREC,' nodes, ',numele,' elements'
       call PigPutMessage(message)
 
-      do i=1,numrec
-        read(nunit,*,IOSTAT=istat) dxray(i),dyray(i),depth(i),code(i)
-        linenum=linenum+1
-        if(istat.ne.0) then
-          call StatusError(istat,linenum,'Read_XYE' )
-          Quit = .TRUE.
-          return
-        endif
-      enddo
- 
-      itot = numrec
-      igridtype = -9999
-
-!  parse first line to find format      
+!  parse first line to find format for nodal data      
       READ(nunit,'(a)',IOSTAT=istat ) Firstline
       linenum=linenum+1
       if(istat.ne.0) then
-        call StatusError(istat,linenum,'Read_XYE' )
+        call StatusError(istat,linenum,'Read_GRD' )
+        Quit = .TRUE.
+        return
+      endif
+
+      read(Firstline,*,IOSTAT=istat) dxray(1),dyray(1),depth(1),code(1) 
+      if(istat.eq.0) then
+        do i=2,numrec
+          read(nunit,*,IOSTAT=istat) dxray(i),dyray(i),depth(i),code(i)
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'Read_GRD' )
+            Quit = .TRUE.
+            return
+          endif
+        enddo
+      else
+        read(Firstline,*,IOSTAT=istat)  dxray(1),dyray(1),depth(1)
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'Read_GRD' )
+          Quit = .TRUE.
+          return
+        endif
+        code(1) = 0
+        do i=2,numrec
+          read(nunit,*,IOSTAT=istat) dxray(i),dyray(i),depth(i)
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'Read_GRD' )
+            Quit = .TRUE.
+            return
+          endif
+          code(i) = 0
+        enddo
+      endif
+
+      itot = numrec
+      igridtype = -9999
+
+!  parse first line to find format for element list      
+      READ(nunit,'(a)',IOSTAT=istat ) Firstline
+      linenum=linenum+1
+      if(istat.ne.0) then
+        call StatusError(istat,linenum,'Read_GRD' )
         Quit = .TRUE.
         return
       endif
@@ -386,7 +416,7 @@
           read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,4),TCode(i)
           linenum=linenum+1
           if(istat.ne.0) then
-            call StatusError(istat,linenum,'Read_XYE' )
+            call StatusError(istat,linenum,'Read_GRD' )
             Quit = .TRUE.
             return
           endif
@@ -394,20 +424,22 @@
       else
         read(Firstline,*,IOSTAT=istat)  (ListTr(j,1),j=1,3)
         if(istat.ne.0) then
-          call StatusError(istat,linenum,'Read_XYE' )
+          call StatusError(istat,linenum,'Read_GRD' )
           Quit = .TRUE.
           return
         endif
         ListTr(4,1) = 0
         TCode(1) = 1
-        do i=1,numele
+        do i=2,numele
           read(8,*,IOSTAT=istat) (ListTr(j,i),j=1,3)
           linenum=linenum+1
           if(istat.ne.0) then
-            call StatusError(istat,linenum,'Read_XYE' )
+            call StatusError(istat,linenum,'Read_GRD' )
             Quit = .TRUE.
             return
           endif
+          ListTr(4,i) = 0
+          TCode(i) = 1
         enddo
       endif
 

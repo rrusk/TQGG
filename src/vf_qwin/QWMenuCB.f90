@@ -745,7 +745,7 @@
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
 
             call CoincidentNodes(TotCoords,totbndys,PtsThisBnd, &
-                                  dxray,dyray,depth,code,range,dispnodes)
+                                  dxray,dyray,depth,code,range,dispnodes,igridtype)
 ! *** redraw here
             itot = Totcoords
             call DrwFig(.false.)
@@ -1175,8 +1175,8 @@
 
             call ListInPoly2(numvert,vertx1,verty1,mrec,itot,dxray,dyray,polylist)
       
-            call PolyResampleNodes(polylist,TotCoords,Totbndys,&
-                             TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
+            call PolyResampleNodes(polylist) ! ,TotCoords,Totbndys,&
+                             !TotIntpts,PtsThisBnd,dxray,dyray,depth,code,igridtype)
             itot = Totcoords
           endif
           return

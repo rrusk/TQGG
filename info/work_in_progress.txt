@@ -15,16 +15,17 @@
                or marker. Close on bottom.  (COMPLETED, JAN 26)
 
   /info/nodecheck - Multiple radio buttons for the various tests. Some require
-               string input. OK and Close on bottom. OK initiates tests.
+               string input. OK and Close on bottom. OK initiates tests.  (COMPLETED)
                
   /info/nodeinfo - Multiple text areas that display info and can be changed.
-                Close on bottom.
+                Close on bottom.(COMPLETED)
                
   /info/elementinfo - Multiple text areas that display info and can be changed.
-                Button on bottom to input coordinates. Close button.
+                Button on bottom to input coordinates. Close button.(COMPLETED)
 
   /config/contour - Set up color table and contour levels. Add and Sutract on 
-                bottom. OK and Close on bottom.
+                bottom. OK and Close on bottom. (Partial fix by using prompts
+                for input data)
   
   /config/data - Buttons to turn on contour or boundary data plots. File
                 selection for each.

@@ -123,7 +123,7 @@
       CHARACTER*256 ans
       integer nunit,j,k,kk,nb,istat,fnlen
       character PigCursYesNo*1, ans1*1
-      LOGICAL ListTri,ListCri
+!      LOGICAL ListTri,ListCri
       logical PigOpenFileCD, ResOK
 
       !change = .true.
@@ -131,7 +131,7 @@
       ans = ' '
       nunit = 9
       ResOK = PigOpenFileCD(nunit,'Save Grid File', ans,                &
-     &    'Neighbour File (*.[n][gc]*),*.ngh;All Files (*.*),*.*;')
+     &    'Neighbour File (*.[ng][gcr]*),*.ngh;All Files (*.*),*.*;')
 
       if(.not.resOK) then
         quit = .true.
@@ -169,6 +169,8 @@
       write(*,*) ans(fnlen-2:fnlen)
 !      istat = index( ans, '.nc' )
       if(ans(fnlen-2:fnlen).eq.'.nc') then !netCDF file
+        write(*,*) fnlen-2,fnlen
+        write(*,*) ans(fnlen-2:fnlen)
         if(change) then
           call RemoveNotExist(itot,code,nbtot,nl)
           call Element_Lister(CHANGE, .FALSE. , &
@@ -177,9 +179,27 @@
           change = .false.
         endif
         close(nunit,status='keep')
+#ifdef CNCD
         call WritenetCDFData(ans,Quit)
-      else
-
+#else
+        call PigMessageOK('Recompile with netCDF option','ReadnCDF')
+#endif
+      elseif(ans(fnlen-3:fnlen).eq.'.grd') then !grd file, nodes+elements
+        write(*,*) fnlen-3,fnlen
+        write(*,*) ans(fnlen-3:fnlen)
+        if(change) then
+          call RemoveNotExist(itot,code,nbtot,nl)
+          call Element_Lister(CHANGE, .FALSE. , &
+             itot,nbtot,dxray,dyray,depth,nl,TotTr,ListTr,Tcode, &
+             x0off,y0off,scaleX,scaleY,igridtype)
+          change = .false.
+        endif
+        call writeGRDfile (nunit, nindex)
+        close( nunit )
+        call PigPutMessage('Done')
+      else ! ngh file
+        write(*,*) fnlen-3,fnlen
+        write(*,*) ans(fnlen-3:fnlen)
         call write_ngh_file (nunit, nindex)
         close( nunit )
         call PigPutMessage('Done')
@@ -201,8 +221,8 @@
             ResOK = PigOpenFileCD(nunit,'Save Element File', ans,           &
      &        'Element File(*.el*), *.el*; All Files(*.*),*.*;' )
             if(ResOK) then
-              ListCri = .false.
-              ListTri = .true.
+!              ListCri = .false.
+!              ListTri = .true.
               call Tr_Dump(nunit,nindex)
               close(nunit)
             endif
@@ -292,7 +312,62 @@
 111   FORMAT(I8,3(1X,1PE14.7),1X,I4)
 
       end   
+
 !*--------------------------------------------------------------------------*
+
+      subroutine writeGRDfile(iunit,nindex)
+
+      use MainArrays
+      
+      implicit none
+            
+! *** passed variables
+      integer iunit
+
+! *** local variables
+      integer j,count
+      integer nindex(0:itot)
+!      LOGICAL ListTri,ListCri
+
+! *** set up index array for deleted nodes
+
+      count = 0
+      do j=1,itot
+        if(code(j).lt.0) then
+          nindex(j) = 0
+        else
+          count = count+1
+          nindex(j) = count
+        endif
+      enddo
+
+      write(*,*) ' Writing grd file....'
+
+      write(iunit,'(a)') "#GRD"
+      if(igridtype.eq.1) then
+        write(iunit, 102 ) x0off, y0off, scaleX, scaleY, igridtype, UTMzone(1:3)
+      else
+        write(iunit, 101 ) x0off, y0off, scaleX, scaleY, igridtype
+      endif
+      write(iunit,*) count, TotTr
+      
+      do j=1,itot
+        if(nindex(j).gt.0) then
+          write(iunit,112) dxray(j),dyray(j),depth(j),code(j)
+        endif
+      enddo
+     
+!      ListCri = .false.
+!      ListTri = .true.
+      call Tr_Dump(iunit,nindex)
+
+101   FORMAT(4(1X,1PE18.10),1X,I3)
+102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
+112   FORMAT(3(1X,1PE14.7),1X,I3)
+
+      end   
+      
+ !*--------------------------------------------------------------------------*
 
       subroutine write_ngh_file(iunit,nindex)
 
@@ -339,7 +414,11 @@
       write(*,*) ' Writing ngh file....'
 
       write(iunit,'(a)') "#NGH"
-      write(iunit, 101 ) x0off, y0off, scaleX, scaleY, igridtype
+      if(igridtype.eq.1) then
+        write(iunit, 102 ) x0off, y0off, scaleX, scaleY, igridtype, UTMzone(1:3)
+      else
+        write(iunit, 101 ) x0off, y0off, scaleX, scaleY, igridtype
+      endif
       write(iunit,*) count
       write(iunit,*) newnbtot
       
@@ -362,6 +441,7 @@
       enddo
      
 101   FORMAT(4(1X,1PE18.10),1X,I3)
+102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
 111   FORMAT(I7,2(1X,1PE14.7),1X,I3,1X,1PE14.7,25(1x,I7))
 
       return
@@ -518,7 +598,11 @@
       starti = 1
 
       write(funit,'(a4)') '#NOD'
-      write(funit,'(4(1X,F13.5),1x,I4)') x0off,y0off,scaleX,scaleY,igridtype
+      if(igridtype.eq.1) then
+        write(funit,102 ) x0off,y0off,scaleX,scaleY,igridtype,UTMzone(1:3)
+      else
+        write(funit,101) x0off,y0off,scaleX,scaleY,igridtype
+      endif
 
 !         - write the total number of nodes
       WRITE( funit, *, err = 99, iostat=IOvalue) TotCoords
@@ -570,6 +654,8 @@
 999     CONTINUE
     call PigEraseMessage
 
+101   FORMAT(4(1X,1PE18.10),1X,I3)
+102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
 910   format ( 2(1X, F13.5), 1X, F9.2 )
 
       end subroutine

@@ -351,18 +351,36 @@
         return
       endif
 
-      status=nf90_put_att(ncid,XVarId,"long_name",'Cartesian_coordinate_x')
-      if(status /= nf90_noerr) then
-        call handle_nf_err(status)
-        err = .true.
-        return
+      if(iXYcoord.eq.1) then
+        status=nf90_put_att(ncid,XVarId,"long_name",'UTM_coordinate_x_easting')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
+      else
+        status=nf90_put_att(ncid,XVarId,"long_name",'Cartesian_coordinate_x')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
       endif
 
-      status=nf90_put_att(ncid,XVarId,"units","m")
-      if(status /= nf90_noerr) then
-        call handle_nf_err(status)
-        err = .true.
-        return
+      if(iXYcoord.eq.3) then
+        status=nf90_put_att(ncid,XVarId,"units","undefined")
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
+      else
+        status=nf90_put_att(ncid,XVarId,"units","m")
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
       endif
 
       status=nf90_put_att(ncid,XVarId,'positive','right')
@@ -388,18 +406,36 @@
         return
       endif
 
-      status=nf90_put_att(ncid,YVarId,"long_name",'Cartesian_coordinate_y')
-      if(status /= nf90_noerr) then
-        call handle_nf_err(status)
-        err = .true.
-        return
+      if(iXYcoord.eq.1) then
+        status=nf90_put_att(ncid,YVarId,"long_name",'UTM_coordinate_y_northing')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
+      else
+        status=nf90_put_att(ncid,YVarId,"long_name",'Cartesian_coordinate_y')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
       endif
 
-      status=nf90_put_att(ncid,YVarId,"units",'m')
-      if(status /= nf90_noerr) then
-        call handle_nf_err(status)
-        err = .true.
-        return
+      if(iXYcoord.eq.3) then
+        status=nf90_put_att(ncid,YVarId,"units","undefined")
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
+      else
+        status=nf90_put_att(ncid,YVarId,"units",'m')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
       endif
 
       status=nf90_put_att(ncid,YVarId,'positive','90_degrees_counterclockwise_from_x')
@@ -930,7 +966,7 @@
 
 ! Local variables
     integer         :: status
-    character(len=80) value
+    character(len=80) value,value2
 
     err = .false.
 
@@ -971,8 +1007,26 @@
 
     if(value(1:4).eq.'long') then
       ixy = 0
-    elseif(value(1:4).eq.'x_coo') then
-      ixy = 1
+    elseif(value(1:4).eq.'x_co') then
+      status= nf90_get_att(ncid,XVarId,'long_name',value)
+      if(status /= nf90_noerr) then
+        call handle_nf_err(status)
+        err = .true.
+        return
+      endif
+      status= nf90_get_att(ncid,XVarId,'units',value2)
+      if(status /= nf90_noerr) then
+        call handle_nf_err(status)
+        err = .true.
+        return
+      endif
+      if(value(1:3).eq.'UTM') then
+        ixy = 1
+      elseif(value2(1:1).eq.'m') then
+        ixy = 2
+      else
+        ixy = 3
+      endif
     endif
 
     status=nf90_inq_varid(ncid,'node_y',YVarId)

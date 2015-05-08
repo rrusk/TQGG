@@ -24,7 +24,7 @@ TQGG:
 		src/PigInterface/*.f90 \
 		src/gridedit/*.f src/gridedit/*.f90 \
 		src/dataio/*.f src/dataio/*.f90 \
-		src/netcdf/nullReadWriteCDF.f90 \
+		src/dataio/*.F90 \
 		src/XMotif/*.f90
 	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
 		src/XMotif/XmMain.h src/XMotif/XmMain.c \
@@ -33,13 +33,14 @@ TQGG:
 	$(FC) *.o -o bin/TQGG $(LIBS)
 
 TQGGnc:
-	$(FC) $(F_FLAGS) -c -I/usr/include/netcdff \
+	$(FC) $(F_FLAGS) -c -DCNCD -I/usr/local/include \
 		src/dataio/MainArrays.f90 \
 		src/gridgen/*.f90 \
 		src/plotsubs/*.f90 \
 		src/PigInterface/*.f90 \
 		src/gridedit/*.f src/gridedit/*.f90 \
 		src/dataio/*.f src/dataio/*.f90 \
+		src/dataio/*.f src/dataio/*.F90 \
 		src/netcdf/UGrid_io_netCDF.f90 \
 		src/netcdf/ReadWriteCDF.f90 \
 		src/XMotif/*.f90

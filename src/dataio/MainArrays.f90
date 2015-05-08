@@ -83,7 +83,8 @@
 !-----------------------------------------------------------------------*
       real*8 x0off, y0off, scaleX, scaleY
       real xlong0, xlongsum, xlongmin, xlongmax
-      integer igridtype,izup
+      integer :: igridtype,izup,iUTMzone=0
+      character(3) :: UTMzone='   '
 !      common /polarxf/ x0off,y0off,xlong0,xlongsum,xlongmin,xlongmax,       &
 !     &                  scaleX, scaleY,igridtype
 

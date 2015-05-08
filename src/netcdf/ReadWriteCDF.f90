@@ -23,6 +23,7 @@
       write(*,*) ' np,ne,ncn=',np,ne,ncn
       itot = np
       TotTr = ne
+      UTMzone = 'nul'
       if(ncn.eq.4) then
         call Read_Grid_netCDF ( np,ne,ncn,dxray,dyray,depth,code,Tcode,ListTr,&
                                 iXYcoord,iZcoord,quit )
@@ -128,8 +129,12 @@
           ListTr(4,j) = nindex(ListTr(4,j))
         endif
       enddo
-      ixy = 1
-      iz = 0
+      ixy = igridtype
+      if(scaleY.lt.0.) then
+        iz = 0
+      else
+        iz = 1
+      endif
       call Create_Grid_netCDF (np,ne,ncn,iXY,iZ,fname,err)
       if(err) then
         quit = .true.

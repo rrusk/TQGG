@@ -80,7 +80,14 @@
 !          istat = index( fle, '.nc' )
           if(fle(fnlen-2:fnlen).eq.'.nc') then !netCDF file
             close(nunit,status='keep')
+#ifdef CNCD
             call ReadnetCDFData(fle,Quit)
+#else
+            call PigMessageOK('Recompile with netCDF option','ReadnCDF')
+            Quit = .TRUE.
+            GridRName =  'NONE'
+            return
+#endif
           else
 !            open(nunit,file=fle,status='old')
             READ(nunit,'(a)',IOSTAT=istat) Firstline
@@ -122,7 +129,135 @@
       endif
 
       close( nunit )
+      
+      if(.not.Quit) call VerifyGridType(Quit)
 
+      END
+
+! --------------------------------------------------------------------------*
+
+      SUBROUTINE VerifyGridType (Quit)
+   
+! Purpose : Verify igridtype for backward compatibility with old file formats.
+
+      use MainArrays
+
+      implicit none
+
+      INCLUDE '../includes/defaults.inc'
+      
+      integer ierr
+      logical Quit
+      character(80) :: cstr, ans
+      character(256),save :: cstrgrid 
+      
+      quit = .false.
+      cstrgrid = 'Enter grid type:'//newline//&
+                   ' 0 = latitude/longitude (degrees)'//newline//&
+                   ' 1 = UTM coordinates (meters)'//newline//&
+                   ' 2 = Cartesian coordinates (meters)'//newline//&
+                   ' 3 = unspecified units'//newline//char(0)
+      
+      if(igridtype.eq.-9999) then !ask for grid type
+        UTMzone = 'nul'
+        do
+          call PigPrompt(cstrgrid, ans )
+          if(ans(1:1).eq.char(0)) then !cancel
+            Quit = .TRUE.
+            exit
+          endif                 
+          READ( ans, *, iostat=ierr ) igridtype
+          if(ierr.eq.0) then
+            if(igridtype.eq.1) then  !get UTM zone
+              iUTMzone = 0
+              call VerifyUTMzone(ierr, Quit)
+              exit
+            elseif(igridtype.ge.0.and.igridtype.le.3) then
+              exit
+            endif
+          endif
+        enddo
+      else  !verify grid type
+        write(cstr,'(I2)') igridtype
+        call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+        if(ans(1:1).eq.'N') then
+          UTMzone = 'nul'
+          do
+            call PigPrompt(cstrgrid, ans )
+            if(ans(1:1).eq.char(0)) then !cancel
+              Quit = .TRUE.
+              exit
+            endif                 
+            READ( ans, *, iostat=ierr ) igridtype
+            if(ierr.eq.0) then
+              if(igridtype.eq.1) then  !get UTM zone
+                iUTMzone = 0
+                call VerifyUTMzone(ierr, Quit)
+                exit
+              elseif(igridtype.ge.0.and.igridtype.le.3) then
+                exit
+              endif
+            endif
+          enddo
+        elseif(igridtype.eq.1) then !verify UTM zone
+          read(UTMzone(1:2),*,iostat=ierr ) iUTMzone
+          call VerifyUTMzone(ierr, Quit)
+        endif
+      endif
+
+      END
+
+! --------------------------------------------------------------------------*
+
+      SUBROUTINE VerifyUTMzone(istat,Quit)
+   
+! Purpose : To determine UTM zone for igridtype=1
+
+      use MainArrays
+
+      implicit none
+      
+      INCLUDE '../includes/defaults.inc'
+      
+      integer :: j,istat
+      character(80) message,ans
+      LOGICAL Quit
+      
+      Quit = .false.
+      do
+        If(istat.ne.0.or.iUTMzone.lt.1.or.iUTMzone.gt.60.or.&
+                         iachar(UTMzone(3:3)).eq.iachar('I').or.&
+                         iachar(UTMzone(3:3)).eq.iachar('O').or.&
+                         iachar(UTMzone(3:3)).lt.iachar('C').or.&
+                         iachar(UTMzone(3:3)).gt.iachar('X')) then !bad zone id
+          !ask for zone
+          write(message,'(a)') 'Invalid UTM zone: '//UTMzone(1:3)//newline//&
+                             'Enter UTM zone: 1C to 60X'
+          call PigPrompt(message,ans )
+          if(ans(1:1).eq.char(0)) then !cancel
+            Quit = .TRUE.
+            return
+          endif                 
+          UTMzone(1:3) = ans(1:3)
+          j = len_trim(UTMzone)
+          !write(message,'(a)') 'UTM zone: '//UTMzone(1:3)
+          !call PigMessageOK(message,'ReadGrid' )
+          if(j.eq.2) then
+            UTMzone(3:3) = UTMzone(2:2)
+            UTMzone(2:2) = UTMzone(1:1)
+            UTMzone(1:1) = ' '
+          endif
+          read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
+!          If(istat.ne.0) iUTMzone = 0
+          !write(message,'(a)') 'UTM zone: '//UTMzone(1:3)
+          !call PigMessageOK(message,'ReadGrid' )
+!          istat = 0
+        else
+          exit
+        endif
+      enddo
+
+      RETURN
       END
 
 ! --------------------------------------------------------------------------*
@@ -196,6 +331,13 @@
               call PigMessageOK(message,'ReadGrid' )
               Quit = .TRUE.
               return
+            endif
+            if(igridtype.eq.1) then ! UTM coordinates, get zone id
+              j = len_trim(firstline)
+              READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
+              if(istat.eq.0) read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
+              call VerifyUTMzone(istat,Quit)
+              if(Quit) return 
             endif
             exit
           endif
@@ -345,10 +487,38 @@
 !------------------BEGIN-------------------------------
 
       QUIT = .FALSE.
+
+      linenum=1
+      do              !remove comment lines
+        READ(nunit,'(a)', IOSTAT=istat) Firstline
+        linenum=linenum+1
+        if(istat.ne.0) then
+          call StatusError(istat,linenum,'Read_GRD' )
+          Quit = .TRUE.
+          return
+        endif
+        if(firstline(1:1).ne."#") then
+          READ( firstline, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY, igridtype
+          if(istat.ne.0) then
+            write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+            call PigMessageOK(message,'Read_GRD' )
+            Quit = .TRUE.
+            return
+          endif
+          if(igridtype.eq.1) then ! UTM coordinates, get zone id
+            j = len_trim(firstline)
+            READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
+            if(istat.eq.0) read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
+            call VerifyUTMzone(istat,Quit)
+            if(Quit) return 
+          endif
+          exit
+        endif
+      enddo
       
 ! - read max number of nodes and elements in this grid
       read(nunit,*,IOSTAT=istat) numrec, numele
-      linenum = 2
+!      linenum = 2
       if(istat.ne.0) then
         call StatusError(istat,linenum,'Read_GRD' )
         Quit = .TRUE.
@@ -399,7 +569,7 @@
       endif
 
       itot = numrec
-      igridtype = -9999
+!      igridtype = -9999
 
 !  parse first line to find format for element list      
       READ(nunit,'(a)',IOSTAT=istat ) Firstline
@@ -798,7 +968,10 @@
         DispNodes = .true.
 
       ENDIF
+      
+      if(.not.Quit) call VerifyGridType(Quit)
 
+      return
       END
 
 !*-------------------------------------------------------------------------*
@@ -871,11 +1044,18 @@
           endif
           if(firstline(1:1).ne."#") then    !comment lines
             read(firstline,*,IOSTAT=istat)x0off,y0off,scaleX,scaleY,igridtype
-             if(istat.ne.0) then
-               call StatusError(istat,linenum,'ReadNode' )
-               Quit = .TRUE.
-               return
-             endif
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadNode' )
+              Quit = .TRUE.
+              return
+            endif
+            if(igridtype.eq.1) then ! UTM coordinates, get zone id
+              j = len_trim(firstline)
+              READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
+              if(istat.eq.0) read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
+              call VerifyUTMzone(istat,Quit)
+              if(Quit) return 
+            endif
             exit
           endif
         enddo

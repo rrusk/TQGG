@@ -203,7 +203,7 @@
         call MNU_PolyMenuDisable
 
         Program_Name = 'TQGridGen'
-        Revision = '$Revision: 14.3 $'
+        Revision = '$Revision: 15.5 $'
         call About(Program_name, Revision )
 
         itot = 0
@@ -234,24 +234,24 @@
           call OpenGridFile(Quit)
           call PigEraseMessage
           if(.not.Quit) then
-            if(igridtype.eq.-9999) then !ask for grid type
-              do
-                call PigPrompt(cstrgrid, ans )
-                READ( ans, *, iostat=ierr ) igridtype
-                if(ierr.eq.0) exit
-              enddo
-            else  !verify grid type
-              write(cstr,'(I2)') igridtype
-              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
-              if(ans(1:1).eq.'N') then
-                do
-                  call PigPrompt(cstrgrid, ans )
+!            if(igridtype.eq.-9999) then !ask for grid type
+!              do
+!                call PigPrompt(cstrgrid, ans )
+!                READ( ans, *, iostat=ierr ) igridtype
+!                if(ierr.eq.0) exit
+!              enddo
+!            else  !verify grid type
+!              write(cstr,'(I2)') igridtype
+!              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+!              if(ans(1:1).eq.'N') then
+!                do
+!                  call PigPrompt(cstrgrid, ans )
 
-                  READ( ans, *, iostat=ierr ) igridtype
-                  if(ierr.eq.0) exit
-                enddo
-              endif
-            endif
+!                  READ( ans, *, iostat=ierr ) igridtype
+!                  if(ierr.eq.0) exit
+!                enddo
+!              endif
+!            endif
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else
@@ -315,23 +315,23 @@
           FlagN = .false.
           call OpenNodeFile( Quit)
           if(.not.Quit) then
-            if(igridtype.eq.-9999) then !ask for grid type
-              do
-                call PigPrompt(cstrgrid, ans )
-                READ( ans, *, iostat=ierr ) igridtype
-                if(ierr.eq.0) exit
-              enddo
-            else  !verify grid type
-              write(cstr,'(I2)') igridtype
-              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
-              if(ans(1:1).eq.'N') then
-                do
-                  call PigPrompt(cstrgrid, ans )
-                  READ( ans, *, iostat=ierr ) igridtype
-                  if(ierr.eq.0) exit
-                enddo
-              endif
-            endif
+!            if(igridtype.eq.-9999) then !ask for grid type
+!              do
+!                call PigPrompt(cstrgrid, ans )
+!                READ( ans, *, iostat=ierr ) igridtype
+!                if(ierr.eq.0) exit
+!              enddo
+!            else  !verify grid type
+!              write(cstr,'(I2)') igridtype
+!              call PigMessageYesNo( 'Gridtype is '//cstr(1:2)//' OK?', ans)
+!              if(ans(1:1).eq.'N') then
+!                do
+!                  call PigPrompt(cstrgrid, ans )
+!                  READ( ans, *, iostat=ierr ) igridtype
+!                  if(ierr.eq.0) exit
+!                enddo
+!              endif
+!            endif
             IF (itot.gt.1000) then
               outlineonly = .TRUE.
             else

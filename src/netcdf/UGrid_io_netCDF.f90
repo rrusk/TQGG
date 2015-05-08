@@ -35,9 +35,11 @@
 ! *** Grid variables
     integer     ::  XVarId       ! Id of the X variable
     integer     ::  YVarId       ! Id of the Y variable
+    integer     ::  X0VarId       ! Id of the X variable origin
+    integer     ::  Y0VarId       ! Id of the Y variable origin
     integer     ::  ZVarId       ! Id of the Z variable
-    integer     ::  LongVarId    ! Id of the longitude variable
-    integer     ::  LatVarId     ! Id of the latitude variable
+    integer     ::  LongVarId    ! Id of the longitude (X) variable
+    integer     ::  LatVarId     ! Id of the latitude (Y) variable
     integer     ::  DepthVarId   ! Id of the depth variable
     integer     ::  NcodeVarId   ! Id of the node code variable
     integer     ::  nenVarId     ! Id of the element variable
@@ -55,14 +57,15 @@
   CONTAINS
 !******************************************************************************
 
-    subroutine Create_Grid_netCDF(np,ne,ncn,iXYcoord,iZcoord,outresfile,err)
+    subroutine Create_Grid_netCDF(np,ne,ncn,iXYcoord,iZcoord,uz,outresfile,err)
 
 !    Create netCDF file to contain output.
 
     implicit none
 
 ! *** passed variables
-    integer ne,np,ncn,iXYcoord,iZcoord
+    integer :: ne,np,ncn,iXYcoord,iZcoord
+    character(3) :: uz
     character(len=80) :: outresfile
 
 ! Local variables
@@ -160,6 +163,13 @@
     endif
 
     status=nf90_put_att(ncid,nf90_global,'node_coordinates','node_x node_y')
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_att(ncid,nf90_global,'node_coordinate_origins','node_x0 node_y0')
     if(status /= nf90_noerr) then
       call handle_nf_err(status)
       err = .true.
@@ -264,6 +274,48 @@
       return
     endif
 
+    status=nf90_def_var(ncid,'node_x0',nf90_double,X0VarId)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_def_var(ncid,'node_y0',nf90_double,Y0VarId)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_att(ncid,X0VarId,"standard_name","x_origin")
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_att(ncid,X0VarId,"long_name","x_origin_in_global_coordinates")
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_att(ncid,Y0VarId,"standard_name","y_origin")
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_att(ncid,Y0VarId,"long_name","y_origin_in_global_coordinates")
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
     if(iXYcoord.eq.0) then  !spherical coordinates
 
 ! Latitude
@@ -358,6 +410,12 @@
           err = .true.
           return
         endif
+        status=nf90_put_att(ncid,XVarId,"utm_zone",uz(1:3))
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
       else
         status=nf90_put_att(ncid,XVarId,"long_name",'Cartesian_coordinate_x')
         if(status /= nf90_noerr) then
@@ -408,6 +466,12 @@
 
       if(iXYcoord.eq.1) then
         status=nf90_put_att(ncid,YVarId,"long_name",'UTM_coordinate_y_northing')
+        if(status /= nf90_noerr) then
+          call handle_nf_err(status)
+          err = .true.
+          return
+        endif
+        status=nf90_put_att(ncid,YVarId,"utm_zone",uz(1:3))
         if(status /= nf90_noerr) then
           call handle_nf_err(status)
           err = .true.
@@ -695,7 +759,7 @@
 
 !********************************************************************************
 
-    subroutine Write_Grid_netCDF ( np,ne,ncn,x,y,depth,ncode,ecode,nen,err)
+    subroutine Write_Grid_netCDF ( np,ne,ncn,x0,y0,x,y,depth,ncode,ecode,nen,err)
 
 !  Output data for a particular constituent
 
@@ -704,7 +768,7 @@
 ! *** passed variables
     integer np,ne,ncn
     integer nen(ncn,ne),ncode(np),ecode(ne)
-    real*8 x(np), y(np), depth(np)
+    real*8 x0, y0, x(np), y(np), depth(np)
 
 ! *** Local variables
     integer status
@@ -722,6 +786,20 @@
     endif
 
     status=nf90_put_var(ncid,YVarId,y)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_var(ncid,X0VarId,x0)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_put_var(ncid,Y0VarId,y0)
     if(status /= nf90_noerr) then
       call handle_nf_err(status)
       err = .true.
@@ -944,7 +1022,7 @@
 
 !********************************************************************************
 
-    subroutine Read_Grid_netCDF(np,ne,ncn,x,y,depth,ncode,ecode,nen,ixy,iz,err )
+    subroutine Read_Grid_netCDF(np,ne,ncn,x0,y0,x,y,depth,ncode,ecode,nen,ixy,iz,uz,err )
 
 !   Get the grid stuff from the already open netCDF file
 
@@ -961,7 +1039,10 @@
     integer,intent(out)     :: iz
     real*8,intent(out)      :: x(np)
     real*8,intent(out)      :: y(np)
+    real*8,intent(out)      :: x0
+    real*8,intent(out)      :: y0
     real*8,intent(out)      :: depth(np)
+    character(3),intent(out) :: uz
     logical, intent(out)    :: err
 
 ! Local variables
@@ -1028,6 +1109,16 @@
         ixy = 3
       endif
     endif
+    
+    if(ixy.eq.1) then
+      status=nf90_get_att(ncid,XVarId,"utm_zone",value)
+      if(status /= nf90_noerr) then
+        call handle_nf_err(status)
+        err = .true.
+        return
+      endif
+      uz(1:3) = value(1:3)
+    endif
 
     status=nf90_inq_varid(ncid,'node_y',YVarId)
     if(status /= nf90_noerr) then
@@ -1037,6 +1128,34 @@
     endif
 
     status=nf90_get_var(ncid,YVarId,y)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_inq_varid(ncid,'node_x0',X0VarId)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_get_var(ncid,X0VarId,x0)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_inq_varid(ncid,'node_y0',Y0VarId)
+    if(status /= nf90_noerr) then
+      call handle_nf_err(status)
+      err = .true.
+      return
+    endif
+
+    status=nf90_get_var(ncid,Y0VarId,y0)
     if(status /= nf90_noerr) then
       call handle_nf_err(status)
       err = .true.

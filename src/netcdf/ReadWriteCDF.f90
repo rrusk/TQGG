@@ -16,7 +16,8 @@
 ! *** local varaibles
       integer j,k,np,ne,ncn,iXYcoord,iZcoord,istat
       integer, allocatable :: nen(:,:)
-      REAL*8    XMAX, YMAX, XMIN, YMIN
+      REAL*8    x0,y0,XMAX, YMAX, XMIN, YMIN
+      character(3) :: uz
      
       call Read_GridSize_netCDF ( fname,np,ne,ncn,quit )
       if(quit) return
@@ -25,14 +26,14 @@
       TotTr = ne
       UTMzone = 'nul'
       if(ncn.eq.4) then
-        call Read_Grid_netCDF ( np,ne,ncn,dxray,dyray,depth,code,Tcode,ListTr,&
-                                iXYcoord,iZcoord,quit )
+        call Read_Grid_netCDF ( np,ne,ncn,x0,y0,dxray,dyray,depth,code,Tcode,ListTr,&
+                                iXYcoord,iZcoord,uz,quit )
         if(quit) return
       elseif(ncn.eq.3) then
         ListTr = 0
         allocate(nen(3,TotTr),stat=istat)
-        call Read_Grid_netCDF ( np,ne,ncn,dxray,dyray,depth,code,Tcode,nen,&
-                                iXYcoord,iZcoord,quit )
+        call Read_Grid_netCDF ( np,ne,ncn,x0,y0,dxray,dyray,depth,code,Tcode,nen,&
+                                iXYcoord,iZcoord,uz,quit )
         if(quit) return
         do j=1,TotTr
           do k=1,3
@@ -43,7 +44,14 @@
       else
         Quit = .true.
       endif
+      x0off = x0
+      y0off = y0
       igridtype = iXYcoord
+      if(igridtype.eq.1) then
+        UTMzone(1:3) = uz (1:3)
+      else
+        UTMzone = 'nul'
+      endif
       izup = iZcoord
 
 !      call Read_BoundarySize_netCDF (nbp,nbnd,nbnd1,err)
@@ -87,6 +95,8 @@
       integer :: nindex(itot),nen(3,TotTr)
       integer :: NUMofBDYS, bnode_index(itot), bnode_id(itot), rnodes(2*itot)
       logical :: err
+      real*8 :: x0,y0
+      character(3) :: uz
       
       quit = .false.
       err = .false.
@@ -135,16 +145,19 @@
       else
         iz = 1
       endif
-      call Create_Grid_netCDF (np,ne,ncn,iXY,iZ,fname,err)
+      x0 = x0off
+      y0 = y0off
+      uz(1:3) = UTMzone(1:3)
+      call Create_Grid_netCDF (np,ne,ncn,iXY,iZ,uz,fname,err)
       if(err) then
         quit = .true.
         return
       endif
 
       if(ncn.eq.3) then
-        call Write_Grid_netCDF (np,ne,ncn,dxray,dyray,depth,code,Tcode,nen,err)
+        call Write_Grid_netCDF (np,ne,ncn,x0,y0,dxray,dyray,depth,code,Tcode,nen,err)
       elseif(ncn.eq.4) then
-        call Write_Grid_netCDF (np,ne,ncn,dxray,dyray,depth,code,Tcode,ListTr,err)
+        call Write_Grid_netCDF (np,ne,ncn,x0,y0,dxray,dyray,depth,code,Tcode,ListTr,err)
       endif
       if(err) then
         quit = .true.

@@ -63,6 +63,8 @@
 !            and drawn on the screen.
 ! Modified:  Daphne Connolly and Steve Prestage May 1989
 
+      use mainarrays, only: x0off, y0off
+
       integer maxpoint
       parameter (maxpoint=500)
 
@@ -106,8 +108,8 @@
           do k=1,NodThisBnd
             READ (33, *, ERR=999, END=999 ) XTemp, YTemp
             PTCOUNT = PTCOUNT + 1
-            XOut(PTCOUNT) = XTemp
-            YOut(PTCOUNT) = YTemp
+            XOut(PTCOUNT) = (XTemp+x0off2)*scaleX2 - x0off
+            YOut(PTCOUNT) = (YTemp+y0off2)*scaleX2 - y0off
             IF ((PTCOUNT .GE. MAXPOINT)) THEN
               CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
               PTCOUNT = 0
@@ -122,56 +124,56 @@
 
       else                 !dig boundary file
 
-      rewind (33)
-      READ (33, *, ERR=990, END=990 ) XTemp, YTemp
+        rewind (33)
+        READ (33, *, ERR=990, END=990 ) XTemp, YTemp
 
-      ITemp=nint(XTemp)
-      JTemp=nint(YTemp)
-      if(ITemp.ne.77.or.JTemp.ne.77) go to 75
+        ITemp=nint(XTemp)
+        JTemp=nint(YTemp)
+        if(ITemp.ne.77.or.JTemp.ne.77) go to 75
  
-50    CONTINUE
+50      CONTINUE
         READ (33, *, ERR=990, END=990 ) XTemp, YTemp
         ITemp = nint(YTemp)
         IF (ITemp .EQ. -9999) GOTO 70
-      go to 50
+        go to 50
 
-70    CONTINUE
+70      CONTINUE
 
-      READ (33, *, ERR=990, END=990 ) XTemp, YTemp
+        READ (33, *, ERR=990, END=990 ) XTemp, YTemp
 
-75    continue
+75      continue
 
-      PTCOUNT = 0
+        PTCOUNT = 0
 ! DO WHILE PTCOUNT .LE. MAXPOINT
-115       IF ( PTCOUNT .NE. MAXPOINT) THEN
-            READ (33, *, ERR=999, END=999 ) XTemp, YTemp
-            ITemp = nint(YTemp)
-            IF ((ITemp .EQ. -9999) .AND. (PTCOUNT .LE. 1)) THEN
-              PTCOUNT = 0
-              GOTO 140
-            ELSEIF ((ITemp .EQ. -9999).AND.(PTCOUNT .GT. 1)) THEN
-              CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
-              PTCOUNT = 0
-              GOTO 140
-            ELSE
-              PTCOUNT = PTCOUNT + 1
-              XOut(PTCOUNT) = XTemp
-              YOut(PTCOUNT) = YTemp
-            ENDIF
-            GOTO 115
+115     IF ( PTCOUNT .NE. MAXPOINT) THEN
+          READ (33, *, ERR=999, END=999 ) XTemp, YTemp
+          ITemp = nint(YTemp)
+          IF ((ITemp .EQ. -9999) .AND. (PTCOUNT .LE. 1)) THEN
+            PTCOUNT = 0
+            GOTO 140
+          ELSEIF ((ITemp .EQ. -9999).AND.(PTCOUNT .GT. 1)) THEN
+            CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
+            PTCOUNT = 0
+            GOTO 140
+          ELSE
+            PTCOUNT = PTCOUNT + 1
+            XOut(PTCOUNT) = XTemp
+            YOut(PTCOUNT) = YTemp
           ENDIF
+          GOTO 115
+        ENDIF
 ! ENDWHILE
-      CALL PigDrawPolyline( PTCOUNT, XOUT, YOUT )
-      XOUT(1) = XOUT(PTCOUNT)
-      YOUT(1) = YOUT(PTCOUNT)
-      PTCOUNT = 1
-      go to 115
+        CALL PigDrawPolyline( PTCOUNT, XOUT, YOUT )
+        XOUT(1) = XOUT(PTCOUNT)
+        YOUT(1) = YOUT(PTCOUNT)
+        PTCOUNT = 1
+        go to 115
 
-140   CONTINUE
-      READ (33, *, ERR=999, END=999 ) XTemp, YTemp
-      go to 115
+140     CONTINUE
+        READ (33, *, ERR=999, END=999 ) XTemp, YTemp
+        go to 115
 
-        endif  !file type
+      endif  !file type
 
 !    Error trap : could not open file..
 890   continue
@@ -201,6 +203,8 @@
 ! Returns  : None
 ! Effect   : Opens the contour file and reads and draws contours.
 ! Modified : Daphne Connolly and Steve Prestage May 1989
+
+      use mainarrays, only: x0off, y0off
 
       integer maxpoint
       parameter (maxpoint=500)
@@ -238,14 +242,14 @@
 
         READ (34, *, ERR=990, END=990 )    !skip line
         READ (34, *, ERR=990, END=990 ) NodBnds
-          do j=1,NodBnds
+        do j=1,NodBnds
           PTCOUNT = 0
           READ (34, *, ERR=990, END=990 ) NodThisBnd
             do k=1,NodThisBnd
               READ (34, *, ERR=999, END=999 ) XTemp, YTemp
               PTCOUNT = PTCOUNT + 1
-              XOut(PTCOUNT) = XTemp
-              YOut(PTCOUNT) = YTemp
+              XOut(PTCOUNT) = (XTemp+x0off2)*scaleX2 - x0off
+              YOut(PTCOUNT) = (YTemp+y0off2)*scaleX2 - y0off
               IF ((PTCOUNT .GE. MAXPOINT)) THEN
                 CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
                 PTCOUNT = 0
@@ -255,62 +259,62 @@
               CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
               PTCOUNT = 0
             endif
-          enddo
-          go to 999
+        enddo
+        go to 999
 
-        else                 !dig contour file
+      else                 !dig contour file
 
-      rewind (34)
-      READ (34, *, ERR=990, END=990 ) XTemp, YTemp
-
-      ITemp=nint(XTemp)
-      JTemp=nint(YTemp)
-      if(ITemp.ne.77.or.JTemp.ne.77) go to 75
- 
-50    continue
+        rewind (34)
         READ (34, *, ERR=990, END=990 ) XTemp, YTemp
-        ITemp = nint(YTemp)
-        IF (ITemp .EQ. -9999) GOTO 70
-      go to 50
 
-70    CONTINUE
+        ITemp=nint(XTemp)
+        JTemp=nint(YTemp)
+        if(ITemp.ne.77.or.JTemp.ne.77) go to 75
+ 
+50      continue
+          READ (34, *, ERR=990, END=990 ) XTemp, YTemp
+          ITemp = nint(YTemp)
+          IF (ITemp .EQ. -9999) GOTO 70
+        go to 50
 
-      READ (34, *, ERR=990, END=990 ) XTemp, YTemp
+70      CONTINUE
 
-75    continue
+        READ (34, *, ERR=990, END=990 ) XTemp, YTemp
 
-      PTCOUNT = 0
+75      continue
+
+        PTCOUNT = 0
 
 ! DO WHILE (PTCOUNT .LE. MAXPOINT)
-115       IF(PTCOUNT .NE. MAXPOINT) THEN
-            READ (34, *, ERR=999, END=999 ) XTemp, YTemp
-            ITemp = nint(YTemp)
-            IF ((ITemp .EQ. -9999).AND.(PTCOUNT .LE. 1)) THEN
-              PTCOUNT = 0
-              GOTO 140
-            ELSEIF ((ITemp .EQ. -9999).AND.(PTCOUNT .GT. 1)) THEN
-              CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
-              PTCOUNT = 0
-              GOTO 140
-            ELSE
-              PTCOUNT = PTCOUNT + 1
-              XOut(PTCOUNT) = XTemp
-              YOut(PTCOUNT) = YTemp
-            ENDIF
-              GOTO 115
+115     IF(PTCOUNT .NE. MAXPOINT) THEN
+          READ (34, *, ERR=999, END=999 ) XTemp, YTemp
+          ITemp = nint(YTemp)
+          IF ((ITemp .EQ. -9999).AND.(PTCOUNT .LE. 1)) THEN
+            PTCOUNT = 0
+            GOTO 140
+          ELSEIF ((ITemp .EQ. -9999).AND.(PTCOUNT .GT. 1)) THEN
+            CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
+            PTCOUNT = 0
+            GOTO 140
+          ELSE
+            PTCOUNT = PTCOUNT + 1
+            XOut(PTCOUNT) = XTemp
+            YOut(PTCOUNT) = YTemp
           ENDIF
+            GOTO 115
+        ENDIF
 ! ENDWHILE
-      CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
-      XOUT(1) = XOUT(PTCOUNT)
-      YOUT(1) = YOUT(PTCOUNT)
-      PTCOUNT = 1
-      go to 115
+        CALL PigDrawPolyline(PTCOUNT, XOUT, YOUT)
+        XOUT(1) = XOUT(PTCOUNT)
+        YOUT(1) = YOUT(PTCOUNT)
+        PTCOUNT = 1
+        go to 115
 
-140   CONTINUE
+140     CONTINUE
         READ (34, *, ERR=999, END=999 ) XTemp, YTemp
-      go to 115
+        go to 115
 
-        endif
+      endif
 
 !    Error trap : could not open file..
 890   continue

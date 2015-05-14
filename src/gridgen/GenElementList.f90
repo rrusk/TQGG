@@ -31,6 +31,8 @@
 !               itot,nbtot,dxray,dyray,depth,nl,exist,TotTr,ListTr,Tcode, &
 !               x0off,y0off,scaleX,scaleY,igridtype)
 
+           USE MainArrays, only: UTMzone
+
            IMPLICIT NONE
 
 !       WARNING - Boundary nodes retrieved in RETRONODES are stored here in
@@ -371,8 +373,11 @@
 !        open(23,file='retronode.nod',status='unknown')
 
         write(23,'(a4)') '#NOD'
-        write(23,'(4(1X,F13.5),1x,I4)') x0off,y0off,scaleX,scaleY,     &
-     &                                     igridtype
+        if(igridtype.eq.1) then
+          write(23,'(4(1X,1PE18.10),1X,I3,1X,a3)') x0off,y0off,scaleX,scaleY,igridtype,UTMzone(1:3)
+        else
+          write(23,'(4(1X,1PE18.10),1X,I3)') x0off,y0off,scaleX,scaleY,igridtype
+        endif
 
         NumIntBndys = 0
         write(23,*) itot

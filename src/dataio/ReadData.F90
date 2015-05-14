@@ -36,6 +36,8 @@
 !          filename is entered.  Grid file is opened, points are read,
 !          and grid file is closed.
 
+      use mainarrays, only: x0off, y0off, scaleX, scaleY, igridtype
+
       implicit none
 
       LOGICAL Quit
@@ -44,13 +46,20 @@
       INCLUDE '../includes/defaults.inc'
 
       CHARACTER*256 fle
-      LOGICAL addfile, newformat
+      LOGICAL newfile, newformat
       integer  nunit, fnlen, istat,linenum
       logical PigOpenFileCD,lexist
       character(80) Firstline
 !------------------BEGIN------------------
 
-      addfile = Quit
+      newfile = Quit
+      if(newfile) then !initialize
+        x0off = 0.
+        y0off = 0.
+        scaleX = 1.
+        scaleY = 1.
+        igridtype = 3
+      endif
       Quit = .FALSE.
       nunit = 8
       fle = 'NONE'
@@ -88,7 +97,7 @@
             GridRName =  'NONE'
             return
 #endif
-          else
+          elseif(fle(fnlen-3:fnlen).eq.'.ngh') then !ngh file
 !            open(nunit,file=fle,status='old')
             READ(nunit,'(a)',IOSTAT=istat) Firstline
             linenum = 1
@@ -103,26 +112,59 @@
               call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
               Quit = .true.
             elseif(firstline(1:4).eq."#GRD") then  !xyz and element grid file, new format
-              call PigStatusMessage( 'Reading Grid file.. [GRD] format' )
-              call ReadGRDData (nunit,Quit)
-              call PigStatusMessage( 'Done' )
+              call PigMessageOK( 'GRD file.. Wrong format for ngh file.','ReadGrid' )
+              Quit = .true.
             elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
               newformat = .true.
               call PigStatusMessage( 'Reading Grid file.. [NGH] format' )
-              call ReadNGHData (nunit,addfile,newformat)
-              Quit = addfile
+              call ReadNGHData (nunit,newfile,newformat)
+              Quit = newfile
               if(.not.quit) call DoCheckEdges()
               call PigStatusMessage( 'Done' )
             else ! guess format
               newformat = .false.
               call PigStatusMessage( 'Reading Grid file.. old [NGH] format' )
-              call ReadNGHData (nunit,addfile,newformat)
-              Quit = addfile
+              call ReadNGHData (nunit,newfile,newformat)
+              Quit = newfile
               if(.not.quit) then
                 call DoCheckEdges()
               endif
               call PigStatusMessage( 'Done' )
             endif
+          elseif(fle(fnlen-3:fnlen).eq.'.grd') then !grd file
+!            open(nunit,file=fle,status='old')
+            READ(nunit,'(a)',IOSTAT=istat) Firstline
+            linenum = 1
+            if(istat.ne.0) then
+              call StatusError(istat,linenum,'ReadGrid' )
+              Quit = .TRUE.
+              close( nunit )
+              return
+            endif
+            
+            if(firstline(1:4).eq."#NOD") then  !node file, new format
+              call PigMessageOK( 'Node file.. Wrong format for grd file.','ReadGrid' )
+              Quit = .true.
+            elseif(firstline(1:4).eq."#GRD") then  !xyz and element grid file, new format
+              call PigStatusMessage( 'Reading Grid file.. [GRD] format' )
+              call ReadGRDData (nunit,Quit)
+              call PigStatusMessage( 'Done' )
+            elseif(firstline(1:4).eq."#NGH") then  !neigh grid file, new format
+              call PigMessageOK( 'ngh file.. Wrong format for grd file.','ReadGrid' )
+              Quit = .true.
+            else ! guess format
+              Quit = .true.
+              call PigStatusMessage( 'Reading Grid file.. basic grd format' )
+              rewind(nunit)
+              call ReadGRDData (nunit,Quit)
+              call PigStatusMessage( 'Done' )
+            endif
+          elseif(fle(fnlen-3:fnlen).eq.'.nod') then !node file
+              call PigMessageOK( 'Node file.. Wrong format for grid.','ReadGrid' )
+              Quit = .true.            
+          else
+            call PigMessageOK(  'ERROR: Unknown file format','ReadGrid' )
+            Quit = .true.            
           endif
         endif
      
@@ -280,12 +322,13 @@
       REAL    XMAX, YMAX, XMIN, YMIN
 
 !     - LOCAL VARIABLES
-      INTEGER i , j , n_offset, nbtot_max
+      INTEGER i , j , i0, n_offset, nbtot_max
       INTEGER   irec, nrec, istat
       INTEGER numrec, numrecmax, linenum
+      real :: zsf
       character*80 message
       LOGICAL NewFile,newformat
-      character(80) Firstline
+      character(100) Firstline
 
 !------------------BEGIN-------------------------------
 
@@ -295,6 +338,7 @@
       
 !     - initialize 
       TotTr = 0
+      i0 = 0
       if(NewFile) then !start from scratch
         do j=1,MAXTRI
           TCode(j) = 1
@@ -383,13 +427,22 @@
           return
         endif
 
-! - read offsets, scale factors, coordinate type
-        READ( nunit, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY
-        linenum=linenum+1
-        if(istat.ne.0) then
-          call StatusError(istat,linenum,'ReadGrid' )
-          Quit = .TRUE.
-          return
+! *** test if this is really old format without offsets and scales
+        READ(nunit,'(a)', IOSTAT=istat) Firstline
+        i = 1
+        READ(firstline,*,IOSTAT=istat) IREC,DXRAY(i),DYRAY(i),CODE(i),DEPTH(i),( NL(j,i),j = 1, NBTOTR )
+        if(istat.eq.0) then
+          i0 = 1
+        else
+! - read offsets, scale factors for old format
+          READ(firstline, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY
+          linenum=linenum+1
+          if(istat.ne.0) then
+            call StatusError(istat,linenum,'ReadGrid' )
+            Quit = .TRUE.
+            return
+          endif
+          i0 = 0
         endif
         igridtype = -9999
      
@@ -411,8 +464,9 @@
 
 !  Adjust for offsets
       n_offset = nrec - 1
+      zsf = abs(scaleY)
    
-      do i=nrec,nrec+numrec-1 
+      do i=nrec+i0,nrec+numrec-1 
         READ(nunit,*,IOSTAT=istat) IREC,DXRAY(i),DYRAY(i),CODE(i),DEPTH(i),( NL(j,i),j = 1, NBTOTR )
         linenum=linenum+1
         if(istat.ne.0) then
@@ -420,6 +474,10 @@
           Quit = .TRUE.
           return
         endif
+        
+        DXRAY(i) = DXRAY(i)*scaleX
+        DYRAY(i) = DYRAY(i)*scaleX
+        DEPTH(i) = DEPTH(i)*zsf
 
         do j=1,NBTOTR
           if(NL(j,i).gt.0) then
@@ -439,15 +497,22 @@
         ITOT = i
        
       enddo
+      
+      scaleX = 1.
+      if(scaleY.gt.0.) then
+        scaleY = 1.
+      else
+        scaleY = -1.
+      endif
 
       nbtotr = nbtot !expand to max !max(nbtotr,nbtot_max)
       DispNodes = .false.
 
-      if(int(ScaleY).eq.-999) then
-        xlongmin = minval(dxray(1:itot))
-        xlongmax = maxval(dxray(1:itot))
-        xlongsum=ScaleX
-      endif
+!      if(int(ScaleY).eq.-999) then
+!        xlongmin = minval(dxray(1:itot))
+!        xlongmax = maxval(dxray(1:itot))
+!        xlongsum=ScaleX
+!      endif
 
       xmin = minval(dxray(1:itot))
       xmax = maxval(dxray(1:itot))
@@ -482,39 +547,47 @@
       INTEGER  nunit, istat
 !        - the number of records that is to be in the data file
       INTEGER numrec, numele, linenum
-      character(80) Firstline,message
+      real :: zsf
+      logical basicformat
+      character(100) Firstline
+      character(80) message
 
 !------------------BEGIN-------------------------------
 
+      basicformat = Quit
       QUIT = .FALSE.
 
       linenum=1
-      do              !remove comment lines
-        READ(nunit,'(a)', IOSTAT=istat) Firstline
-        linenum=linenum+1
-        if(istat.ne.0) then
-          call StatusError(istat,linenum,'Read_GRD' )
-          Quit = .TRUE.
-          return
-        endif
-        if(firstline(1:1).ne."#") then
-          READ( firstline, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY, igridtype
+      if(basicformat) then
+        igridtype = -9999
+      else
+        do              !remove comment lines
+          READ(nunit,'(a)', IOSTAT=istat) Firstline
+          linenum=linenum+1
           if(istat.ne.0) then
-            write(message,'(a,i8,a)') 'ERROR reading line ',linenum
-            call PigMessageOK(message,'Read_GRD' )
+            call StatusError(istat,linenum,'Read_GRD' )
             Quit = .TRUE.
             return
           endif
-          if(igridtype.eq.1) then ! UTM coordinates, get zone id
-            j = len_trim(firstline)
-            READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
-            if(istat.eq.0) read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
-            call VerifyUTMzone(istat,Quit)
-            if(Quit) return 
+          if(firstline(1:1).ne."#") then
+            READ( firstline, *, IOSTAT=istat ) x0off, y0off, scaleX, scaleY, igridtype
+            if(istat.ne.0) then
+              write(message,'(a,i8,a)') 'ERROR reading line ',linenum
+              call PigMessageOK(message,'Read_GRD' )
+              Quit = .TRUE.
+              return
+            endif
+            if(igridtype.eq.1) then ! UTM coordinates, get zone id
+              j = len_trim(firstline)
+              READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
+              if(istat.eq.0) read( UTMzone(1:2),*,IOSTAT=istat ) iUTMzone
+              call VerifyUTMzone(istat,Quit)
+              if(Quit) return 
+            endif
+            exit
           endif
-          exit
-        endif
-      enddo
+        enddo
+      endif
       
 ! - read max number of nodes and elements in this grid
       read(nunit,*,IOSTAT=istat) numrec, numele
@@ -569,6 +642,20 @@
       endif
 
       itot = numrec
+      zsf = abs(scaleY)
+      do i=1,itot                
+        DXRAY(i) = DXRAY(i)*scaleX
+        DYRAY(i) = DYRAY(i)*scaleX
+        DEPTH(i) = DEPTH(i)*zsf
+      enddo
+      
+      scaleX = 1.
+      if(scaleY.gt.0.) then
+        scaleY = 1.
+      else
+        scaleY = -1.
+      endif
+
 !      igridtype = -9999
 
 !  parse first line to find format for element list      
@@ -622,11 +709,11 @@
       nbtotr = nbtot !expand to max !max(nbtotr,nbtot_max)
       DispNodes = .false.
 
-      if(int(ScaleY).eq.-999) then
-        xlongmin = minval(dxray(1:itot))
-        xlongmax = maxval(dxray(1:itot))
-        xlongsum=ScaleX
-      endif
+!      if(int(ScaleY).eq.-999) then
+!        xlongmin = minval(dxray(1:itot))
+!        xlongmax = maxval(dxray(1:itot))
+!        xlongsum=ScaleX
+!      endif
 
       xmin = minval(dxray(1:itot))
       xmax = maxval(dxray(1:itot))
@@ -1005,10 +1092,11 @@
 ! - LOCAL VARIABLES
       INTEGER start, end, ii, jj, idiff, jjmax, bcode
       integer linenum
-      CHARACTER*80 cstr, firstline
+      CHARACTER*80 cstr
+      character(100)  firstline
       LOGICAL Quit
       REAL    XMAX, YMAX, XMIN, YMIN
-      real xd, yd, dep
+      real xd, yd, dep, zsf
 !       start,end - to mark indices of a set of boundary nodes or
 !                   the set of interior nodes while reading
 !       ii,jj - indices to increment from start to end
@@ -1049,6 +1137,7 @@
               Quit = .TRUE.
               return
             endif
+            zsf = abs(scaleY)
             if(igridtype.eq.1) then ! UTM coordinates, get zone id
               j = len_trim(firstline)
               READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzone(1:3)
@@ -1136,9 +1225,9 @@
           endif
           jjmax = jj
           if(jj.le.MaxPts) then
-            dxray(jj) = xd
-            dyray(jj) = yd
-            Depth(jj) = dep
+            dxray(jj) = xd*scaleX
+            dyray(jj) = yd*scaleX
+            Depth(jj) = dep*zsf
             code(jj) = bcode    
           endif
         END DO
@@ -1190,15 +1279,22 @@
           endif
           jjmax = jj
           if(jj.le.MaxPts) then
-            dxray(jj) = xd
-            dyray(jj) = yd
-            Depth(jj) = dep
+            dxray(jj) = xd*scaleX
+            dyray(jj) = yd*scaleX
+            Depth(jj) = dep*zsf
             !Exist(jj) = .true.
             Code(jj) = 0
           endif
         END DO
       ENDIF
 !          - ( TotCoords .gt. end )
+      
+      scaleX = 1.
+      if(scaleY.gt.0.) then
+        scaleY = 1.
+      else
+        scaleY = -1.
+      endif
 
       TotCoords = jjmax
       do ii=1,TotBndys
@@ -1361,7 +1457,7 @@
       INTEGER TotCoords2, TotBndys2,  TotIntBndys2, PtsThisBnd2, TotIntpts2
       integer TotCoordsNew,bndindex
       integer StartIntPts
-      CHARACTER*256 FName, cstr*80, message*80,Firstline*80
+      CHARACTER*256 FName, cstr*80, message*80,Firstline*100
       character*1 ans, PigCursYesNo
       LOGICAL Quit
       real x2, y2, dep
@@ -1731,11 +1827,11 @@
       DispNodes = .true.
       igridtype = -9999
 
-      if(int(ScaleY).eq.-999) then
-        xlongmin = minval(dxray(1:itot))
-        xlongmax = maxval(dxray(1:itot))
-        xlongsum=ScaleX
-      endif
+!      if(int(ScaleY).eq.-999) then
+!        xlongmin = minval(dxray(1:itot))
+!        xlongmax = maxval(dxray(1:itot))
+!        xlongsum=ScaleX
+!      endif
 
       xmin = minval(dxray(1:itot))
       xmax = maxval(dxray(1:itot))

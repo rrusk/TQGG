@@ -74,6 +74,7 @@
 !      write(*,*) ('Reading file '//fle(:fnlen))
       call ReadReferenceGrid (Quit)
       close( 8 )
+      if(quit) return
 
 ! *** Allocate element arrays
       ALLOCATE (NENRef(4,2*NPRef),ECRef(2*NPRef), STAT = istat )
@@ -99,6 +100,7 @@
       SUBROUTINE ReadReferenceGrid (quit)
 
       USE RefGridData
+      use mainarrays, only : x0off, y0off, scaleY, igridtype, UTMzone
    
 ! Purpose : To read reference grid data into memory
 
@@ -112,6 +114,8 @@
 !        - counters
       INTEGER   irec, nrec
       character*80 Firstline
+      character(3) :: UTMzoneR
+      character PigCursYesNo*1, ans1*1
 
 !------------------BEGIN------------------
 
@@ -131,7 +135,27 @@
           if(firstline(1:1).ne."#") then    !comment lines
 !           following line is internal read of firstline          
 ! - read offsets, scale factors, coordinate type
-            READ( firstline, *, err = 9999, end=99999 ) x0offR, y0offR, scaleXR, scaleYR, igridtypeR
+            READ(firstline, *, err = 9999, end=99999 ) x0offR, y0offR, scaleXR, scaleYR, igridtypeR
+! *** check that igridtype is the same as main grid
+            if(igridtypeR.ne.igridtype) then
+               ans1 = PigCursYesNo('Ref grid is of different type. Continue?')
+               if(ans1.eq.'N') then
+                 Quit = .true.
+                 return
+               endif
+            endif
+            if(igridtypeR.eq.1) then
+! *** read UTMzone, check that it is the same as main grid
+              j = len_trim(firstline)
+              READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzoneR(1:3)
+              if(UTMzoneR(1:3).ne.UTMzone(1:3)) then
+                ans1 = PigCursYesNo('Ref grid has different UTMzone. Continue?')
+               if(ans1.eq.'N') then
+                 Quit = .true.
+                 return
+               endif
+              endif
+            endif
             exit
           endif
         enddo
@@ -191,6 +215,9 @@
         READ( 8, *, end = 999, err = 9999 ) IREC,XRef(i),YRef(i),CODERef(i),ZRef(i), &
                        ( NbRef(j,i),j = 1, MaxNbRef)
 
+        XRef(i) = (XRef(i)+x0offR)*scaleXR - x0off !set same units and offset as main grid
+        YRef(i) = (YRef(i)+y0offR)*scaleXR - y0off
+        ZRef(i) = ZRef(i)*scaleYR*scaleY !set up/down in same sense as main grid
         NREC = i
         EXRef(i) = .TRUE.   
 

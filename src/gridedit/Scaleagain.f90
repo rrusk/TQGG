@@ -312,8 +312,8 @@
         WXH(LEVEL) = WXH(LEVEL) - xlong0
       endif
 
-      ScaleX = xlongsum
-      ScaleY = -999.
+      !ScaleX = xlongsum
+      !ScaleY = -999.
 
       DO JJ = 1, ITOT
         xscf = cos((dyray(jj)+y0off)*d2r)
@@ -357,8 +357,8 @@
         WXL(LEVEL) = WXL(LEVEL) - xlong0
         WXH(LEVEL) = WXH(LEVEL) - xlong0
       endif
-      ScaleX = xlongsum
-      ScaleY = -999.
+      !ScaleX = xlongsum
+      !ScaleY = -999.
 
       DO JJ = 1, ITOT
         xscf = cos((dyray(jj)+y0off)*d2r)
@@ -398,8 +398,8 @@
         WXH(LEVEL) = WXH(LEVEL) + xlongsum
       endif
 
-      ScaleX = 1.
-      ScaleY = 1.
+      !ScaleX = 1.
+      !ScaleY = 1.
 
       DO JJ = 1, ITOT
         xscf = cos((dyray(jj)+y0off)*d2r)

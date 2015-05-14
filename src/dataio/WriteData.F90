@@ -126,6 +126,11 @@
 !      LOGICAL ListTri,ListCri
       logical PigOpenFileCD, ResOK
 
+      if(igridtype.lt.0) then
+        call PigMessageOK('Cannot save file with polar transform','WriteGrid')
+        return
+      endif
+      
       !change = .true.
       
       ans = ' '
@@ -182,7 +187,7 @@
 #ifdef CNCD
         call WritenetCDFData(ans,Quit)
 #else
-        call PigMessageOK('Recompile with netCDF option','ReadnCDF')
+        call PigMessageOK('Recompile with netCDF option','WritenCDF')
 #endif
       elseif(ans(fnlen-3:fnlen).eq.'.grd') then !grd file, nodes+elements
         write(*,*) fnlen-3,fnlen
@@ -363,7 +368,7 @@
 
 101   FORMAT(4(1X,1PE18.10),1X,I3)
 102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
-112   FORMAT(3(1X,1PE14.7),1X,I3)
+112   FORMAT(3(1X,1PE21.13),1X,I3)
 
       end   
       
@@ -442,7 +447,7 @@
      
 101   FORMAT(4(1X,1PE18.10),1X,I3)
 102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
-111   FORMAT(I7,2(1X,1PE14.7),1X,I3,1X,1PE14.7,25(1x,I7))
+111   FORMAT(I7,2(1X,1PE21.13),1X,I3,1X,1PE14.7,25(1x,I7))
 
       return
       end subroutine
@@ -540,6 +545,8 @@
 !          an existing file is not allowed.
 !*----------------------------------------------------------------------*
 
+      use MainArrays, only : igridtype
+
       implicit none
  
       integer, parameter :: funit=29
@@ -559,7 +566,13 @@
 
 !----------------START ROUTINE------------------------------------------
 
-!      success = .FALSE.
+
+      if(igridtype.lt.0) then
+        call PigMessageOK('Cannot save file with polar transform','WriteNode')
+        return
+      endif
+
+      !      success = .FALSE.
       Flename = ' '
 
       ResOK = PigOpenFileCD(funit,'Save Node File', Flename,&
@@ -656,7 +669,7 @@
 
 101   FORMAT(4(1X,1PE18.10),1X,I3)
 102   FORMAT(4(1X,1PE18.10),1X,I3,1X,a3)
-910   format ( 2(1X, F13.5), 1X, F9.2 )
+910   format ( 2(1X, F21.13), 1X, 1PE14.7 )
 
       end subroutine
       

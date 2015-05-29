@@ -1,0 +1,19 @@
+#!/bin/sh
+# build TQGG - compile and link
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/MainArrays.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridgen/*.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/plotsubs/*.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/PigInterface/*.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit/*.f
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/gridedit/*.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.f90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/dataio/*.F90
+gfortran -c -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace ../../src/XMotif/*.f90
+gcc -c -Wall -g -I /usr/OpenMotif/include/ ../../src/XMotif/XmMain.c
+gcc -c -Wall -g -I /usr/OpenMotif/include/ ../../src/XMotif/XmDrawdbl.c
+gcc -c -Wall -g -I /usr/OpenMotif/include/ ../../src/XMotif/XmDialogs.c
+gfortran *.o  -o TQGGdbg -L/usr/OpenMotif/lib -L/usr/X11/lib -lXm -lXt -lX11
+#gfortran -fcheck=bounds -fbacktrace *.o  -o TQGGdbg -lXm -lXt -lX11
+rm *.o
+rm *.mod

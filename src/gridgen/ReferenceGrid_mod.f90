@@ -100,7 +100,7 @@
       SUBROUTINE ReadReferenceGrid (quit)
 
       USE RefGridData
-      use mainarrays, only : x0off, y0off, scaleY, igridtype, UTMzone
+      use mainarrays, only : x0off, y0off, scaleY, igridtype, UTMzone, xlong0
    
 ! Purpose : To read reference grid data into memory
 
@@ -113,14 +113,19 @@
       INTEGER i  , j, istat
 !        - counters
       INTEGER   irec, nrec
+      real d2r, xscf
       character*80 Firstline
       character(3) :: UTMzoneR
       character PigCursYesNo*1, ans1*1
+      logical :: PTneeded
 
 !------------------BEGIN------------------
 
 
       QUIT = .FALSE.
+
+      d2r = acos(-1.)/180.
+      PTneeded=.false.
       
 !     - initialize 
       nrec = 1
@@ -137,7 +142,15 @@
 ! - read offsets, scale factors, coordinate type
             READ(firstline, *, err = 9999, end=99999 ) x0offR, y0offR, scaleXR, scaleYR, igridtypeR
 ! *** check that igridtype is the same as main grid
-            if(igridtypeR.ne.igridtype) then
+            if(igridtypeR.eq.0.and.igridtype.lt.0) then
+               ans1 = PigCursYesNo('Ref grid requires Polar Transform. Continue?')
+               if(ans1.eq.'Y') then
+                 PTneeded = .true.
+               else
+                 Quit = .true.
+                 return
+               endif
+            elseif(igridtypeR.ne.igridtype) then
                ans1 = PigCursYesNo('Ref grid is of different type. Continue?')
                if(ans1.eq.'N') then
                  Quit = .true.
@@ -233,6 +246,30 @@
         end do
       
       enddo
+      
+      if(PTneeded) then
+! *** check data for proper limits
+        DO J = 1, NPRef
+          If((XRef(J).lt.-360.).or.(XRef(J).gt.360.)) then
+!            text='Longitude out of range -360<long<360'
+            call PigMessageOK('Ref Longitude out of range -360<long<360','Longitude Limits')
+            return
+          endif
+        enddo
+        DO J = 1, NPRef
+          If((YRef(J)+y0off.lt.-89.9).or.(YRef(J)+y0off.gt.89.9)) then
+!            text='Latitude out of range -89<lat<89'
+            call PigMessageOK('Ref Latitude out of range -89<lat<89','Latitude Limits')
+            return
+          endif
+        enddo
+!        write(*,*) 'ref',maxval(XRef(1:NPRef)),minval(XRef(1:NPRef)),maxval(YRef(1:NPRef)),minval(YRef(1:NPRef))
+        DO J = 1, NPRef
+          xscf = cos((YRef(j)+y0off)*d2r)
+          XRef(J) = (XRef(J) - xlong0) * xscf
+        enddo
+!        write(*,*) 'refPT',maxval(XRef(1:NPRef)),minval(XRef(1:NPRef)),maxval(YRef(1:NPRef)),minval(YRef(1:NPRef))
+      endif
 
       RETURN
 

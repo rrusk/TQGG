@@ -15,7 +15,7 @@ TQGG (pronounce like Jacuzzi) is a general purpose interactive program that crea
 2-dimensional unstructured grids. The long name is Triangle Quadrilateral Grid Generation and it was
 developed from the program Trigrid and its later incarnation GridGen.
 
-For Linux and OSX, the GUI uses Motif and is compiled with gcc and gfortran. 
+For Linux and OSX, the GUI uses openMotif and is compiled with gcc and gfortran. 
 For Windows, the GUI uses the QUICKWIN routines in Visual Fortran (a combination of
 Visual Studio and the Intel fortran compiler). When initially developed 30 odd years 
 ago, the program was written in ancient fortran and used a command line interface. With
@@ -38,7 +38,7 @@ specific instructions are given for building the program with different operatin
 
 \section{Linux}
 \subsection{System Requirements}
-Linux systems require the Motif development environment, gcc, and gfortran. Normally, gcc is 
+Linux systems require the openMotif development environment, gcc, and gfortran. Normally, gcc is 
 available with the code development environment, and gfortran and Motif are available through
 the software manager for the particular flavor of Linux being used. If netCDF is desired, the netCDF 
 libraries can be installed with the software manager. The fortran interface is also needed and can be 
@@ -48,26 +48,68 @@ The software has been
 tested on several versions of openSUSE and Linux Mint. 
 
 \subsection{Building}
-On Linux, just type 'make' in the directory TQGG and the executable will be built and put into the
+On Linux, just type 'make TQGG' in the directory TQGG and the executable will be built and put into the
 subdirectory 'bin'. Then typing 'bin/TQGG' will execute the program. There are test files in 
-the directory 'demodata'.
+the directory 'demodata'. Typing 'make clean' will remove the object and module object files.
 
-The program can also be built using the scripts in './TQGGWS/TQGG\_xm'. cd to this directory and
-use the scripts to build versions with and without debug support.
+There are 4 flavours of TQGG that can be built by using one of the following names in the make command:
+\begin{description}
+ \item [TQGG] The normal run version.
+ \item [TQGGdbg] The debug version with traceback and bounds checking.
+ \item [TQGGnc] The run version with netCDF support.
+ \item [TQGGncdbg] The debug version with netCDF support and traceback and bounds checking.
+\end{description}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
 
 \section{Apple OSX}
 \subsection{System Requirements}
-OSX like Linux requires the Motif development environment, gcc, and gfortran. These are
-not normally installed on the proprietary OSX machines. Motif can be installed from several
-sources on the web, and gcc and gfortran are available from GNU. You will need to install
+OSX like Linux requires the openMotif development environment, gcc, and gfortran. These are
+not normally installed on the proprietary OSX machines nor is there a package manager. 
+OpenMotif can be installed from several
+sources on the web, gfortran is available from the GNU web site, and gcc (GNU or clang version) 
+comes with OSX development environment depending on OSX version. You will need to install
 Apple's XCode for the compilers. It is interesting getting all this software to dance together,
 but the result is worth it. The TQGG code was developed on a Macbook with OSX 10.6,
-XCode 4, and Motif 2.1.32-22i.
+XCode 4, and openMotif 2.1.32-22i and with OSX 10.10.5, XCode 7, and openMotif 2.3.4.
 
 \subsection{Building}
-The program can be built using the scripts in './TQGGWS/TQGG\_mac'. cd to this directory and
-use the scripts to build versions with and without debug support. You may have to change the 
-path to the Motif code and compilers if they install in a different directory.
+
+\subsubsection{OSX 10.6.8 (and earlier?)}
+
+This was the first attempt to port the program from linux to a macbook. After searching around
+and taking a few missteps, the following procedure was successful.
+
+\begin{enumerate}
+ \item Install XCode from Apple. This provides gcc.
+ \item Install or update to the latest version of XQuartz (The X11 system used by OSX). 
+ \item Install gfortran from https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
+ \item Download the openMotif 2.1.32 libraries and include files from \\
+ http://www.ist-inc.com/motif/download/index.html
+ \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+\end{enumerate}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
+
+\subsubsection{OSX 10.10.5}
+
+Somewhere between OSX 10.6.8 and 10.10.5, the available download for openMotif 2.1.32-22i no longer 
+functions properly and openMotif must be rebuilt. However, others have made this a simple task.
+In all, the necessary software is provided by following these steps:
+\begin{enumerate}
+ \item Install XCode and Command Line Tools from Apple. This provides gcc (clang) and the tools
+ for rebuilding openMotif.
+ \item Install or update to the latest version of XQuartz (The X11 system used by OSX). 
+ \item Install gfortran from https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
+ \item Install Homebrew for package management from http://brew.sh/. Also see https://github.com/Homebrew/homebrew.
+ \item Build the openMotif libraries and include files using a one-line command with Homebrew.\\ 
+ See https://gist.github.com/steakknife/60a39a32ae84e12238a2
+ \item Create a symbolic link so the compiler and linker can find the openMotif include files and libraries.\\
+ sudo ln -s /usr/local/Cellar/openmotif/2.3.4 /usr/OpenMotif
+ \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+\end{enumerate}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
 
 \section{MS Windows}
 \subsection{System Requirements}
@@ -78,7 +120,7 @@ compiler 2011.8. Visual Studio 2008 has also been used with 64-bit XP where the 
 automatically updated to a new format.
 
 \subsection{Building}
-The project file TQGG.vfproj can be found in './TQGGWS/TQGG\_vf'. Open this file in Visual Studio
+The project file TQGG.vfproj can be found in './TQGGWS\_vf'. Open this file in Visual Studio
 and there will be options to build the 32-bit debug and release versions, and the 64-bit debug 
 and release versions.
 

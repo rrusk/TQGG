@@ -89,14 +89,7 @@
 !          istat = index( fle, '.nc' )
           if(fle(fnlen-2:fnlen).eq.'.nc') then !netCDF file
             close(nunit,status='keep')
-#ifdef CNCD
             call ReadnetCDFData(fle,Quit)
-#else
-            call PigMessageOK('Recompile with netCDF option','ReadnCDF')
-            Quit = .TRUE.
-            GridRName =  'NONE'
-            return
-#endif
           elseif(fle(fnlen-3:fnlen).eq.'.ngh') then !ngh file
 !            open(nunit,file=fle,status='old')
             READ(nunit,'(a)',IOSTAT=istat) Firstline

@@ -184,11 +184,7 @@
           change = .false.
         endif
         close(nunit,status='keep')
-#ifdef CNCD
         call WritenetCDFData(ans,Quit)
-#else
-        call PigMessageOK('Recompile with netCDF option','WritenCDF')
-#endif
       elseif(ans(fnlen-3:fnlen).eq.'.grd') then !grd file, nodes+elements
         write(*,*) fnlen-3,fnlen
         write(*,*) ans(fnlen-3:fnlen)

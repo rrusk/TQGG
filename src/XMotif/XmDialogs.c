@@ -959,10 +959,12 @@ char *strings[] = { "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9",
 /* callback for all ToggleButtons of WPigNodeCheck.*/
 void toggledNodeCheckCB (Widget widget, XtPointer client_data, XtPointer call_data)
 {
-	int bit = (int) client_data;
+	int bit = *((int *) client_data);
+	free(client_data);
+
 	XmToggleButtonCallbackStruct *toggle_data = (XmToggleButtonCallbackStruct *) call_data;
 
-    long which = (long) client_data;
+    	long which = (long) bit;
 
 	if (toggle_data->set == XmSET){ /* if the toggle button is set, flip its bit */
 		toggles_set |= (1 << bit);
@@ -1050,7 +1052,11 @@ void WPigNodeCheck(void)
 	/* simply loop thru the strings creating a widget for each one */
 	for (i = 0; i < XtNumber (strings); i++) {
 			w = XmCreateToggleButtonGadget (toggle_box, strings[i], NULL, 0);
-			XtAddCallback (w, XmNvalueChangedCallback, toggledNodeCheckCB, (XtPointer) i);
+
+			int * ip = (int *) malloc(sizeof(int));
+			*ip = i;
+
+			XtAddCallback (w, XmNvalueChangedCallback, toggledNodeCheckCB, (XtPointer) ip);
 			XtManageChild (w);
 	}
 

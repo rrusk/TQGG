@@ -25,6 +25,8 @@
   !***********************************************************************
 */
 
+#include <stdio.h>
+
 #include "XmMain.h"
 #include "pigdefs.h"
 
@@ -693,7 +695,7 @@ void fileok_cb (Widget widget, XtPointer client_data, XtPointer call_data)
     
     if (!*filename) {
         /* nothing typed? */
-        puts ("No file selected.");
+        printf("No file selected.");
 
         XtFree (filename);
         

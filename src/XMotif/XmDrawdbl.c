@@ -27,6 +27,7 @@
 */
 
 #include <Xm/DrawingA.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "pigdefs.h"
 

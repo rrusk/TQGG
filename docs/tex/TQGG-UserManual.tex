@@ -20,21 +20,22 @@
 \newcounter{Figure}
 \renewcommand\theFigure{\arabic{Figure}}
 \title{GridGen Users Manual}
+
 \begin{document}
 
 
-\title{Triangle-Quadrilateral Grid Generation (TQGG) User Manual}
+\title{Triangle-Quadrilateral Grid Generation (TQGG) User Manual \\ - \\
+ A computer program for constructing unstructured grids }
 
 \author{Roy Walters \\
-  Ocean-River Hydrodynamics \\
-\and
   Clayton Hiles \\
+  Kristoffer Lorentsen \\ \\
   Cascadia Coast Research Ltd. \\
-%\date{5 Oct 2012}
-\and
-  Kristoffer Lorentsen \\
-  Cascadia Coast Research Ltd.}
+  Victoria, BC Canada \\
+  http://cascadiacoast.com \\ \\
+  and with help from many others}
 
+  
 \maketitle
 
 \newpage
@@ -42,6 +43,136 @@
 
 \setcounter{tocdepth}{2}
 \tableofcontents
+
+
+\newpage
+\section{Installation}
+
+\subsection{Background}
+TQGG (pronounced like Jacuzzi) is an open source general purpose interactive program that creates
+2-dimensional unstructured grids. The long name is Triangle Quadrilateral Grid Generation and it was
+developed from the program Trigrid and its later incarnation GridGen.
+
+For Linux and OSX, the GUI uses openMotif and is compiled with gcc and gfortran. 
+For Windows, the GUI uses the QUICKWIN routines in Visual Fortran (a combination of
+Visual Studio and the Intel fortran compiler). When initially developed 30 odd years 
+ago, the program was written in ancient fortran and used a command line interface. With
+the advent of more modern GUIs, the graphical interface is written in C and has has 
+been separated from the fortran computational code. Hence, this is a mixed-language program.
+
+The source code is in a git repository. The first step is to install git (a revision control program)
+on the target system. This is freely available software and may be obtained at \\
+
+\noindent http://git-scm.com/downloads \\
+
+Once git is installed, create a base directory in your user space for the TQGG source; ie, MyPrograms.
+Change directory to the directory that has just been created. Then type \\
+
+\noindent git clone https://github.com/rrusk/TQGG.git \\
+
+\noindent which will create a directory ./TQGG and install the code there. In the next sections, 
+specific instructions are given for building the program with different operating systems.
+
+
+\subsection{Linux}
+\subsubsection{System Requirements}
+Linux systems require the openMotif development environment, gcc, and gfortran. Normally, gcc is 
+available with the code development environment, and gfortran and Motif are available through
+the software manager for the particular flavor of Linux being used. If netCDF is desired, the netCDF 
+libraries can be installed with the software manager. The fortran interface is also needed and can be 
+downloaded from the netCDF download site. The fortran files should be built with gfortran to be compatible
+with the other code. Building the interface is simple and well documented. We have used version 4.2.1.
+The software has been
+tested on several versions of openSUSE and Linux Mint. 
+
+\subsubsection{Building}
+On Linux, just type 'make TQGG' in the directory TQGG and the executable will be built and put into the
+subdirectory 'bin'. Then typing 'bin/TQGG' will execute the program. There are test files in 
+the directory 'demodata'. Typing 'make clean' will remove the object and module object files.
+
+There are 4 flavours of TQGG that can be built by using one of the following names in the make command:
+\begin{description}
+ \item [TQGG] The normal run version.
+ \item [TQGGdbg] The debug version with traceback and bounds checking.
+ \item [TQGGnc] The run version with netCDF support.
+ \item [TQGGncdbg] The debug version with netCDF support and traceback and bounds checking.
+\end{description}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
+
+\subsection{Apple OSX}
+\subsubsection{System Requirements}
+OSX like Linux requires the openMotif development environment, gcc, and gfortran. These are
+not normally installed on the proprietary OSX machines nor is there a package manager. 
+OpenMotif can be installed from several
+sources on the web, gfortran is available from the GNU web site, and gcc (GNU or clang version) 
+comes with OSX development environment depending on OSX version. You will need to install
+Apple's XCode for the compilers. It is interesting getting all this software to dance together,
+but the result is worth it. The TQGG code was developed on a Macbook with OSX 10.6,
+XCode 4, and openMotif 2.1.32-22i and with OSX 10.10.5, XCode 7, and openMotif 2.3.4.
+
+\subsubsection{Building}
+
+ {\bf{OSX 10.6.8 (and earlier?)}}
+
+This was the first attempt to port the program from linux to a macbook. After searching around
+and taking a few missteps, the following procedure was successful.
+
+\begin{enumerate}
+ \item Install XCode from Apple. This provides gcc.
+ \item Install or update to the latest version of XQuartz (The X11 system used by OSX). 
+ \item Install gfortran from https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
+ \item Download the openMotif 2.1.32 libraries and include files from \\
+ http://www.ist-inc.com/motif/download/index.html
+ \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+\end{enumerate}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. \\
+
+{\bf{OSX 10.10.5}}
+
+Somewhere between OSX 10.6.8 and 10.10.5, the available download for openMotif 2.1.32-22i no longer 
+functions properly and openMotif must be rebuilt. However, others have made this a simple task.
+In all, the necessary software is provided by following these steps:
+\begin{enumerate}
+ \item Install XCode and Command Line Tools from Apple. This provides gcc (clang) and the tools
+ for rebuilding openMotif.
+ \item Install or update to the latest version of XQuartz (The X11 system used by OSX). 
+ \item Install gfortran from https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
+ \item Install Homebrew for package management from http://brew.sh/. Also see https://github.com/Homebrew/homebrew.
+ \item Build the openMotif libraries and include files using a one-line command with Homebrew.\\ 
+ See https://gist.github.com/steakknife/60a39a32ae84e12238a2
+ \item Create a symbolic link so the compiler and linker can find the openMotif include files and libraries.\\
+ sudo ln -s /usr/local/Cellar/openmotif/2.3.4 /usr/OpenMotif
+ \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+\end{enumerate}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
+
+\subsection{MS Windows}
+\subsubsection{System Requirements}
+The Windows version requires Visual Studio and a fortran compiler that includes the QUICKWIN
+libraries. These libraries are fortran callable subroutines that access a simplified version
+of the WIN API. The program was developed using Win XP SP2, Visual Studio 2005, and Intel fortran
+compiler 2011.8. Visual Studio 2008 has also been used with 64-bit XP where the project file is
+automatically updated to a new format.
+
+\subsubsection{Building}
+The project file TQGG.vfproj can be found in './TQGGWS/VS2005'. Open this file in Visual Studio
+and there will be options to build the 32-bit debug and release versions, and the 64-bit debug 
+and release versions.
+
+Unlike the Linux and Mac versions, all the dialog boxes in Windows are modal; ie, the dialog must be 
+closed before any other operations can commence. The only solution to this is to program the GUI
+directly with the WIN API and not use QUICKWIN.
+
+There have been issues in running these executables on later versions of Windows (7 and possibly 8).
+Apparently, there is some security issue with the later versions such that the dialog boxes will
+not accept any input so the program hangs. This may not happen with later versions of VS and QUICKWIN that
+are built for the later versions of Windows.
+
+
+
 
 \newpage
 \section{TQGG Program Description}
@@ -190,7 +321,7 @@ OpenNode \\ AddNode \\    \hline
 Sample \\    \hline
 XSection \\    \hline
 IntrimSave \\ SaveAs \\    \hline
-Print \\ Quit\\
+ Quit\\
     \hline
    \end{tabular}
    \label{tab:FILE}
@@ -203,9 +334,9 @@ These menu items are described next.
 This option allows for reading a new grid file in NGH or GRD format (see Section \ref{sec:formats}). Any existing data is replaced.
 
 \subsubsection[Menu item AddGrid]{Menu item AddGrid}
-This option allows for reading a new grid file in NEIGH format (see Section \ref{sec:formats}). This grid is merged with any existing data so that this action is used to join grids together. Along the edge of the grids that are merged, the boundary node codes are changed to 90, which make this a line that is fixed in space. After merging files, use the \textbf{\{Info\}NodeCheck} to examine the codes at the ends of the lines where the grids are joined. In many cases, the codes at these points need to be changed to 1, 5, or 6, depending on the type of boundary (land, open, or junction of land and open).
+This option allows for reading a new grid file in NGH format (see Section \ref{sec:formats}). This grid is merged with any existing data so that this action is used to join grids together. Along the edge of the grids that are merged, the boundary node codes are changed to 90, which make this a line that is fixed in space. After merging files, use the \textbf{\{Info\}NodeCheck} to examine the codes at the ends of the lines where the grids are joined. In many cases, the codes at these points need to be changed to 1, 5, or 6, depending on the type of boundary (land, open, or junction of land and open).
 
-When joining grids in this way, it is helpful to begin the editing session with the two sub-grids displayed in different colours. This can be done by suitable choice of the SECONDARY COLOUR INDEX, as explained in the description of option \textbf{\{Configure\}ConfigGrid} later in this Chapter.
+When joining grids in this way, it is helpful to begin the editing session with the two sub-grids displayed in different colours. This is be done by default using a SECONDARY COLOUR INDEX.
 
 The two sub-grids may have to be stitched together as required. Some nodes may have to be deleted if the two sub-grids overlap; conversely, extra nodes may have to be added if there is a substantial gap. Connections between nodes of the two sub-grids may be established using \textbf{\{GridEdit\}AddLine} or the node-merging capability available through \textbf{\{GridEdit\}Move}. To use this later, which is very convenient where there are pairs of adjacent nodes from the two sub-grids, it is first necessary to invoke \textbf{\{GridEdit \}GridMerge}.
 
@@ -213,35 +344,28 @@ The two sub-grids may have to be stitched together as required. Some nodes may h
 This option allows for reading a new node file in NODE format (see Section \ref{sec:formats}). Any existing data is replaced. After picking this option, the user is prompted for the file name of a NODE format file.
 
 \subsubsection[Menu item AddNode]{Menu item AddNode}
-This option permits reading a NODE format file and sub-sampling the boundaries and interior nodes by index or by distance. If there are no nodes in existence prior to choosing this option, a NODE format file can be sub-sampled. Otherwise, the nodes are added to the existing nodes. If the prompt option is ON, the user is prompted before any set of nodes is added. This is useful for selectively adding boundaries or interior nodes. [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
+This option permits reading a NODE format file and then adding data from other NODE format files. This data can be island (inner) boundaries, line constraints which are interior nodes that are in fixed positions and linked together, and arbitrary interior nodes. The usual procedure is to read a file with the outer boundary, then select menu item {\bf AddNode} and follow the prompts to add selected data. 
 
 \subsubsection[Menu item Sample]{Menu item Sample}
 This menu item is used to sample *.xyz files into TQGG. The workspace will be cleared prior to sampling the files.
 The user will be prompted to input a gridtype and minimum subsample spacing. The subsample spacing is defined in meters and will subsample the boundaries by only including new nodes that are farther away from the previous one than the minimum spacing.
 
 \subsubsection[Menu item CrossSection]{Menu item XSection}
-The following option is used for creating grids from cross section data. A file containing cross section data is read and a grid is created from this data. Options in the right-hand-panel define the number of nodes to create across the section, and the number of nodes to create between each cross section. All these nodes are interpolated using a cubic spline algorithm. See Section \ref{sec:formats} for a description of files in XSEC format.  [THIS SECTION NEEDS TO BE UPDATED.  I AM NOT SURE THAT THE PROGRAM BEHAVIOUR IS STILL AS DESCRIBED]
+This option is used for creating grids from cross section data. A file containing cross section data is read and a grid is created from this data (sample data: demodata/sriver.xsc). The user is prompted for the number of nodes to create across the section, the number of nodes to create between each cross section, the type of grid (nodes, triangles, quadrilaterals), and the grid units. All these nodes are interpolated using a cubic spline algorithm. See Section \ref{sec:formats} for a description of files in XSEC format.
 
 \subsubsection[Menu item InterimSave]{Menu item InterimSave}
-Invoking this option leads to output of the current version of the grid in `.NGH' format or node file in a `.NOD' format. The resulting file is less compact than the NEIGH file and NODE file obtained with the usual EXIT procedure (see below). But it is a useful facility and should be used at regular intervals during a long editing session to avoid losing one's work in the event of power failure or other interruption. Alternate interim saves are written to files named interim1.*** and interim2.***; the name of the last interim save file output can be checked via the \textbf{\{Info\}Files} option.
+Invoking this option leads to output of the current version of the grid in `.NGH' format or node file in a `.NOD' format. The resulting file is less compact than the NGH file and NODE file obtained with the usual EXIT procedure (see below). But it is a useful facility and should be used at regular intervals during a long editing session to avoid losing one's work in the event of power failure or other interruption. Alternate interim saves are written to files named interim1.*** and interim2.***; the name of the last interim save file output can be checked via the \textbf{\{Info\}Files} option.
 
 \subsubsection[Menu item SaveAs]{Menu item SaveAs}
-This is the option normally used after the completion of a grid or modification of a grid and node file. It brings up a request for the name of the file in which the final version is to be saved. If the file does not exist then a prompt appears asking the user whether or not to create the file. If no file output is selected or `CANCEL' is selected, then the program exits with open error message.
-
-\subsubsection[Menu item Print]{Menu item Print}
-This option is identical in all the interactive programs. Picking this option brings up the Windows print manager. Note that for all printing it is advisable to change the background to white using Background in \textbf{\{View\}}. [This menu is not implemented yet in Motif version of TQGG.]
-
-%\subsubsection[Menu item About]{Menu item About}
-%This option displays the version number and name of the developers.
+This is the option normally used after the completion of a grid or modification of a grid and node file. It brings up a request for the name of the file in which the final version is to be saved. \\
+WIN BEHAVIOUR: If the file does not exist then a prompt appears asking the user whether or not to create the file. If no file output is selected or `CANCEL' is selected, then the program exits with open error message.
 
 \subsubsection[Menu item Quit]{Menu item Quit}
-This allows exit from the Editor without output of any files. The user is prompted to answer whether an exit is really desired. This helps prevent accidental termination of the program.
+This allows exit without output of any files. The user is prompted to answer whether the file is to be saved and whether an exit is really desired. This helps prevent accidental termination of the program.
 
 
 \subsection{Contents of menu: View}
-This option provides control over windowing and uses the same module as is used in the other interactive graphics programs.
-
-When the View menu is chosen from \textbf{\{TOP\}}, the options appear as shown in Table \ref{tab:VIEW}.
+This option provides control over windowing. When the View menu is chosen from \textbf{\{TOP\}}, the options appear as shown in Table \ref{tab:VIEW}.
 
 \begin{table}[htb!]
  \caption{View menu items.}
@@ -260,7 +384,7 @@ PolarTransform \\  UTMTransform \\
 \end{table}
 
 
-The functions in this menu provide control over windowing (zoom) and refreshing the display. Up to [?] levels of windowing are allowed.
+The functions in this menu provide control over windowing (zoom) and refreshing the display. Up to 50 levels of windowing are allowed.
 
 \subsubsection{Menu item Redraw}
 This function forces a refresh of the current display. It may be used for instance when grid lines have become partially erased during removal of markers. It is also used in some instances to get a clean display after turning off options such as display of the original digitized boundaries.
@@ -298,8 +422,6 @@ This selection converts the present x and y coordinate using a spherical polar t
 \subsubsection{Menu item UTMTransform}
 This selection converts the present x and y coordinate using a UTM Transform. If the current grid type is Lat/Lon it will convert to UTM. If the current grid type is UTM, it will convert to Lat/Lon. The user will be prompted to input a UTM zone for the conversion.
 
-\textbf{[TODO: Transform menu item descriptions should be support with a description of each type of transform]}
-
 
 \subsection{Contents of menu: Info}
 When the Info menu is chosen from \textbf{\{TOP\}}, the options appear as shown in Table \ref{tab:INFO}.
@@ -326,7 +448,7 @@ These permit placing of coloured markers on the screen to mark locations or to d
 % This menu permits use of the right-hand panel for display of information about any selected node or triangle and also permits the user to change the coordinates, depth, or computational code of any selected vertex via the keyboard. Names of files being used during the current editing session or a limited portion of any arbitrary file can also be displayed.
 
 \subsubsection{Menu item NodeInfo}
-Selection of this menu item prompt the user to select a node.  In the Motif version of TQGG this is done using the mouse to click on the node.  The following information is displayed in the terminal window.  Note that work is ongoing to translate output to a dialogue box.
+Selection of this menu item prompt the user to select a node.  In the Motif version of TQGG this is done using the mouse to click on the node.  The following information is displayed in the terminal window.
 
 \begin{itemize}
 \item Index number
@@ -336,12 +458,10 @@ Selection of this menu item prompt the user to select a node.  In the Motif vers
 
 A marker is placed at each vertex examined. If a number of points are examined, it may be desirable to erase existing markers in order to be able to spot new markers. \textbf{\{View\}Redraw} erases all markers.
 
-%After choosing a node, the user may change its depth, computational code or coordinates by picking the corresponding current values shown in cyan in the right-hand panel. It is advisable not to change the coordinates of a vertex unless it is visible, so as to avoid impermissible moves. It should be noted that using this option to make the coordinates of a vertex identical (or nearly identical) to those of a neighbour does not result in a MERGE operation, and this type of change should be avoided.
+After choosing a node, the user may change its depth or computational code by changing the corresponding current values shown in the dialog box and picking update.
 
 \subsubsection{Menu item ElementInfo}
-Selection of this option prompts the user to select an element.  In the Motif version of TQGG this is done using the mouse to click on the element.  The following information is displayed in the terminal window.  Note that work is ongoing to translate output to a dialogue box.
-
-The following information on the selected element appears:
+Selection of this option prompts the user to select an element.  This is done using the mouse to click on the element. The following information on the selected element appears in the dialog box:
 
 \begin{itemize}
 \item Index number
@@ -351,11 +471,10 @@ The following information on the selected element appears:
 \end{itemize}
 A marker is placed in each element examined. If a number of them are examined, it may be desirable to erase existing markers in order to be able to spot new markers. \textbf{\{View\}Redraw} erases all markers.
 
-% GOT TO HERE WITH EDITING
+The element code can be changed by changing the appropriate value in the dialog box and selecting update. To find an element by index, change the index number to the desired value and select update.
 
 \subsubsection{Menu item NodeCheck}
-This enables labelling of grid vertices with coloured markers according to certain built-in criteria or an external list, so providing an efficient visual means of simultaneously checking specific properties at all vertices visible in the window. When this option is selected, appropriate information appears in a dialogue box with available criteria as shown below. [This dialogue box is still under construction and not all options work].
-\\ \\
+This enables labelling of grid vertices with coloured markers according to certain built-in criteria or an external list, thus providing an efficient visual means of simultaneously checking specific properties at all vertices visible in the window. When this option is selected, appropriate information appears in a dialogue box with available criteria as shown below.
 
 
 \begin{table}[htb!]
@@ -399,7 +518,7 @@ This enables labelling of grid vertices with coloured markers according to certa
 %NONE
 
 
-The final option EXT instructs the Editor to read in a prepared external file (in EXTVER format), each line of which contains the number of a vertex where a marker is to be placed, followed by an integer specifying the colour of the marker. [This option not yet implimented in Motif version of TQGG].]
+The final option EXT instructs the program to read in a prepared external file (in EXTVER format), each line of which contains the number of a vertex where a marker is to be placed, followed by an integer specifying the colour of the marker. [This option not yet implimented in Motif version of TQGG].]
 
 The name of the external criterion file is not requested until the EXT option is invoked; consequently, it is possible for the user to colour vertices according to different criteria in succession by preparing as many external files as required. The name of the external file currently assigned is displayed in the information panel. A different external file can be assigned by clicking the name of the existing file in the information panel.
 
@@ -407,7 +526,7 @@ Finally, when all details of the criterion or criteria to be displayed have been
 
 \subsubsection{Menu item ElementCheck}
 
-To permit convenient monitoring of certain triangle properties, default or user defined colour tables are used to place coloured markers and solid colours in triangles. When the colouring option is invoked, necessary list of all triangles and their calculated triangular properties are updated. This enables the user to check effects on triangle properties of any editing grid immediately.
+To permit convenient monitoring of certain triangle properties, default or user defined colour tables are used to place coloured markers and solid colours in triangles. When the colouring option is invoked, necessary list of all triangles and their calculated triangular properties are updated. This enables the user to check effects on triangle properties of any editing operations immediately.
 
 When the ElementCheck option is selected, a dialogue box appears with options for selecting the colouring mode and the type of test as shown below.
 
@@ -452,13 +571,13 @@ After the needed check and options are selected, the check can be run by pressin
 \subsubsection{Menu item BoundaryCheck}
 Selection of this option will perform boundary checks on the boundary. The check is intended to be run prior to doing a triangualtion to make sure that the grid is defined correctly.The following checks will be performed:
 \begin{description}
-\item[Boundary Orientation] All boundaries orientation are checked. Clockwise boundaries are then displayed in \emph{red}, while counter-clockwise boundaries are display in \emph{green}
+\item[Boundary Orientation] All boundary orientations are checked. Clockwise boundaries are then displayed in \emph{red}, while counter-clockwise boundaries are display in \emph{green}
 \item[Outer Boundary Location] The outer boundary is found and if this is not the first boundary in the data-arrays, the user will be prompted to move it.
 \item[Outer Boundary Orientation] The outer boundarys orientation should be CCW. If it is CW, the user is prompted to reverse it.
 \item[Island Boundary Orientation] All other boundaries than the outer boundary should be defined CW. If any are CCW, the user will be prompted to reverse them.
 \item[Number of nodes on boundaries] If there are boundaries that have 3 or less nodes, the user will be prompted to delete these.
 \item[Node code reset] All nodecodes are reset to: 1 - outer boundary, 2 - island boundary
-\item[Triangulation Check] TQGG will perform a test-triangulation of the current boundaries. If any errors occur, the user will be notified and a permanent marked will be placed on the location where the error occured. Errors include: intersecting boundaries, coincident nodes and more.
+\item[Triangulation Check] TQGG will perform a test-triangulation of the current boundaries. If any errors occur, the user will be notified and a permanent marker will be placed on the location where the error occured. Errors include: intersecting boundaries, coincident nodes and more.
 \end{description}
 
 \subsubsection{Menu item EraseChecks}
@@ -509,55 +628,55 @@ Triangulate \\
 \end{table}
 
 
-These options are used for the creation of nodes and grids within the working polygon (the currently-activated polygon) and the last option generates triangles from nodes.
+These options are used for the creation of nodes and grids. For clusters, the generation is within the working polygon (the currently-activated polygon or the whole polygon if there are no polygons). The last option generates triangles from nodes. 
 
 \subsubsection[Menu item OneFront]{Menu item OneFront}
-[ NEEDS UPDATE ]
+One of the options for generating a grid of triangles is a frontal marching method described in \cite{LO1998,S1980}. The grid generation starts at the boundaries and projects new nodes into the interior based on the location and curvature of the boundary nodes. In order to generate a reasonable grid, the location of the boundary nodes must vary smoothly. This option generates a single front with a line of triangles projected into the interior of the grid. Fronts can be added one at a time to evaluate how the grid generation is progressing. If a reference grid is input, the triangle area will vary with depth in the reference grid such as the grid becomes coarser with increasing depth.  
+
 \subsubsection[Menu item Clusters]{Menu item Clusters}
 
-The Clusters option provides a method of creating a set of nodes whose spacing is a function of water depth. As explained in Henry (1988), when the model domain is subdivided into cells whose areas are proportional to water depth and the centres of area of these cells are taken as the basis for a triangular network, the areas of the triangles in the network are also approximately proportional to water depth and the spacing of the nodes is such that the Courant criterion is satisfied approximately throughout the grid, that is, node spacing is proportional to the local phase speed of shallow water waves. It should be noted that triangle area could be made proportional to any scalar quantity defined over the domain, by providing a reference grid for that quantity at stage GenerateMesh above, in place of a depth grid.
+The Clusters option provides a method of creating a set of nodes whose spacing is a function of water depth. As explained in \cite{HW1992}, when the model domain is subdivided into cells whose areas are proportional to water depth and the centres of area of these cells are taken as the basis for a triangular network, the areas of the triangles in the network are also approximately proportional to water depth and the spacing of the nodes is such that the Courant criterion is satisfied approximately throughout the grid, that is, node spacing is proportional to the local phase speed of shallow water waves. It should be noted that triangle area could be made proportional to any scalar quantity defined over the domain, by providing a reference grid for that quantity in place of a depth grid after this menu item is selected.
 
-The model domain is subdivided into cells by forming appropriately-sized compact clusters of squares belonging to the fine resolution Cartesian grid laid out over the domain using option GenerateMesh. Cluster (cell) area is related to water depth by an expression A0 + A1*DEPTH + A2*DEPTH**2, where the coefficients A0, A1, A2 can be set by the user. The linear case described in the preceding paragraph corresponds to A0 = A2 = 0.
+If the cluster option Display Mesh (below) is chosen, then the fine mesh will be displayed and the user has the option of changing the spacing. Otherwise, 100 cells across is used as a default. After displaying the mesh, the user is queried whether the mesh is OK. If not, the user is prompted for a new number of cells across the grid.
 
-Choice of option Clusters brings up an information panel on the right, which allows the user to reset various parameters and display conditions. The information panel contents are:
+If the cluster option Display Reference Grid (below) is chosen, then the reference grid id displayed. This option is useful for determining whether the reference grid properly overlays the grid being generated.
 
-Minimum cluster size (default =1) is considered in Cartesian grid squares. The maximum number of new nodes shown is the maximum node array size permitted taken away from the number of existing nodes in the whole domain. If a starting location for cluster formation is required other than at the point of maximum water depth, the starting location has to be specified in terms of number of rows and columns in the fine Cartesian grid, counting from the lower left-hand corner. The outlines of the clusters of squares from the Cartesian grid can be displayed as picking the option Draw Clusters forms them. Cluster formation begins on picking option ACCEPT.
+Next, the model domain is subdivided into cells by forming appropriately-sized compact clusters of squares summed from the fine resolution Cartesian grid laid out over the domain. Cluster (cell) area is related to water depth by an expression A0 + A1*DEPTH + A2*DEPTH**2, where the coefficients A0, A1, A2 can be set by the user. The linear case described in the preceding paragraph corresponds to A0 = A2 = 0. If the display Cluster option (below) is chosen, the user will be queried whether the cluster layout and gradation looks OK. Selecting no will bring up a series of prompts to read in new values of A0, A1, and A2. This is a quick generation procedure where the user is encouraged to experiment until a satisfactory grid is obtained.
 
-\subsubsection[Menu item Options]{Menu item Options}
+\subsubsection[Menu item Options]{Menu item Options (Clusters)}
 
 When selecting this menu item, the user will be prompted with the following questions:\\
-Display Mesh? Yes or No\\
-Display Ref Grid? Yes or No\\
-Display Clusters? Yes or No\\
 
-[ NEEDS UPDATE ]
+\begin{description}
+ \item Display Mesh? Yes or No. If yes, the fine mesh from which clusters are constructed is displayed.
+ \item Display Ref Grid? Yes or No. If yes, the reference grid for depth information is displayed.
+ \item Display Clusters? Yes or No. If yes, the constructed clusters are displayed.
+\end{description}
 
 \subsubsection[Menu item AllFronts]{Menu item AllFronts}
-Generates a unstructured grid using all boundaries.
-[ NEEDS UPDATE ]
+This option starts the creation of an unstructured grid composed of triangles using the frontal marching method described above. The frontal method will continue until no additional nodes can be created. The resulting triangle shapes can usually be improved with the reshape option in menu {\bf \{GridEdit\}Reshape}.
+If a reference grid is input, the triangle area will vary with depth in the reference grid such as the grid becomes coarser with increasing depth.  
 
 \subsubsection[Menu item Options (AllFronts)]{Menu item Options (AllFronts)}
-Menu item under construction
+[options under construction]
 
 \subsubsection[Menu item OverlayHex]{Menu item OverlayHex}
-[ NEEDS UPDATE ]
+This option creates a grid of equilateral triangles over an existing grid. First read in a grid file, or a node file and triangulate it, and select {\bf OverlayHex}. The program will prompt then user for the number (or size) of the triangles across the grid. Then a grid will be overlayed on the existing grid and any triangles outside of the outer boundary will be deleted. The resulting grid is then the active grid.
+
+
 \subsubsection[Menu item OverlaySquares]{Menu item OverlaySquares}
-This option places a new interior node at the centre of each square of the Cartesian grid whose centre lies within the active polygon and more than half a mesh interval from the nearest land boundary, that is, at the centre of each square assigned a positive depth as a result of operation GenerateMesh above.
+This option creates a grid of square quadrilaterals over an existing grid. First read in a grid file, or a node file and triangulate it, and select {\bf OverlaySquares}. The program will prompt then user for the number (or size) of the squares across the grid. Then a grid will be overlayed on the existing grid and any squares outside of the outer boundary will be deleted. The resulting grid is then the active grid.
 
 \subsubsection[Menu item OverlayMixed]{Menu item OverlayMixed}
-[ NEEDS UPDATE ]
+This option creates a grid of square quadrilaterals over an existing grid with triangles along the boundary to achieve a better fit. First read in a grid file, or a node file and triangulate it, and select {\bf OverlayMixed}. The program will prompt then user for the number (or size) of the squares across the grid. Then a grid will be overlayed on the existing grid and any squares outside of the outer boundary will be deleted or fitted to a triangle. The resulting grid is then the active grid.
+
 \subsubsection[Menu item Triangulate]{Menu item Triangulate}
 
-The following option is used for triangulation of a set of nodes; that is, it converts the data from NODE format to NEIGH format with a neighbour list and triangle list. The triangulation algorithm used in GRIDIT was devised originally by Cline and Renka and modified by Bova and Carey to handle boundaries. It yields what is known as a Delaunay triangulation, one in which the triangles formed are as near equilateral as possible for the given positions of the nodes.
+The following option is used for triangulation of a set of nodes; that is, it converts the data from NODE format to NGH format with a neighbour list and triangle list. The triangulation algorithm was devised by Prof. Scott Sloan (Department of Civil Engineering, University of Newcastle NSW 2308, Australia). It yields what is known as a constrained Delaunay triangulation, one in which the triangles formed are as near equilateral as possible for the given positions of the nodes.
 
-After triangulation, the grid should be checked both visually and by using various operations under Tests in the \{TOP\} menu. The reason for checking the output is that although the triangulation algorithm is fairly robust, it can produce various errors, some immediately obvious and some not. For instance, when the coordinate datum is poorly positioned, remote from the domain being modelled, consequent error in single precision subtractions can lead to very obvious misconnections between nodes far removed from one another. To minimize round off errors, coordinate reference should be placed within or immediately adjacent to the grid. 
+The algorithm starts by creating a large supertriangle around the domain to be triangulated. Then individual nodes are injected into the triangulation and element edges are swapped as required. Next, boundary and interior line constraints are enforced. Finally, the supertriangle and exterior triangles are removed and the resulting grid is subject to a number of error checks.
 
-On the other hand, less obvious but serious error can occur if the first few nodes on a boundary are collinear or approximately collinear. Then some or all of the nodes involved, and even some nodes further along the boundary, may have surplus connections to nodes which are not their immediate neighbours in the input node set. Automatic detection and correction of these errors is part of the triangulation algorithm. Checking for this type of error is advisable with the help of the EditGrid option. It can be prevented by modifying the arrangement of the corresponding block of nodes in the input file. Since each boundary corresponds to a closed curve, collinear nodes at the beginning of a boundary block can be moved to the end of the block (using a text editor), where they normally cause no problem.
-
-The triangulation algorithm can be confused by certain complicated coastal geometry. When an island lies partly in a coastal bay and both features have relatively few boundary nodes, spurious connections may be set up; the island coastline may be erroneously incorporated into the outer boundary. Another common error occurs along some nearly straight boundary segments. There are boundary connections that lie outside the boundary and define long, thin triangles that are difficult to see. Normally these connections are removed automatically. They can also generally be detected by using option \{Tests\}Nodecheck, as will be explained later.
-
-These errors are not peculiar to the Renka algorithm. All methods of triangulation used so far by the authors suffer from some problems similar to those mentioned, so it is advisable to have good error-checking capability, no matter what triangulation method is used.
-
+After triangulation, the grid should be checked both visually and by using various test operations such as in menu item {\bf \{Info\}ElementCheck}.
 
 \subsection{Contents of menu: NodeEdit}
 Picking EditNode with the mouse brings up a menu with options as shown in Table \ref{tab:NODEEDIT}. It gives access to operations affecting individual nodes rather than groups of nodes. 
@@ -578,80 +697,41 @@ PolyDeleteBnd \\ PolyDeleteInt \\ PolyDeleteAll \\
   \end{center}
 \end{table}
 
-
-NOTE: The subsections below are no longer accurate.
-\
 \subsubsection[Menu item DeleteNode]{Menu item DeleteNode}
-This menu options allow for deleting single nodes. Point the mouse at the node that is to be deleted, and click.
+This menu option is for deleting single nodes. Point the mouse at the node that is to be deleted, and click.
 
 N.B. This DeleteNode option should not be used for complete deletion of an island, which requires more radical changes to the NODE file. Instead, use DeleteIsland, described later.
 
 \subsubsection[Menu item MoveNode]{Menu item MoveNode}
-This menu options allow for moving single nodes. Point the mouse at the node that is to be moved, and click. The node will be highlighted. Click on the location where the node should be moved.
+This menu option is for moving single nodes. Point the mouse at the node that is to be moved, and click. The node will be highlighted. Then click on the location where the node should be moved.
 
 \subsubsection[Menu item AddBndNode]{Menu item AddBndNode}
-This menu options allow for adding a boundary node to an existing boundary. Click on the location where the node is to be added. TQGG will connect the node to the existing boundary and the user will be prompted to confirm the connection.
+This menu options is for adding a boundary node to an existing boundary. Click on the location where the node is to be added. TQGG will connect the node to the existing boundary and the user will be prompted to confirm the connection. If the connections cannot be found, insert the node between the desired connections. Then move the node to the proper location.
 
 \subsubsection[Menu item Reverse]{Menu item Reverse}
 This option is used to reverse the direction of a boundary. After choosing this option, click on the boundary that is to be reversed.
 
 \subsubsection[Menu item Join]{Menu item Join}
-This option is used to join two boundarie endpoints. After choosing this option, click on the first boundary, then the second boundary endpoint that is to be joined. The user will be prompted to confirm the action.
+This option is used to join two boundary endpoints. After choosing this option, click on the first boundary, then the second boundary endpoint that is to be joined. The user will be prompted to confirm the action.
 
 \subsubsection[Menu item Split]{Menu item Split}
-This option is used to split a boundary. After choosing this option, click on a boundary where you want to delete it. After doing so, TQGG will suggest to split the boundary in the direction of the next node that is farthest away from the selected node. If this is rejected, TQGG will suggest to split in the opposite direction. If confirmed, the boundary will be split. Note that endpoints can not be split from the boundary.
+This option is used to split a boundary. After choosing this option, click on a boundary where you want to delete it. After doing so, TQGG will suggest splitting the boundary in the direction of the next node that is farthest away from the selected node. If this is rejected, TQGG will suggest splitting in the opposite direction. If confirmed, the boundary will be split. Note that endpoints can not be split from the boundary.
 
 \subsubsection[Menu item ReSample]{Menu item ReSample}
-This option performes an uneven ReSample along a boundary line. When selected, the user should select two nodes on the same boundary. TQGG will then perform a resample so that the resolution is evenly increasing/decreasing from the resolution at the first node, to the resolution at the second node.
+This option performs an uneven ReSample along a boundary line. When selected, the user should select two nodes on the same boundary. TQGG will then perform a resample so that the resolution is evenly increasing/decreasing from the resolution at the first node, to the resolution at the second node.
 
 \subsubsection[Menu item Reselect]{Menu item Reselect}
 
-This option allows the user to replace any designated string of boundary nodes with a fresh selection of nodes from a boundary data file in DIGIT or NODE format. Selection may be made on the basis of distance between points or by choosing every Nth digitized point. The following information panel is displayed:
-
-BOUNDARY NODE\newline
-RESELECTION
-
-
-\bigskip
-
-File Type: \ \ NODE\newline
-File Name:\newline
-NONE \newline
-
-Show Bndry from file: \ \ NO\newline
-Show Bndry Connect: \ \ YES
-
-Sampling Rate:\newline
-Nth Point: \ \ \ \ 10\newline
-Distance: \ \  \ \ \ \ 1.000
-
-PICK ENDPOINTS\newline
-RESELECT 
-
-TOP: DISPLAY
-
-TOP: INFO\newline
-QUIT
-
-
-\bigskip
-
-NODE and File Boundary Blocks in Same Order:
-
-NO
-
-Pick [NONE] under '{}'File Name:'{}' as the first operation in this panel. Enter the file name of the file to reselect from to the following prompt. Pick [NODE] next to '{}'File Type:'{}' if the file is in DIGIT format. The asterisk indicates which selection criterion is in effect. To reselect a stretch of boundary nodes, first pick the first and last nodes on the stretch to be replaced. The program will then search the digitized boundary data file and display the points, which it identifies to be the first and last points of the corresponding stretch of digitized boundary data. On confirming this identification, the user can make a fresh selection of nodes by picking ReSelect. Once reselection of the nodes is complete the new nodes will be displayed and the user may save or cancel the reselection at the following prompt. If the reselection is saved a prompt will appear asking if depth for the reselected nodes should be interpolated or assigned from the input file used. Pick QUIT to leave this procedure. The 
-final option in the panel permits some saving of time in the case of very large digitized boundary files. If it is known that the blocks of data (digitized data or nodes) representing islands are in exactly the same order in both the DIGIT and NODE files, then some search time can be saved by toggling NO to YES. Do not use this facility if islands have been deleted with the corresponding updating of the digitized boundary file.
-\\
+This option allows the user to replace any designated string of boundary nodes with a fresh selection of nodes from a boundary data file in NODE format. Selection is made on the basis of choosing every Nth digitized point.
 
 \subsubsection[Menu item DeleteIsland]{Menu item DeleteIsland}
 This option deletes all boundary nodes associated with an island, that is, complete removal of an island from the node file. The user selects the island to be deleted by picking any boundary node of the island.
 
 \subsubsection[Menu item AddIntNode]{Menu item AddIntNode}
-[NEEDS UPDATE]
+When this item is selected, the AddInternalNode option is active. Nodes are added in sequence by clicking on the interior of the grid. This option is active until changed by another menu option.
 
 \subsubsection[Menu item AddIntLine]{Menu item AddIntLine}
-[NEEDS UPDATE]
+This option is used for adding a line of nodes in the interior of the grid. First, the 2 end nodes are selected, then the user is prompted for the number of nodes to place between the endpoints.
 
 
 \subsection{Contents of menu: GridEdit}
@@ -672,25 +752,17 @@ GridToNodes \\
   \end{center}
 \end{table}
 
-These permit a wide variety of changes to be made to the displayed grid, as described below.
-
-NOTE: menu items below are out of date.
-
-
-
-
+These options permit a wide variety of changes to be made to the displayed grid, as described below.
 
 \subsubsection[Menu item AddLine]{Menu item AddLine}
 Option AddLine permits addition of a connection between two vertices. Pick the two nodes by point and click.
 
-Note: When selecting a node by means of the cursor, the message `ERROR - Invalid point' may be displayed. When this happens, a second attempt to select the required node will normally prove successful, since the cursor range is increased automatically. The cursor range can also be changed directly as described in \{Info\}CursorRange or turned off using \{Info\}AutoRange.
-
 \subsubsection[Menu item DeleteLine]{Menu item DeleteLine}
-Option AddLine permits the removal og the connection between two vertices. Pick the line that is to be removed by clicking its center point.
+Option DeleteLine removes of the connection between two vertices. Pick the line that is to be removed by clicking its center point.
 
 \subsubsection[Menu item AddNode]{Menu item AddNode}
 Choice of option AddNode permits the user to add a new vertex to the grid. To add a new node - point and click.
-
+If a point is inserted into an existing element, connections are made to the element vertices. If the point is outside an existing element, no connections are made and the point must be connected using menu item {\bf AddLine}.
 
 \subsubsection[Menu item DeleteNode]{Menu item DeleteNode}
 This option allows deletion of a vertex and its connections to other vertices. To delete a node - point and click.
@@ -700,7 +772,7 @@ The Move operation consists simply of moving a designated vertex to a new locati
 
 \subsubsection[Menu item Merge]{Menu item Merge}
 
-The Merge operation combines to nodes into one. First, use the mouse to choose the node that should be merged into another, then choose the node that is should be merged into. 
+The Merge operation combines two nodes into one. First, use the mouse to choose the node that should be merged into another, then choose the node that is should be merged into. 
 
 Values of depth and computational code are changed automatically when vertices are merged. If the vertex being moved is labelled A, and B designates the stationary vertex with which A is merged, then the depth and code for the merged vertex at B are set as follows:
 
@@ -729,9 +801,7 @@ The second application of Insert is to add certain extra connections within a qu
 The function of this editing operation is to swap a diagonal connection in a quadrilateral formed by 2 triangles. In order to perform this process, place the cursor near the mid-point of diagonal line.
 
 \subsubsection[Menu item Dekite]{Menu item Dekite}
-For removing kites ( elements with 4 nodes ).
-\
-[NEEDS UPDATE]
+The word 'kite' denotes a 4 triangle patch with one node at the center and 4 nodes along the outer edges. This configuration is usually less accurate than other configurations and can lead to local noise in the solution. The kite is identified by a center node with only 4 adjacent nodes. Choosing this menu item will remove kites and replace them with 2 triangles that have the shortest interior edge.
 
 \subsubsection[Menu item Reshape]{Menu item Reshape}
 Reshape provides a method for forming more equilateral triangles in the grid by making appropriate adjustments in the positions of interior vertices. Use of this option is recommended after any editing operations that involve adding or deleting any vertices or connections between vertices. Reshape makes three passes through the grid, treats the interior vertices in order of their indices, and leaves a vertex in its original position if the computed adjustment is less than about 1\% of the linear dimensions of the polygon formed by its neighbours. The depth at each new vertex position is computed automatically by linear interpolation.
@@ -739,9 +809,7 @@ Reshape provides a method for forming more equilateral triangles in the grid by 
 Unlike all the other editing operations, Reshape cannot be reversed; it is recommended that the current grid be saved using \{File\}InterimSave if there is any likelihood of requiring the grid as it is prior to reshaping.
 
 \subsubsection[Menu item GridToNodes]{Menu item GridToNodes}
-Use this option to save a Node file from the existing grid.
-
-
+Use this option to generate a Node file from the existing grid. This is the inverse operation to triangulation.
 
 
 \subsection{Contents of menu: Polygons}
@@ -779,10 +847,12 @@ Delete is used in conjunction with Cycle to delete the currently active polygon 
 This option allows the user to read in a named file containing polygons designed and saved during some earlier node-editing session by means of Write. For instance, when running the demonstration case supplied, use Read to read a file named POLYEAST.DAT, which defines a particular polygon to be used if exact comparison with subsequent test outputs to be possible.
 
 \subsubsection[Menu item Write]{Menu item Write}
-This saves all currently defined polygons to a file named by the user. It may be used in conjunction with Read below.
+This saves all currently defined polygons to a file named by the user. It may be used in conjunction with Read to input any polygons previously saved.
 
 \subsection{Contents of menu: NodeInPoly}
-This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. The menu is as listed in Table \ref{tab:NODEINPOLY} 
+This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. 
+If a polygon is not active a message is displayed asking the user to define a polygon first.
+The menu is as listed in Table \ref{tab:NODEINPOLY} 
 
 \begin{table}[htb!]
  \caption{NodeInPoly menu items.}
@@ -813,7 +883,9 @@ Use this menu options to delete all internal nodes within the currently active p
 Use this menu options to delete all nodes within the currently active polygon.
 
 \subsection{Contents of menu: GridInPoly}
-This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. The menu is as listed in Table \ref{tab:GRIDINPOLY} 
+This option gives access to various editing operations that can be carried out on groups of nodes once one or more working polygons have been set up. 
+If a polygon is not active a message is displayed asking the user to define a polygon first.
+The menu is as listed in Table \ref{tab:GRIDINPOLY} 
 
 \begin{table}[htb!]
  \caption{GridInPoly menu items.}
@@ -838,7 +910,7 @@ This option permits changing all computational codes for nodes within a polygon.
 This option allows the element code to be changed for groups of elements in the current polygon, or by reading a polygon file. When a grid is set up, separate polygons should be created using DefineGroup to define separate element types. All these polygons should be saved in a file and then read to set element codes for any modification of this grid. The first polygon (usually the whole polygon) defines element code 1 and the second code 2 etc.
 
 \subsubsection[Menu item Dekite]{Menu item Dekite}
-Reshapes all kites ( elements with 4 nodes ) in the active polygon.The operation is similar to that in \{EditGrid\}Dekite.
+Replaces all kites (a 4 triangle patch whose center node has 4 neighbors ) in the active polygon. The operation is the same as that in \{EditGrid\}Dekite but includes the entire active polygon rather than a single kite.
 
 \subsubsection[Menu item Reshape]{Menu item Reshape}
 This option allows a reshape of the elements in the current polygon. The operation is similar to that in \{EditGrid\}ReShape.
@@ -846,66 +918,25 @@ This option allows a reshape of the elements in the current polygon. The operati
 \subsubsection[Menu item DeleteGrid]{Menu item DeleteGrid}
 This option deletes the grid section selected by the current polygon.
 
-If a polygon is not active a message is displayed asking the user to define a polygon first.
-
 \subsubsection[Menu item SplitGrid]{Menu item SplitGrid}
-The split option permits division of an existing grid into two separate grids. It is used most frequently to remove surplus parts of a grid outside the open boundaries, after the latter have been positioned. It can also be used to split a large grid into smaller parts, either temporarily, to facilitate editing, or permanently, to provide grids for smaller models. (The opposite process of joining together small grids to make a larger one can be carried out by means of the \{File\}AddGrid option). In order to use this option, an active '{}'splitting'{}' polygon must be created first using DefineGroup. In this case, grid parts inside and outside the polygon are separated into two self-consistently numbered grids. Before splitting can be carried out, the user must select suitable vertices near the polygon and move them to the nearest side of the polygon, otherwise the grids will have a gap between them. As well as facilitating movement of vertices, the program also reminds the user to enter appropriate computing 
-codes for each vertex moved to the new boundaries formed on splitting.
+The split option enables division of an existing grid into two separate grids. It is used most frequently to remove surplus parts of a grid outside the open boundaries, after the latter have been positioned. It can also be used to split a large grid into smaller parts, either temporarily, to facilitate editing, or permanently, to provide grids for smaller models. (The opposite process of joining together small grids to make a larger one can be carried out by means of the \{File\}AddGrid option). In order to use the SplitGrid option, an active '{}'splitting'{}' polygon must be created first using DefineGroup. In this case, grid parts inside and outside the polygon are separated into two self-consistently numbered grids. 
 
-Before choosing the SplitGrid option, the user must design a polygon that demarcates the intended division. That part of the initial grid, which lies inside the splitting polygon, will eventually be output as an independent grid, and the remaining part outside the polygon will be output as another grid. Each of the output grids will be in NEIGH format and will have its nodes numbered consecutively from 1 upwards. Note: A current bug in the Splitter makes it inadvisable to place a polygon vertex directly at a boundary node of the grid: a triangle may consequently be dropped from the sub-grid lying inside the polygon when the split takes place. Avoid this by finding the coordinates of the boundary node using the \{Info\}Node option before choosing SplitGrid and extrapolate the required splitting line to find a suitable vertex position outside the grid.
-
-The following first prompt appears after the option is chosen.
-
-First vertex of side to work on by C - cursor, X -- xy, Q - quit?
-
-Normally, the polygon vertices will be placed by means of the cursor, option C, but the X option is useful occasionally, e.g. when repeating a previous run, for instance when practising with the demonstration data. Coordinates are always given in problem length units. On exit from the Splitter, a file of polygon vertex coordinates with the filename POLY.DAT is output automatically to facilitate such repeat runs. The next prompt asks the user to indicate the desired location for the first vertex of the polygon, after which the following prompt appears:
-
-V - pick next vertex L - pick last vertex Q - quit
-
-Vertices should be entered either in clockwise order or counter clockwise order, since they are connected and displayed in order of entry. Choice of location by cursor or coordinates is offered for each vertex. Currently, up to ten vertices are allowed. After the last vertex has been positioned, the user can either confirm or cancel the displayed polygon. Assuming that a satisfactory polygon has been drawn, the next step is to decide which side of the polygon to work on, i.e. to choose one of the sides of the polygon which actually intersects the grid, and then move nearby nodes to this line, so that both sub-grids produced will have boundary nodes lying on the splitting polygon. The relevant prompts are:
-
-Pick 1st vertex of next side to work on by C - cursor, X - xy
-
-Pick 2nd vertex of next side to work on by C - cursor, X - xy
-
-At this point, in response to the prompt ``A - automatic M - manual movement to polygon boundary Q --quit'', there is a choice of methods for moving nodes to the splitting line. Manual movement of nodes to the splitting polygon requires choosing both the node and its new position by cursor. Under option A~-~automatic, so far as internal nodes are concerned, the user merely has to indicate with the cursor which node to move and the node is then moved to the current working side of the splitting polygon along a perpendicular through its original position. However, boundary nodes are still moved manually, as the automatic move option might result in a node being moved away from the original boundary, particularly when the boundary and the splitting line are not approximately perpendicular to one another. Whether automatic or manual moving of nodes is chosen, each move is displayed for confirmation or cancellation.
-
-Note that in choosing nodes to move to the splitting line, it is important that consecutive nodes moved should be connected to one another, i.e. be neighbours. An example of an improper sequence of nodes is A-B-C-D in a figure not yet available. In this case, the connection EF still crosses the splitting line after nodes A, B, C and D have been moved. On the other hand A-B-F-D or A-E-F-D would be acceptable sequences. Where one of the sub-grids output by the Splitter is going to be discarded, for example when some unwanted extension of a grid is being removed, it is normally better to move unwanted nodes to the splitting line, rather than choosing nodes that will be retained in any case. It is then easier to maintain well-shaped triangles in the remaining sub-grid. Prior to moving a node to the splitting line, the user has a choice of the following:
-
-M - Move Node \ \ W - Windowing \ \ D - Done this side
-
-Option W is not accessible from this menu.
-
-When moving nodes to the splitting polygon, it is advisable to zoom in until nodes to be moved are at least 0.5 cm apart on the screen. This may involve displaying only part of the current polygon side; opportunity to zoom out again is offered at appropriate times. When ready to move a node to the current working side of the splitting polygon, choose option M (move node) from [3]. This will bring up further prompts appropriate to automatic or manual node moving. After the node has been moved, the user will be asked to confirm or cancel the move. One situation in which a move may have to be cancelled is if the wrong node is selected due to insufficient sensitivity of the cursor. The program will correct this automatically, if the move is cancelled and the selection is repeated. There is a bug in the Splitter at present, which results in occasional failure to restore the previous display when a move is cancelled; this can be ignored, since the program in fact handles the grid file correctly. Continue moving 
-nodes to the splitting line until connections between nodes coincide with the line along its whole length. Note that a node should be '{}'moved'{}' even if it originally lies on the line; otherwise the program is not informed that such a node is now a boundary node. If in doubt whether a node has been moved or not, check the colour of lines connecting it to its neighbours: all of these will be in the '{}'modify colour'{}' if the node has been moved. There is no harm in moving a node twice, if in doubt. The completion of a side is signalled by using option D in [3], but before doing so, it is necessary to window out, using option W, to the extent that the whole length of the current working side is visible in the display. Then when D is subsequently entered, it will always be possible to see which node prompt [5], below, refers to. When moving nodes to the current working side of the splitting polygon is complete and this has been signalled to the Splitter program by entering D in answer to prompt [3], a 
-marker is placed at each moved node in turn and the following prompt appears:
-
-Enter a non-zero computational code for this boundary point:
-
-The code entered by the user will be assigned to the node in question in both sub-grid files output by the splitter. Water depth at the new location of a moved node is evaluated by linear interpolation, if it is originally an internal node. For a moved boundary node, the user has the option of leaving the depth equal to its value before the node was moved or entering a new value of depth. When codes have been entered for all nodes moved to the current working side, the following prompt appears:
-
-F - finished \ \ M - if more sides to do
-
-If more than one side of the splitting polygon intersects the grid, and not all such sides have had nodes moved to them, option M should be chosen. The first subsequent step is to window up, if necessary, to make sure that the whole of the next side to be worked on is visible. The user will then be lead through the same procedure for the next working side as for the previous one. Eventually, when nodes have been moved to all sides of the splitting polygon which intersect the grid, choose option F, which initiates the actual splitting process.
+Before choosing the SplitGrid option, the user must design a polygon that demarcates the intended division. That part of the initial grid, which lies inside the splitting polygon, will eventually be output as an independent grid, and the remaining part outside the polygon will be output as another grid. The inner grid will not contain any nodes outside the polygon nor links (edges) to these nodes. The outer grid will contain the links to the inner grid so that the 2 grids can be joined again. 
 
 The user is then led through a series of steps concerning display and output of the two sub-grids produced. When these have been carried out, splitting is complete.
 
 \subsubsection[Menu item RefineGrid]{Menu item RefineGrid}
-When this option is chosen, all triangles within the active polygon are refined. [NEEDS UPDATE]
+When this option is chosen, all triangles within the active polygon are refined by dividing each element at its midside point. Thus one element becomes four. If an element has 2 vertices outside the polygon, it is not refined. If an element has 1 vertex outside the polygon, then the element is refined into 2 elements by connecting the midside of the 2 nodes within the polycon and the node outside the polygon.
 
 \subsubsection[Menu item CutOffGrid]{Menu item CutOffGrid}
-Cuts a section of the grid off, specified by the active polygon. [NEEDS UPDATE]
+Cuts a section of the grid off within the active polygon according to a depth test. The user is prompted for a maximum and minimum value for the z coordinate in the grid. Any nodes outside this range are deleted along with the elements that they are part of.
 
 \subsubsection[Menu item SetDepth]{Menu item SetDepth}
-[NEEDS UPDATE]
-
-%\subsubsection[Menu item RefineElement]{Menu item RefineElement}
-%When this option is chosen, all triangles within the active polygon are refined by dividing each element at its mid side nodes. Thus one element becomes four. NOTE: This option is not active at this time.
-
+This option is used for scaling or offsetting the z coordinate. The user is prompted for a scale factor and an offset. These values are used within the active polygon.
 
 
 \subsubsection[Menu item ReDepth]{Menu item ReDepth}
-Load a reference NEIGH file to apply new deph parameters to the grids nodes. This function is useful when you have altered the existing grid. 
+This option enables reading a reference NGH file in order to interpolate new depth values at the grid nodes. This function is useful when you have altered the existing grid and wish to specify the correct depths (z coordinate). 
 
 
 \subsection{Contents of menu: Help}
@@ -927,10 +958,10 @@ About \\
 
 
 \subsubsection[Menu item TQGG Help]{Menu item TQGG Help}
-[Needs update]
+Refers the user to this documentation in the doc directory.
 
 \subsubsection[Menu item About]{Menu item About}
-[Needs update]
+Specifies the revision number of the program. In the Motif version, the information is printed on the terminal.
 
 
 
@@ -1357,7 +1388,7 @@ x,y,z,s \ \ \ \ \ \ \ \ \ {}- (3 reals, 1 integer, free format)\newline
 \noindent
 nxp\\
 Next nxp pairs of lines:\\
-ns,xl,yl,xr,yr,xref\\
+ns,xl,yl,xr,yr,zref\\
 ( (distr(j), depth(j)) j=1,ns)\\
 
 
@@ -1376,5 +1407,35 @@ ns,xl,yl,xr,yr,xref\\
 
 \ \ \ 21\\ \ \ \ \ 9 \ {}-6.06 \ \ \ \ \ 3.50 \ \ \ \ \ 6.06 \ \ \ \ {}-3.50 \ \ \ \ \ 9.15 0. 0. 2.00 1.2 2.50 1.5 3.00 1.8 3.33 2. 4.06 2. 4.80 2. 5.53 2. 6.27 2.\\ \ \ \ \ 9 \ \ 3.20 \ \ \ \ 17.48 \ \ \ \ 13.69 \ \ \ \ \ 8.22 \ \ \ \ \ 9.145 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.8 3.88 2.25 4.67 2.25 5.44 2.15 6.22 2.0\\ \ \ \ \ 9 \ 18.51 \ \ \ \ 28.48 \ \ \ \ 21.72 \ \ \ \ 19.00 \ \ \ \ \ 9.14 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.8 3.88 2.25 4.67 2.5 5.44 2.5 6.22 2.05 \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ \ . \ \ \ \ \ \ \ \ . \ \ \ \ \\9 206.79 \ \ \ {}-18.15 \ \ \ 209.47 \ \ \ {}-27.64 \ \ \ \ \ 9.06 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.39 3.88 1.43 4.67 1.47 5.44 1.51 6.2 1.5 \\ 9 214.74 \ \ \ \ {}-8.04 \ \ \ 225.23 \ \ \ {}-17.31 \ \ \ \ \ 9.055 0. 0. .77 .45 1.54 .9 2.33 1.35 3.11 1.45 3.88 1.55 
 4.67 1.65 5.44 1.75 6.2 1.8
+
+\newpage
+
+%\bibliographystyle{abbrvnat}
+%\bibliography{bib}
+\addcontentsline{toc}{section}{References}
+% ======================== %
+% =====  REFERENCES ====== %
+% ======================== %
+
+\begin{thebibliography}{99}
+
+
+\bibitem[Henry and Walters(1992)]{HW1992} 
+Henry, R.F. and R.A. Walters, 1992. 
+A geometrically-based, automatic generator for irregular triangular networks. 
+Communications in Applied Numerical Methods 9, 555--566.
+
+\bibitem[L\"{o}hner and O\~{n}ate(1998)]{LO1998}
+L\"{o}hner, R., O\~{n}ate, E., 1998.
+An advancing front point generation technique.
+Commun. Numer. Meth. Engng. 14, 1097-1108.
+
+\bibitem[Sadek(1980)]{S1980}
+Sadek, E.A. (1980). A scheme for the automatic generation of triangular finite elements.
+International Journal of. Numerical Methods in Engineering 15, 1813-1822.
+
+
+\end{thebibliography}
+
 
 \end{document}

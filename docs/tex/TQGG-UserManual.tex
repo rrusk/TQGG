@@ -33,9 +33,10 @@
   Cascadia Coast Research Ltd. \\
   Victoria, BC Canada \\
   http://cascadiacoast.com \\ \\
-  and with help from many others}
+  and with help from many others \\}
 
-  
+\date{ 1 December 2016}
+
 \maketitle
 
 \newpage
@@ -124,7 +125,7 @@ and taking a few missteps, the following procedure was successful.
  \item Install gfortran from https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
  \item Download the openMotif 2.1.32 libraries and include files from \\
  http://www.ist-inc.com/motif/download/index.html
- \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+ \item Build TQGG by typing 'make -f Makefile-OSX TQGG', where TQGG can have one of the forms described earlier.
 \end{enumerate}
 
 Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. \\
@@ -144,7 +145,19 @@ In all, the necessary software is provided by following these steps:
  See https://gist.github.com/steakknife/60a39a32ae84e12238a2
  \item Create a symbolic link so the compiler and linker can find the openMotif include files and libraries.\\
  sudo ln -s /usr/local/Cellar/openmotif/2.3.4 /usr/OpenMotif
- \item Build TQGG by typing 'make -f Makefile-mac TQGG', where TQGG can have one of the forms described earlier.
+ \item Build TQGG by typing 'make -f Makefile-OSX TQGG', where TQGG can have one of the forms described earlier.
+\end{enumerate}
+
+Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. \\ 
+
+{\bf{OSX 10.11}}
+
+With this version, the C compiler is now clang which intercepts the gcc call. Unfortunately clang is
+incompatible with everything so the gcc compiler supplied with gfortran must be used. Then the last step
+above is replaced with
+
+\begin{enumerate}
+ \item Build TQGG by typing 'make -f Makefile-OSX2 TQGG', where TQGG can have one of the forms described earlier.
 \end{enumerate}
 
 Run the program by copying it from subdirectory bin to somewhere on \$PATH or run it from bin. 
@@ -183,7 +196,7 @@ This program uses interactive graphics to read geometric and grid data, to creat
 Changes can also be made to the grid. For instance, vertices and connections between vertices can be added or deleted; vertices can be moved or merged with one another; and triangle shape can be adjusted. The user directs changes in purely graphical terms, by suitable positioning of a cursor on the displayed grid; the program keeps account of all corresponding changes in vertex coordinates and interconnections between vertices. Any proposed changes are displayed immediately, for confirmation or cancellation.
 
 \subsection{Use of TQGG}
-This program is invoked from the command line by typing the name of the executable file (typically 'TQGG'). A frame for the grid editing area is drawn in black on the screen and a menu along the top of the panel allows interation with the program. At this point, the user chooses a menu item that leads to node or grid input, whichever is desired. The initial display shows the entire grid being edited.  If the grid is larger than 1000 nodes, only the outline is shown initially. The entire grid can be displayed by selecting \textbf{\{View\}Redraw} from the View menu.
+This program is invoked from the command line by typing the name of the executable file (typically 'TQGG'). A frame for the grid editing area is drawn in black on the screen and a menu along the top of the panel allows interaction with the program. At this point, the user chooses a menu item that leads to node or grid input, whichever is desired. The initial display shows the entire grid being edited.  If the grid is larger than 1000 nodes, only the outline is shown initially. The entire grid can be displayed by selecting \textbf{\{View\}Redraw} from the View menu.
 
 Editor options are presented to the user in menus that appear across the top of the screen, and additional prompts are displayed when necessary. Selections from the menus are made by means of the mouse, but some editing operations require keyboard input also.
 
@@ -227,13 +240,13 @@ resolution can be changed in individual sections using \textbf{[NodeEdit]/ReSamp
 Boundary data can also be obtained from an existing set of coordinates for point data through the menu item
 \textbf{[File]/Sample}. For instance, the input data can be a text file with lines containing (x,y) or (x,y,z) coordinates
 generated from vector shorelines or other sources. The program will prompt for a minimum distance between data
-points and prefilter the data to reduce the size of high resolution data sets. The minimum distance should be some
+points and then filter the data to reduce the size of high resolution data sets. The minimum distance should be some
 fraction of the desired final resolution ($\approx 1/4$ or so) in order to maintain accuracy when sampling. 
 Save each input file as a node file using \textbf{[File]/SaveAs}. Each output file
 contains one boundary arranged in order from one end to the other and the boundaries from each file can be 
 added together using \textbf{[File]/AddNode} and adding each boundary in sequence.
 These boundaries can then be joined, reversed, and manipulated using items in \textbf{[NodeEdit]}.
-As an alternative, the files may include multiple segments with lines containing (x,y,z,s), where s is a segement
+As an alternative, the files may include multiple segments with lines containing (x,y,z,s), where s is a segment
 identifier. All points with the same segment identification should be arranged in order from one end to the other
 and the points will be automatically arranged into a separate boundary. Multiple segment data can be manipulated
  in the same manner as the single segment data.
@@ -348,7 +361,7 @@ This option permits reading a NODE format file and then adding data from other N
 
 \subsubsection[Menu item Sample]{Menu item Sample}
 This menu item is used to sample *.xyz files into TQGG. The workspace will be cleared prior to sampling the files.
-The user will be prompted to input a gridtype and minimum subsample spacing. The subsample spacing is defined in meters and will subsample the boundaries by only including new nodes that are farther away from the previous one than the minimum spacing.
+The user will be prompted to input a gridtype and minimum sample spacing. The sample spacing is defined in meters and will subsample the boundaries by only including new nodes that are farther away from the previous one than the minimum spacing.
 
 \subsubsection[Menu item CrossSection]{Menu item XSection}
 This option is used for creating grids from cross section data. A file containing cross section data is read and a grid is created from this data (sample data: demodata/sriver.xsc). The user is prompted for the number of nodes to create across the section, the number of nodes to create between each cross section, the type of grid (nodes, triangles, quadrilaterals), and the grid units. All these nodes are interpolated using a cubic spline algorithm. See Section \ref{sec:formats} for a description of files in XSEC format.
@@ -358,7 +371,7 @@ Invoking this option leads to output of the current version of the grid in `.NGH
 
 \subsubsection[Menu item SaveAs]{Menu item SaveAs}
 This is the option normally used after the completion of a grid or modification of a grid and node file. It brings up a request for the name of the file in which the final version is to be saved. \\
-WIN BEHAVIOUR: If the file does not exist then a prompt appears asking the user whether or not to create the file. If no file output is selected or `CANCEL' is selected, then the program exits with open error message.
+WINDOWS BEHAVIOUR: If the file does not exist then a prompt appears asking the user whether or not to create the file. If no file output is selected or `CANCEL' is selected, then the program exits with open error message.
 
 \subsubsection[Menu item Quit]{Menu item Quit}
 This allows exit without output of any files. The user is prompted to answer whether the file is to be saved and whether an exit is really desired. This helps prevent accidental termination of the program.
@@ -445,8 +458,6 @@ Files \\ Limits \\
 
 These permit placing of coloured markers on the screen to mark locations or to display properties of vertices and triangles. Solid colouring of triangles is available as an alternative to colour markers.
 
-% This menu permits use of the right-hand panel for display of information about any selected node or triangle and also permits the user to change the coordinates, depth, or computational code of any selected vertex via the keyboard. Names of files being used during the current editing session or a limited portion of any arbitrary file can also be displayed.
-
 \subsubsection{Menu item NodeInfo}
 Selection of this menu item prompt the user to select a node.  In the Motif version of TQGG this is done using the mouse to click on the node.  The following information is displayed in the terminal window.
 
@@ -474,7 +485,7 @@ A marker is placed in each element examined. If a number of them are examined, i
 The element code can be changed by changing the appropriate value in the dialog box and selecting update. To find an element by index, change the index number to the desired value and select update.
 
 \subsubsection{Menu item NodeCheck}
-This enables labelling of grid vertices with coloured markers according to certain built-in criteria or an external list, thus providing an efficient visual means of simultaneously checking specific properties at all vertices visible in the window. When this option is selected, appropriate information appears in a dialogue box with available criteria as shown below.
+This enables labeling of grid vertices with coloured markers according to certain built-in criteria or an external list, thus providing an efficient visual means of simultaneously checking specific properties at all vertices visible in the window. When this option is selected, appropriate information appears in a dialogue box with available criteria as shown below.
 
 
 \begin{table}[htb!]
@@ -518,11 +529,11 @@ This enables labelling of grid vertices with coloured markers according to certa
 %NONE
 
 
-The final option EXT instructs the program to read in a prepared external file (in EXTVER format), each line of which contains the number of a vertex where a marker is to be placed, followed by an integer specifying the colour of the marker. [This option not yet implimented in Motif version of TQGG].]
+The final option EXT instructs the program to read in a prepared external file (in EXTVER format), each line of which contains the number of a vertex where a marker is to be placed, followed by an integer specifying the colour of the marker. [This option not yet implemented in Motif version of TQGG].]
 
 The name of the external criterion file is not requested until the EXT option is invoked; consequently, it is possible for the user to colour vertices according to different criteria in succession by preparing as many external files as required. The name of the external file currently assigned is displayed in the information panel. A different external file can be assigned by clicking the name of the existing file in the information panel.
 
-Finally, when all details of the criterion or criteria to be displayed have been decided, the user should press the "Run Check" button in order to view the appropriate coloured markers. %Display flag option is used here to easily turn all markers off at a particular instance.
+Finally, when all details of the criterion or criteria to be displayed have been decided, the user should press the "Run Check" button in order to view the appropriate coloured markers. 
 
 \subsubsection{Menu item ElementCheck}
 
@@ -569,7 +580,8 @@ In addition, an external file (in EXTCRI format) containing a list of triangles 
 After the needed check and options are selected, the check can be run by pressing RUN CHECK. The markers or coloured triangles will be displayed. To erase the checks, use \textbf{\{Info\}EraseChecks}
 
 \subsubsection{Menu item BoundaryCheck}
-Selection of this option will perform boundary checks on the boundary. The check is intended to be run prior to doing a triangualtion to make sure that the grid is defined correctly.The following checks will be performed:
+Selection of this option will perform boundary checks on the boundary. The check is intended to be run prior to doing a triangulation to make sure that the grid is defined correctly.The following checks will be performed:
+
 \begin{description}
 \item[Boundary Orientation] All boundary orientations are checked. Clockwise boundaries are then displayed in \emph{red}, while counter-clockwise boundaries are display in \emph{green}
 \item[Outer Boundary Location] The outer boundary is found and if this is not the first boundary in the data-arrays, the user will be prompted to move it.
@@ -597,9 +609,9 @@ Selection of this option will allow the user top input a range for the \textbf{\
 
 \subsubsection[Menu item TooClose]{Menu item TooClose}
 
-The TooClose option allows automatic detection of nodes that are too close to one another (coincident). All the nodes in the workspace will be sorted along the x-axis, any node that has another node within its range in the positive x-direction will be flagged to be deleted and marked in the workspace. The range is set using \textbf{\{Info\}SetRange} menu item. If no range has been set when invoking this option, the user will be prompted to input one. The distance between nodes is calculated using the \emph{Haversine} formula for Lat/Lon grids and \emph{Pythagoras' theorem} for meters based coodinates.
+The TooClose option allows automatic detection of nodes that are too close to one another (coincident). All the nodes in the workspace will be sorted along the x-axis, any node that has another node within its range in the positive x-direction will be flagged to be deleted and marked in the workspace. The range is set using \textbf{\{Info\}SetRange} menu item. If no range has been set when invoking this option, the user will be prompted to input one. The distance between nodes is calculated using the \emph{Haversine} formula for Lat/Lon grids and \emph{Pythagoras' theorem} for meters based coordinates.
 
-After nodes are flagged and marked, the user ar prompted to delete them. If confirmed all the flagged nodes will be deleted.
+After nodes are flagged and marked, the user is prompted to delete them. If confirmed all the flagged nodes will be deleted.
 
 \subsubsection[Menu item Files]{Menu item Files}
 This option brings up a list of files currently assigned to the Editor. Filenames cannot be changed via the display panel under this option.
@@ -1381,7 +1393,9 @@ x,y,z,s \ \ \ \ \ \ \ \ \ {}- (3 reals, 1 integer, free format)\newline
 
 \subsubsection[Description]{Description}
 
-[THIS SECTION NOT YET UPDATED]\\
+This data format is useful for rivers and other long narrow domains where cross section data at
+intervals along the thalweg are available. For each cross section, the left bank and right bank coordinates 
+(looking downstream) are specified followed by bed elevations along the cross section. \\
 
 \textbf{Data layout}: \\ 
 
@@ -1409,7 +1423,51 @@ ns,xl,yl,xr,yr,zref\\
 4.67 1.65 5.44 1.75 6.2 1.8
 
 \newpage
+\addcontentsline{toc}{section}{Acknowledgements}
+\section*{Acknowledgements}
 
+Early development of TRIGRID was carried out at the Institute of Ocean Sciences by Lynda
+Williams, Kin Wu, and Russ Kirby, under the supervision of Edmand Fok, to specifications
+developed by Falconer Henry. Modification of the interactive editor to permit colour marking of
+triangles was done by Robin Parlee, Gordon Laine and John Snider, students in the Camosun College
+Computer Technology program. The node editor (NODER) was developed by John MacLeod over
+two workterms of the Camosun College Computing Technology course. Roy Walters, then at U.S.
+Geological Survey, wrote the sampling program (SAMPLER) and the interactive display and plotting
+programs PLOTGRID and PLOTMOD, which were later, merged into a single program (DISPLOT).
+
+Reorganisation of the package for conversion to GKS graphics and implementation on a MicroVAX
+was carried out by Roy Walters. The major task was separating the graphics functions from the 
+computational functions. Daphne Connolly and Steve Prestage of Camosun College later
+ported the Editor to a PC-AT, at the same time introducing mouse input and other improvements.
+
+Francisco Werner and Mike Hagin, Skidaway Institute of Oceanography, in cooperation with Roy
+Walters, ported TRIGRID to SUN workstations. Adrian Dolling and John MacLeod, of Channel
+Consulting, Victoria, ported TRIGRID to the IBM RS 6000 workstation, under contract from IBM
+Bergen. Dave Greenberg produced the first X-GKS version of TRIGRID and ran it on Sun and Data
+General workstations and also on a PC with the Linux operating system. Adrian Dolling 
+has ported TRIGRID to MS-Windows for the PC using the WIN API.
+In addition, two Camosun students, Allan Moore and Sam LeBlanc worked under Adrian Dolling’s 
+direction on a graphics interface module for Trigrid in the spring of 1993.
+
+To obtain the present structure of the program, Roy Walters has merged all the graphics programs
+(including SAMPLER, NODER, EDITOR, and SPLITTER) and DISPLOT. In addition, the
+functionality in GRIDIT (triangulation) and PREJOIN (grid merging) have been included. The input
+section was expanded to include grid generation from river cross-sections, and creation of grids in
+quadrilateral areas.
+
+In 2002, P. Chandramohan (NIWA, New Zealand) collected all the current documentation into a Windows *.hlp
+file that could be invoked directly from the program menu. With the demise of the programs that display these
+file formats, the documentation was converted to a pdf file with considerable input from Clayton Hiles.
+
+Recently, Roy Walters has written a new C interface that permits porting to Linux and OSX. The dialog boxes 
+were added by Raymond Rusk. He has also created a GitHub open source repository where the program now resides.
+
+The latest improvements are an expansion and modification to the sampling part of the program by 
+Kristoffer Lorentsen. This work has greatly improved importing geometric data and constructing boundary
+geometry which then leads to better grids when using frontal marching methods.
+
+
+\newpage
 %\bibliographystyle{abbrvnat}
 %\bibliography{bib}
 \addcontentsline{toc}{section}{References}
@@ -1431,9 +1489,14 @@ An advancing front point generation technique.
 Commun. Numer. Meth. Engng. 14, 1097-1108.
 
 \bibitem[Sadek(1980)]{S1980}
-Sadek, E.A. (1980). A scheme for the automatic generation of triangular finite elements.
+Sadek, E.A. (1980). 
+A scheme for the automatic generation of triangular finite elements.
 International Journal of. Numerical Methods in Engineering 15, 1813-1822.
 
+\bibitem[Thacker(1980)]{T1980}
+Thacker, W.C. (1980).
+A Brief Review of Techniques for Generating Irregular Computational Grids.
+Int. J. Numerical Methods in Engineering., 15, 1335-41
 
 \end{thebibliography}
 

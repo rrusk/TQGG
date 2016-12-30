@@ -1,0 +1,94 @@
+# ============================================================================
+# Name        : Makefile
+# Author      : Raymond Rusk, Roy Walters
+# Version     :
+# Copyright   : Copyright (C) 2012 under GNU General Public License v2
+# Description : Makefile for TQGridGen  (needs a lot of work yet)
+# ============================================================================
+
+.PHONY: all clean
+
+# Change these lines if you are using different
+# Fortran or C compilers and compiler options.
+# gfortran and gcc(clang) on macs
+FC = gfortran
+F_FLAGS = -Wall -Wtabs -fdefault-real-8 # -O2 -g
+FDBG_FLAGS =  -fdefault-real-8 -Wall -fcheck=bounds -fbacktrace
+CC = /usr/local/gfortran/bin/gcc
+C_FLAGS = -Wall -I /usr/OpenMotif/include -I /usr/X11/include
+CDBG_FLAGS = -Wall -I /usr/OpenMotif/include -I /usr/X11/include
+LIBS = -L /usr/OpenMotif/lib -L /usr/X11/lib -lXm -lXt -lX11
+
+
+TQGG:
+	$(FC) $(F_FLAGS) -c \
+		src/dataio/MainArrays.f90 \
+		src/gridgen/*.f90 \
+		src/plotsubs/*.f90 \
+		src/PigInterface/*.f90 \
+		src/gridedit/*.f src/gridedit/*.f90 \
+		src/dataio/*.f src/dataio/*.f90 \
+		src/netcdf/nullReadWriteCDF.f90 \
+		src/XMotif/*.f90
+	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
+		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
+	mkdir -p ./bin
+	$(FC) *.o -o bin/TQGG $(LIBS)
+	rm *.o *.mod
+
+TQGGdbg:
+	$(FC) $(FDBG_FLAGS) -c \
+		src/dataio/MainArrays.f90 \
+		src/gridgen/*.f90 \
+		src/plotsubs/*.f90 \
+		src/PigInterface/*.f90 \
+		src/gridedit/*.f src/gridedit/*.f90 \
+		src/dataio/*.f src/dataio/*.f90 \
+		src/netcdf/nullReadWriteCDF.f90 \
+		src/XMotif/*.f90
+	$(CC) $(CDBG_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
+		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
+	mkdir -p ./bin
+	$(FC) *.o -o bin/TQGGdbg $(LIBS)
+	rm *.o *.mod
+
+TQGGnc:
+	$(FC) $(F_FLAGS) -c -I/usr/local/include \
+		src/dataio/MainArrays.f90 \
+		src/gridgen/*.f90 \
+		src/plotsubs/*.f90 \
+		src/PigInterface/*.f90 \
+		src/gridedit/*.f src/gridedit/*.f90 \
+		src/dataio/*.f src/dataio/*.f90 \
+		src/netcdf/UGrid_io_netCDF.f90 \
+		src/netcdf/ReadWriteCDF.f90 \
+		src/XMotif/*.f90
+	$(CC) $(C_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
+		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
+	mkdir -p ./bin
+	$(FC) *.o -o bin/TQGGnc -lnetcdff -lnetcdf $(LIBS)
+	rm *.o *.mod
+
+TQGGncdbg:
+	$(FC) $(FDBG_FLAGS) -c -I/usr/local/include \
+		src/dataio/MainArrays.f90 \
+		src/gridgen/*.f90 \
+		src/plotsubs/*.f90 \
+		src/PigInterface/*.f90 \
+		src/gridedit/*.f src/gridedit/*.f90 \
+		src/dataio/*.f src/dataio/*.f90 \
+		src/netcdf/UGrid_io_netCDF.f90 \
+		src/netcdf/ReadWriteCDF.f90 \
+		src/XMotif/*.f90
+	$(CC) $(CDBG_FLAGS) -c src/XMotif/f90_c.h \
+		src/XMotif/XmMain.h src/XMotif/XmMain.c \
+		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
+	mkdir -p ./bin
+	$(FC) *.o -o bin/TQGGncdbg -lnetcdff -lnetcdf $(LIBS)
+	rm *.o *.mod
+
+clean:
+	rm *.o *.mod

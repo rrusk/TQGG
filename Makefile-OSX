@@ -35,6 +35,7 @@ TQGG:
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
 	$(FC) *.o -o bin/TQGG $(LIBS)
+	rm *.o *.mod
 
 TQGGdbg:
 	$(FC) $(FDBG_FLAGS) -c \
@@ -51,6 +52,7 @@ TQGGdbg:
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
 	$(FC) *.o -o bin/TQGGdbg $(LIBS)
+	rm *.o *.mod
 
 TQGGnc:
 	$(FC) $(F_FLAGS) -c -I/usr/local/include \
@@ -68,6 +70,7 @@ TQGGnc:
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
 	$(FC) *.o -o bin/TQGGnc -lnetcdff -lnetcdf $(LIBS)
+	rm *.o *.mod
 
 TQGGncdbg:
 	$(FC) $(FDBG_FLAGS) -c -I/usr/local/include \
@@ -85,6 +88,7 @@ TQGGncdbg:
 		src/XMotif/XmDrawdbl.c src/XMotif/XmDialogs.c
 	mkdir -p ./bin
 	$(FC) *.o -o bin/TQGGncdbg -lnetcdff -lnetcdf $(LIBS)
+	rm *.o *.mod
 
 clean:
 	rm *.o *.mod

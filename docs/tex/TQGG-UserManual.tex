@@ -144,7 +144,7 @@ In all, the necessary software is provided by following these steps:
  \item Build the openMotif libraries and include files using a one-line command with Homebrew.\\ 
  See https://gist.github.com/steakknife/60a39a32ae84e12238a2
  \item Create a symbolic link so the compiler and linker can find the openMotif include files and libraries.\\
- sudo ln -s /usr/local/Cellar/openmotif/2.3.4 /usr/OpenMotif
+ sudo ln -s /usr/local/Cellar/openmotif/2.3.4 /usr/local/OpenMotif
  \item Build TQGG by typing 'make -f Makefile-OSX TQGG', where TQGG can have one of the forms described earlier.
 \end{enumerate}
 
@@ -152,9 +152,9 @@ Run the program by copying it from subdirectory bin to somewhere on \$PATH or ru
 
 {\bf{OSX 10.11}}
 
-With this version, the C compiler is now clang which intercepts the gcc call. Unfortunately clang is
-incompatible with everything so the gcc compiler supplied with gfortran must be used. Then the last step
-above is replaced with
+With this version, the C compiler is now clang which intercepts the gcc call. Unfortunately clang is sometimes
+incompatible with everything so the gcc compiler supplied with gfortran must be used. If this is necessary,
+then the last step above is replaced with
 
 \begin{enumerate}
  \item Build TQGG by typing 'make -f Makefile-OSX2 TQGG', where TQGG can have one of the forms described earlier.

@@ -28,8 +28,6 @@
  A computer program for constructing unstructured grids }
 
 \author{Roy Walters \\
-  Clayton Hiles \\
-  Kristoffer Lorentsen \\ \\
   Cascadia Coast Research Ltd. \\
   Victoria, BC Canada \\
   http://cascadiacoast.com \\ \\
@@ -351,7 +349,7 @@ This option allows for reading a new grid file in NGH format (see Section \ref{s
 
 When joining grids in this way, it is helpful to begin the editing session with the two sub-grids displayed in different colours. This is be done by default using a SECONDARY COLOUR INDEX.
 
-The two sub-grids may have to be stitched together as required. Some nodes may have to be deleted if the two sub-grids overlap; conversely, extra nodes may have to be added if there is a substantial gap. Connections between nodes of the two sub-grids may be established using \textbf{\{GridEdit\}AddLine} or the node-merging capability available through \textbf{\{GridEdit\}Move}. To use this later, which is very convenient where there are pairs of adjacent nodes from the two sub-grids, it is first necessary to invoke \textbf{\{GridEdit \}GridMerge}.
+The two sub-grids may have to be stitched together as required. Some nodes may have to be deleted if the two sub-grids overlap; conversely, extra nodes may have to be added if there is a substantial gap. Connections between nodes of the two sub-grids may be established using \textbf{\{GridEdit\}AddLine} or the node-merging capability available through \textbf{\{GridEdit\}Merge}. To use this later, which is very convenient where there are pairs of adjacent nodes from the two sub-grids, it is first necessary to invoke \textbf{\{GridEdit \}GridMerge}.
 
 \subsubsection[Menu item OpenNode]{Menu item OpenNode}
 This option allows for reading a new node file in NODE format (see Section \ref{sec:formats}). Any existing data is replaced. After picking this option, the user is prompted for the file name of a NODE format file.
@@ -647,11 +645,11 @@ One of the options for generating a grid of triangles is a frontal marching meth
 
 \subsubsection[Menu item Clusters]{Menu item Clusters}
 
-The Clusters option provides a method of creating a set of nodes whose spacing is a function of water depth. As explained in \cite{HW1992}, when the model domain is subdivided into cells whose areas are proportional to water depth and the centres of area of these cells are taken as the basis for a triangular network, the areas of the triangles in the network are also approximately proportional to water depth and the spacing of the nodes is such that the Courant criterion is satisfied approximately throughout the grid, that is, node spacing is proportional to the local phase speed of shallow water waves. It should be noted that triangle area could be made proportional to any scalar quantity defined over the domain, by providing a reference grid for that quantity in place of a depth grid after this menu item is selected.
+The Clusters option provides a method of creating a set of nodes whose spacing is a function of water depth. As explained in \cite{HW1992}, when the model domain is subdivided into cells whose areas are proportional to water depth as specified in a reference grid and the centres of area of these cells are taken as the basis for a triangular network, the areas of the triangles in the network are also approximately proportional to water depth and the spacing of the nodes is such that the Courant criterion is satisfied approximately throughout the grid, that is, node spacing is proportional to the local phase speed of shallow water waves. It should be noted that triangle area could be made proportional to any scalar quantity defined over the domain, by providing a reference grid for that quantity in place of a depth grid after this menu item is selected.
 
 If the cluster option Display Mesh (below) is chosen, then the fine mesh will be displayed and the user has the option of changing the spacing. Otherwise, 100 cells across is used as a default. After displaying the mesh, the user is queried whether the mesh is OK. If not, the user is prompted for a new number of cells across the grid.
 
-If the cluster option Display Reference Grid (below) is chosen, then the reference grid id displayed. This option is useful for determining whether the reference grid properly overlays the grid being generated.
+If the cluster option Display Reference Grid (below) is chosen, then the reference grid is displayed. This option is useful for determining whether the reference grid properly overlays the grid being generated.
 
 Next, the model domain is subdivided into cells by forming appropriately-sized compact clusters of squares summed from the fine resolution Cartesian grid laid out over the domain. Cluster (cell) area is related to water depth by an expression A0 + A1*DEPTH + A2*DEPTH**2, where the coefficients A0, A1, A2 can be set by the user. The linear case described in the preceding paragraph corresponds to A0 = A2 = 0. If the display Cluster option (below) is chosen, the user will be queried whether the cluster layout and gradation looks OK. Selecting no will bring up a series of prompts to read in new values of A0, A1, and A2. This is a quick generation procedure where the user is encouraged to experiment until a satisfactory grid is obtained.
 
@@ -701,8 +699,7 @@ Picking EditNode with the mouse brings up a menu with options as shown in Table 
 NodeEdit:\\     \hline
 DeleteNode \\ MoveNode \\     \hline
 AddBndNode \\ Reverse \\ Join \\ Split \\ ReSample \\ Reselect \\ AddBndLine \\ DeleteIsland \\     \hline
-AddIntNode \\ AddIntLine \\     \hline
-PolyDeleteBnd \\ PolyDeleteInt \\ PolyDeleteAll \\
+AddIntNode \\ AddIntLine \\   
     \hline
    \end{tabular}
    \label{tab:NODEEDIT}
@@ -850,7 +847,7 @@ The Create option permits design of a new polygon within which to edit nodes. Th
 This option creates a polygon that includes the entire grid.
 
 \subsubsection[Menu item Cycle]{Menu item Cycle}
-Repeated picking of option Cycle permits the user to display in turn all, none or individual members of the list of stored polygons. Non-active polygons are outlined in red, whereas the active polygon is outlined in yellow.
+Repeated picking of option Cycle permits the user to display in sequence all the individual members of the list of stored polygons. Non-active polygons are outlined in red, whereas the active polygon is outlined in yellow.
 
 \subsubsection[Menu item Delete]{Menu item Delete}
 Delete is used in conjunction with Cycle to delete the currently active polygon from the stored list of polygons.
@@ -916,10 +913,10 @@ CutOffGrid \\ SetDepth \\ ReDepth \\
 
 
 \subsubsection[Menu item NodeCode]{Menu item NodeCode}
-This option permits changing all computational codes for nodes within a polygon. For instance, all the nodes with code = 1 along a section of land boundary can be changed to code = 5 for an open boundary. Then the endpoints are set manually to code = 6 to describe a node at the junction of a land and open boundary.
+This option permits changing all computational codes for nodes within a polygon. For instance, all the nodes with code = 1 along a section of land boundary can be changed to code = 5 for an open boundary. Then the endpoints are set manually to code = 6 to describe a node at the junction of a land and open boundary. These particular codes are used in the model RiCOM but any other codes can be chosen for different models.
 
 \subsubsection[Menu item ElementCode]{Menu item ElementCode}
-This option allows the element code to be changed for groups of elements in the current polygon, or by reading a polygon file. When a grid is set up, separate polygons should be created using DefineGroup to define separate element types. All these polygons should be saved in a file and then read to set element codes for any modification of this grid. The first polygon (usually the whole polygon) defines element code 1 and the second code 2 etc.
+This option allows the element code to be changed for groups of elements in the current polygon, or by reading a polygon file. When a grid is set up, separate polygons should be created using {\bf \{Polygons\}Create} to define separate element types. All these polygons should be saved in a file and then read to set element codes for any modification of this grid. The first polygon (usually the whole polygon) defines element code 1 and the second code 2 etc.
 
 \subsubsection[Menu item Dekite]{Menu item Dekite}
 Replaces all kites (a 4 triangle patch whose center node has 4 neighbors ) in the active polygon. The operation is the same as that in \{EditGrid\}Dekite but includes the entire active polygon rather than a single kite.
@@ -948,7 +945,7 @@ This option is used for scaling or offsetting the z coordinate. The user is prom
 
 
 \subsubsection[Menu item ReDepth]{Menu item ReDepth}
-This option enables reading a reference NGH file in order to interpolate new depth values at the grid nodes. This function is useful when you have altered the existing grid and wish to specify the correct depths (z coordinate). 
+This option enables reading a depth reference NGH file in order to interpolate new depth values at the grid nodes of the current grid. This function is useful when you have altered the existing grid and wish to specify the correct depths (z coordinate). 
 
 
 \subsection{Contents of menu: Help}
@@ -994,13 +991,16 @@ There are 2 broad categories of files: Grid files that contain nodal and connect
 stages in grid generation and can be converted back and forth with the menu item GridGen/Triangulate and
 GridEdit/Grid2Nodes.
 
+For files that use UTM coordinates, the UTM zone must be specified. There are 2 common formats for the zone;
+ e.g., 10North for zone 10 in the northern hemisphere, or 10U with U specifying the latitude band.  In TQGG we use the latter.
+
 \newpage
 \subsection[Neighbour (NGH) format]{Neighbour (NGH) format}
 
 \subsubsection[Description]{Description}
 
 Neighbour format files can have 3 formats: default (current) format, old format, and really old (original) format.
-These are defined below.
+These are defined below. The program will read all 3 formats but only write in the default format.
 
 The default format file can contain comment lines beginning on line 2 and are identified by a \# character in the
 first position on the line. The first line after comments contains scaling and grid type information. When the file is read,
@@ -1095,7 +1095,7 @@ id,x(id),y(id),code(id),z(id),(nbr(id,j),j=1,nnb)\newline
 \subsubsection[Description]{Description}
 
 Node format files can have 2 formats: default (current) format and old format.
-These are defined below.\\
+These are defined below. The program will read both formats but only write in the default format.\\
 
 \textbf{Data layout - default format}: \\ 
 
@@ -1137,7 +1137,7 @@ x,y,z \ \ \ \ \ \ \ \ \ {}- (npi lines, 3 reals, free format)\newline
 \textbf{igridtype} (integer) - the type of coordinates used by the grid. 0=(lat,long), 1=UTM, 2=m, 3=general. \newline
 \textbf{UTMzone} (3 characters) - optional UTM zone if igridtype=1. \\
 \textbf{np} (integer) - total number of nodes\newline
-\textbf{nb} (integer) - total number of boundaries.\newline
+\textbf{nb} (integer) - total number of boundaries (outer, islands, and constraints). \newline
 \textbf{nib} (integer) - number of internal boundaries (line constraints).\newline
 \textbf{nbp(i)} (integer) - number of nodes on ith boundary.\newline
 \textbf{x,y,z} (real)- x,y co-ordinates and bed elevation at node.\newline
@@ -1146,9 +1146,9 @@ x,y,z \ \ \ \ \ \ \ \ \ {}- (npi lines, 3 reals, free format)\newline
  NOTES: - outer boundary nodes must be all in one block and must be the first boundary.\newline
  \ \ \ \ \ \ \ {}- outer boundary must be in counter clockwise order.\newline
  \ \ \ \ \ \ \ {}- all inner boundaries (islands) must be in clockwise order.\\
-\ \ \ \ \ \ \ {}- all internal boundaries must be last in the boundary list.
-
-
+ \ \ \ \ \ \ \ {}- all internal boundaries that are line constraints are last in the boundary list.
+ \ \ \ \ \ \ \ {}- internal nodes are listed last.
+ 
 %\newpage
 \subsubsection{Example of data file in NODE format}
 
@@ -1194,7 +1194,7 @@ The element files can have 2 formats: one with 3 integers per line that is suita
 triangle elements only, and one with 5 integers per line that is suitable for 
 quadrilateral or triangular elements. If using the latter, the 4th vertex number
 is 0 for a triangle. The program will parse the first line
-to determine the correct format to read.\\
+to determine the correct format to read. The program will read both formats but only write in the default format. \\
 
 \textbf{Data layout - default format}: \\ 
 
@@ -1252,7 +1252,7 @@ information and the element list is generated when they are read.
 
 The format for grid (GRD) files has 2 forms. The default format contains a file type identifier and origin and
 scaling information. The simple format just reads the number of nodes and elements, then reads a list of
-node locations followed by a list of element vertices.\\
+node locations followed by a list of element vertices. The program will  only write in the default format.\\
 
 \textbf{Data layout - default format}: \\ 
 
@@ -1352,7 +1352,8 @@ The input routines will parse the file to
 determine the format and variables present, then read to the end of the file to determine the number of data points. 
 Three types of formats are supported. In the first, only the x,y coordinates of the point are read which is primarily used
 for shoreline data.  In the second,  x,y coordinates and bed elevation of a point are read which applies to boundary data with
-depth information. In the third, the data is read as segments in pairs of data points. When the segment identifier is the same,
+depth information. In the third, the data is read as segments in pairs of data points. When the segment identifier is the same
+and the segments are in order,
 the segments will be joined together. Otherwise, the segments can be manipulated with editing tools.\\
 
 \textbf{Data layout}: \\ 
@@ -1446,7 +1447,7 @@ Consulting, Victoria, ported TRIGRID to the IBM RS 6000 workstation, under contr
 Bergen. Dave Greenberg produced the first X-GKS version of TRIGRID and ran it on Sun and Data
 General workstations and also on a PC with the Linux operating system. Adrian Dolling 
 has ported TRIGRID to MS-Windows for the PC using the WIN API.
-In addition, two Camosun students, Allan Moore and Sam LeBlanc worked under Adrian Dolling’s 
+In addition, two Camosun students, Allan Moore and Sam LeBlanc worked under Adrian Dolling's
 direction on a graphics interface module for Trigrid in the spring of 1993.
 
 To obtain the present structure of the program, Roy Walters has merged all the graphics programs

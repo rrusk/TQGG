@@ -309,19 +309,19 @@
 !      INCLUDE '../includes/cntcfg.inc'
 
 !     - PASSED VARIABLES
-      INTEGER   nunit
-      LOGICAL Quit
+      INTEGER :: nunit
+      LOGICAL :: Quit
 
-      REAL    XMAX, YMAX, XMIN, YMIN
+      REAL :: XMAX, YMAX, XMIN, YMIN
 
 !     - LOCAL VARIABLES
-      INTEGER i , j , i0, n_offset, nbtot_max
-      INTEGER   irec, nrec, istat
-      INTEGER numrec, numrecmax, linenum
+      INTEGER :: i , j , i0, n_offset, nbtot_max
+      INTEGER :: irec, nrec, istat
+      INTEGER :: numrec, numrecmax, linenum
       real :: zsf
-      character*80 message
-      LOGICAL NewFile,newformat
-      character(100) Firstline
+      character(80) :: message
+      LOGICAL :: NewFile,newformat
+      character(120) :: Firstline
 
 !------------------BEGIN-------------------------------
 

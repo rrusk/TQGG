@@ -37,38 +37,42 @@
       implicit none 
 
 ! *** passed variables
-      integer n,ncb,nce, AutoGenFlag
-      integer npts,ntri
-      integer t(3,2*npts+1),v(4,2*npts+1),ncode(npts)
-      integer list(npts), elist(2,n)
-      real x(npts+3),y(npts+3)
-      real DMAX,XMIN,YMIN      !  needed in s/r CreateClusterPoints
+      integer :: n,ncb,nce, AutoGenFlag
+      integer :: npts,ntri
+      integer :: t(3,2*npts+1),v(4,2*npts+1),ncode(npts)
+      integer :: list(npts), elist(2,n)
+      real :: x(npts+3),y(npts+3)
+      real :: DMAX,XMIN,YMIN      !  needed in s/r CreateClusterPoints
 
 ! *** local variables
       real, allocatable, save :: Reflength(:)
-      logical Quit
-      integer istat,np0
+      logical :: Quit
+      integer :: istat,np0
 
       if(.not.allocated(Reflength)) then
         ALLOCATE (RefLength(npts), STAT = istat )
         if(istat.ne.0) then
-              call PigMessageOK('out of memory - Cannot allocate Reflength storage array','Reflength')
-              AutoGenFlag = -1
+          call PigMessageOK('out of memory - Cannot allocate Reflength storage array','Reflength')
+          AutoGenFlag = -1
           return
-            endif
+        endif
       endif
 
       if(AutoGenFlag.eq.1) then  !add a front 
-        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
+        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,&
+                         LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
       elseif(AutoGenFlag.eq.2) then  !add another front
-        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
+        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,&
+                         LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
       elseif(AutoGenFlag.eq.4) then  !add all fronts front
         AutoGenFlag = 1
-        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
+        call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,&
+                         LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
         AutoGenFlag = 2
         do
           np0 = n
-          call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
+          call NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,&
+                           LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
           if(n.le.np0) exit
           if(AutoGenFlag.ne.2) then
             call PigMessageOK('ERROR: Front too long, check for overrefinement','newnf')
@@ -87,7 +91,8 @@
 
 ! **********************************************************
 
-    subroutine NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
+    subroutine NODEBFRONT2(NPTS,N,X,Y,ncode,DMAX,XMIN,YMIN,&
+                           LIST,V,T,NTRI,ELIST,NCB,NCE,Reflength,AutoGenFlag)
 
 
 !     PURPOSE:  Boundary front triangulation
@@ -98,10 +103,9 @@
 !    triangles associated with this node. Add the extra node (or nodes) to 
 !    construct the triangles. Use an 'advancing front' method to propagate inwards.
 
-!      Multiple boundaries, ie islands are allowed, but at the moment two fronts (or
-!    two parts of one front) may come close together and overlap. Hence at the moment
-!    this version should be run for a specified number of iterations (found by trial
-!    and error), then the remainder filled in using cluster insertion. 
+!      Multiple boundaries, ie islands are allowed. One option with
+!    this version is to run for a specified number of iterations (found by trial
+!    and error), then the remaining space filled by using cluster insertion. 
 !
 !     INPUT:
 !     ------
@@ -160,34 +164,34 @@
     implicit none 
 
 ! *** passed variables
-      integer n, ncb, nce, AutoGenFlag
-      integer npts,ntri,v1,v2,v3
-      integer t(3,2*npts+1),v(4,2*npts+1),ncode(npts)
-      integer list(npts), elist(2,n)
-      real xp,yp,zp
-      real x(npts+3),y(npts+3),DMAX,XMIN,YMIN
-      real Reflength(npts)
+      integer :: n, ncb, nce, AutoGenFlag
+      integer :: npts,ntri,v1,v2,v3
+      integer :: t(3,2*npts+1),v(4,2*npts+1),ncode(npts)
+      integer :: list(npts), elist(2,n)
+      real :: xp,yp,zp,zp0
+      real :: x(npts+3),y(npts+3),DMAX,XMIN,YMIN
+      real :: Reflength(npts)
     
 !  *** local
       integer :: ncb00, ncb0 = 0
-      integer j,jj,nn,n1,ia, istat,ErrorFlag
-      integer  p,tp,i,ii,numinb
-      integer  newnf, newnf0, newnbreak, breaki, fi
+      integer :: j,jj,nn,n1,ia, istat,ErrorFlag
+      integer ::  p,tp,i,ii,numinb
+      integer ::  newnf, newnf0, newnbreak, breaki, fi
       integer, save :: nf, nbreak
       integer, allocatable, save :: break(:), f(:), oldf(:)
-      integer newf(2*nce), newbreak(nce)
+      integer :: newf(2*nce), newbreak(nce)
 !      real, allocatable, save :: reflength(:)
-      real angle, theta, alpha,vax,vbx,vay,vby,Lb,l,Lbavg,snum,Lavg,snum1
-      real Lba,Lbb,Lbmin,Lbmax
-      real xt,yt,dxt,dyt,ang,dxn,dyn,w,dx1,dy1
-      real pi,distv1,distv2,distv3
+      real :: angle, theta, alpha,vax,vbx,vay,vby,Lb,l,Lbavg,snum,Lavg,snum1
+      real :: Lba,Lbb,Lbmin,Lbmax
+      real :: xt,yt,dxt,dyt,ang,dxn,dyn,w,dx1,dy1
+      real :: pi,distv1,distv2,distv3
 
 !  *** used for ref grid stuff
-      INTEGER nex,npx,i1
-      REAL refdepth(1),factor
-      Real d2r
+      INTEGER :: nex,npx,i1
+      REAL :: refdepth(1),factor
+      Real :: d2r
 
-      pi=3.1415927
+      pi = 3.1415927
       d2r = pi/180.
 
 !      ACTVPOLY=0
@@ -196,14 +200,14 @@
       if(ncb0.eq.0) then         
         ALLOCATE (break(nce), f(2*nce), oldf(2*nce), STAT = istat )   !RefLength(npts), STAT = istat )
         if(istat.ne.0) then
-              call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
-              AutoGenFlag = -1
+          call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
+          AutoGenFlag = -1
           return
-            endif
+        endif
         ncb0 = nce
       elseif(AutoGenFlag.eq.2.and.nce.ne.ncb0) then
-            call PigPutMessage('ERROR: Grid has changed since last front')
-            AutoGenFlag = -2
+        call PigPutMessage('ERROR: Grid has changed since last front')
+        AutoGenFlag = -2
         return
       elseif(Autogenflag.eq.1) then
         ncb00 = ncb0
@@ -213,10 +217,10 @@
           if(allocated(f)) deallocate(f)
           ALLOCATE (break(nce), f(2*nce), STAT = istat )
           if(istat.ne.0) then
-                call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
-                AutoGenFlag = -1
+            call PigMessageOK('out of memory - Cannot allocate front storage arrays','front')
+            AutoGenFlag = -1
             return
-              endif
+          endif
         endif
 !      elseif(Autogenflag.eq.3) then
 !        return !already set up
@@ -224,7 +228,6 @@
       
       if(AutoGenFlag.eq.1) then !.or.AutoGenFlag.eq.3) then  !set reflength
 
-!        ITOT=1
         nbreak =1
         breaki = 1
         fi = 1
@@ -343,11 +346,16 @@
             xp = dmax*x(f(i)) + xmin
             yp = dmax*y(f(i)) + ymin
             call InterpRefGrid2( xp, yp, zp )
-            factor = zp
+!            factor = zp
             xp = dmax* x(oldf(i)) + xmin
             yp = dmax* y(oldf(i)) + ymin
-            call InterpRefGrid2( xp, yp, zp )
-            factor = factor/max(zp,1.)  !1.25
+            call InterpRefGrid2( xp, yp, zp0 )
+            if(zp0.eq.0.) then
+              factor = 1.
+            else
+              factor = zp/zp0
+            endif
+!            factor = factor/max(zp,1.)  !1.25
             factor = max(0.8,min(1.25,factor))
             RefLength(f(i)) = factor*RefLength(f(i))
           enddo

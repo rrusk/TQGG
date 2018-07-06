@@ -107,17 +107,20 @@
       IMPLICIT NONE
 
 !     - PASSED VARIABLES
-      LOGICAL Quit
+      LOGICAL :: Quit
 
 !     - LOCAL VARIABLES
-      INTEGER i  , j, istat
+      INTEGER :: i , j, istat
 !        - counters
-      INTEGER   irec, nrec
-      real d2r, xscf
-      character*80 Firstline
+      INTEGER :: irec, nrec
+      real :: d2r, xscf
+      character(120) :: Firstline
       character(3) :: UTMzoneR
-      character PigCursYesNo*1, ans1*1
+      character :: PigCursYesNo*1, ans1*1
       logical :: PTneeded
+      character*1 :: newline
+      INTEGER MarkType1
+      COMMON /MoreDefaults/ MarkType1,newline
 
 !------------------BEGIN------------------
 
@@ -162,11 +165,12 @@
               j = len_trim(firstline)
               READ( firstline(j-2:j), '(a)', IOSTAT=istat ) UTMzoneR(1:3)
               if(UTMzoneR(1:3).ne.UTMzone(1:3)) then
-                ans1 = PigCursYesNo('Ref grid has different UTMzone. Continue?')
-               if(ans1.eq.'N') then
-                 Quit = .true.
-                 return
-               endif
+                ans1 = PigCursYesNo('Ref grid has different UTMzone. '//newline//&
+                                    'UTM='//UTMzone(1:3)//' UTMR='//UTMzoneR(1:3)//' Continue?')
+                if(ans1.eq.'N') then
+                  Quit = .true.
+                  return
+                endif
               endif
             endif
             exit

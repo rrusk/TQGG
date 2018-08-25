@@ -122,6 +122,10 @@
 
       GridRName =  fle
       fnlen = len_trim( Fle )
+        
+      scaleX = 1.
+      scaleY = 1.
+      igridtype = 3
 
       call PigPutMessage('Reading file '//fle(:fnlen))
       TotCoords = 0

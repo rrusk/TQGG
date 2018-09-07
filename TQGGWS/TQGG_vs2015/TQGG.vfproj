@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="QuickWin" Version="11.0" ProjectIdGuid="{A63BC396-47E9-49F3-AC74-024C5ECF4195}">
+	<Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug" Interfaces="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" FPS4Filenames="true" RuntimeLibrary="rtQuickWin"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" FPS4Filenames="true" WarnUnusedVariables="true" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" UninitializedVariablesCheck="true" RuntimeLibrary="rtQuickWinDebug" Interfaces="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateManifest="false" GenerateDebugInformation="true" SubSystem="subSystemWindows" StackReserveSize="100000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" FPS4Filenames="true" RuntimeLibrary="rtQuickWin"/>
+				<Tool Name="VFLinkerTool" SuppressStartupBanner="true" GenerateManifest="false" SubSystem="subSystemWindows" StackReserveSize="40000000"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+		<File RelativePath="..\..\src\vf_qwin\TQGGvf.RC"/></Filter>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath="..\..\src\plotsubs\AllChecks.f90"/>
+		<File RelativePath="..\..\src\plotsubs\Allinfo.f90"/>
+		<File RelativePath="..\..\src\vf_dialogs\configurecontours.f"/>
+		<File RelativePath="..\..\src\vf_dialogs\configuregrid.f"/>
+		<File RelativePath="..\..\src\vf_dialogs\configurenodes.f"/>
+		<File RelativePath="..\..\src\plotsubs\dispcontbnd.f90"/>
+		<File RelativePath="..\..\src\plotsubs\drawgrid.f90"/>
+		<File RelativePath="..\..\src\gridgen\ErrorMessage.f90"/>
+		<File RelativePath="..\..\src\gridgen\GenClusters.f90"/>
+		<File RelativePath="..\..\src\gridgen\GenElementList.f90"/>
+		<File RelativePath="..\..\src\gridgen\GeneratePoints10-7-28b.f90"/>
+		<File RelativePath="..\..\src\gridgen\GroupEditSubs.f90"/>
+		<File RelativePath="..\..\src\dataio\MainArrays.f90"/>
+		<File RelativePath="..\..\src\gridgen\MainTriangle.f90"/>
+		<File RelativePath="..\..\src\gridedit\NEWEDITS.f90"/>
+		<File RelativePath="..\..\src\plotsubs\nodedisp.f90"/>
+		<File RelativePath="..\..\src\gridedit\nodemod.f90"/>
+		<File RelativePath="..\..\src\gridedit\NodeReselect.f"/>
+		<File RelativePath="..\..\src\gridedit\NODEUPDT7-7-14.f"/>
+		<File RelativePath="..\..\src\gridedit\nodeutil.f"/>
+		<File RelativePath="..\..\src\netcdf\nullReadWriteCDF.f90"/>
+		<File RelativePath="..\..\src\gridgen\OverlayGridCells10-7-28.f90"/>
+		<File RelativePath="..\..\src\plotsubs\permmark.f90"/>
+		<File RelativePath="..\..\src\gridedit\Piced1.f"/>
+		<File RelativePath="..\..\src\gridedit\piced2.f"/>
+		<File RelativePath="..\..\src\PigInterface\PigDisplaySubs.f90"/>
+		<File RelativePath="..\..\src\PigInterface\PigDrawSubs.f90"/>
+		<File RelativePath="..\..\src\PigInterface\PigMessage.f90"/>
+		<File RelativePath="..\..\src\plotsubs\Plotsubs.f90"/>
+		<File RelativePath="..\..\src\gridgen\poly_subs.f90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWDialogs.F90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWMain.f90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWMenuCB.f90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWMenuInit.f90"/>
+		<File RelativePath="..\..\src\vf_qwin\QWpig.f90"/>
+		<File RelativePath="..\..\src\dataio\ReadData.f90"/>
+		<File RelativePath="..\..\src\gridgen\ReferenceGrid_mod.f90"/>
+		<File RelativePath="..\..\src\vf_dialogs\RHPanel.f"/>
+		<File RelativePath="..\..\src\dataio\SampleData.f90"/>
+		<File RelativePath="..\..\src\gridedit\Scaleagain.f90"/>
+		<File RelativePath="..\..\src\gridgen\SloanTriSubs.f90"/>
+		<File RelativePath="..\..\src\gridedit\sortit.f"/>
+		<File RelativePath="..\..\src\gridedit\StraightLine.f"/>
+		<File RelativePath="..\..\src\dataio\Stspl.f"/>
+		<File RelativePath="..\..\src\dataio\stspldf.f">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
+		<File RelativePath="..\..\src\dataio\WriteData.f90"/>
+		<File RelativePath="..\..\src\dataio\Xsection.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>
